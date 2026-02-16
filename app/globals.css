@@ -1,26 +1,744 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
+/* Enable Tailwind v4 class-based dark mode */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ========== Color Tokens ========== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Brand colors */
+  --brand-red: #c61f2b;
+  --brand-blue: #0b4f7a;
+  --brand-red-50: #fdecee;
+  --brand-blue-50: #e9f1f6;
+
+  /* CTA colors */
+  --cta-primary-bg: #c61f2b;
+  --cta-primary-hover: #a31b24;
+  --cta-secondary-bg: #0b4f7a;
+  --cta-secondary-hover: #08436b;
+  --cta-ghost-border: #0b4f7a;
+  --cta-muted-bg: rgba(11, 79, 122, 0.16);
+  --cta-muted-hover-bg: rgba(11, 79, 122, 0.28);
+
+  /* Surface colors (light mode) */
+  --surface-bg: #f8fafc;
+  --surface-card: #ffffff;
+  --surface-elevated: #ffffff;
+  --surface-border: #e2e8f0;
+
+  /* Text colors (light mode) */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  /* Form colors */
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+  --input-border-hover: #94a3b8;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Dark mode tokens - Following Apple HIG & Google Material 3 */
+/* Apple: Min 4.5:1 contrast, aim for 7:1 for small text */
+/* Google: High-emphasis 87% white, Medium 60% white, avoid pure white on black */
+.dark {
+  --brand-red-50: rgba(198, 31, 43, 0.15);
+  --brand-blue-50: rgba(11, 79, 122, 0.25);
+
+  --cta-muted-bg: rgba(11, 79, 122, 0.25);
+  --cta-muted-hover-bg: rgba(11, 79, 122, 0.4);
+
+  /* Surfaces: Deep gray (not pure black) - reduces eye strain */
+  --surface-bg: #0f172a;
+  --surface-card: #1e293b;
+  --surface-elevated: #334155;
+  --surface-border: #475569;
+
+  /* Text: Light grays (not pure white) - per Google Material 3 */
+  /* High-emphasis: ~87% brightness */
+  --text-primary: #f1f5f9;
+  /* Medium-emphasis: ~70% brightness */
+  --text-secondary: #e2e8f0;
+  /* Low-emphasis: ~50% brightness - improved from #64748b for better contrast */
+  --text-muted: #94a3b8;
+
+  --input-bg: #1e293b;
+  --input-border: #475569;
+  --input-border-hover: #64748b;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ========== Base Styles ========== */
+@layer base {
+  @font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('/assets/fonts/Inter-Variable.woff2') format('woff2');
+  }
+
+  @font-face {
+    font-family: 'Playfair Display';
+    font-style: normal;
+    font-weight: 600 700;
+    font-display: swap;
+    src: url('/assets/fonts/PlayfairDisplay-Variable.woff2') format('woff2');
+  }
+
+  html {
+    scroll-behavior: smooth;
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  html,
+  body {
+    background-color: var(--surface-bg);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-size: clamp(0.95rem, 0.92rem + 0.3vw, 1.05rem);
+    line-height: 1.6;
+    margin: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: 'Playfair Display', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    font-weight: 700;
+  }
+
+  h1 {
+    font-size: clamp(2.25rem, 2.1rem + 1.5vw, 3.25rem);
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+
+  h2 {
+    margin-top: 0;
+    font-size: clamp(1.5rem, 1.4rem + 0.6vw, 2.25rem);
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-size: clamp(1.2rem, 1.12rem + 0.35vw, 1.5rem);
+  }
+
+  a:not(.btn) {
+    transition: color 0.2s ease-out, transform 0.2s ease-out;
+  }
+
+  a:not(.btn):hover,
+  a:not(.btn):focus-visible {
+    transform: translateY(-1px);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ========== Button Styles with Microinteractions ========== */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl border border-transparent px-4 py-3 sm:px-5 sm:py-3 text-sm font-semibold cursor-pointer;
+  min-height: 44px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateY(0) scale(1);
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px) scale(1.01);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--cta-primary-bg);
+  outline-offset: 3px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary {
+  background-color: var(--cta-primary-bg);
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(198, 31, 43, 0.2);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--cta-primary-hover);
+  box-shadow: 0 8px 16px rgba(198, 31, 43, 0.3);
+}
+
+.btn-secondary {
+  background-color: var(--cta-secondary-bg);
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(11, 79, 122, 0.15);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--cta-secondary-hover);
+  box-shadow: 0 8px 16px rgba(11, 79, 122, 0.25);
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--cta-ghost-border);
+  border-color: var(--cta-ghost-border);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: var(--cta-muted-bg);
+  color: var(--cta-secondary-bg);
+}
+
+.dark .btn-ghost {
+  color: var(--text-secondary);
+  border-color: var(--surface-border);
+}
+
+.dark .btn-ghost:hover:not(:disabled) {
+  background-color: var(--surface-elevated);
+  color: var(--text-primary);
+}
+
+.btn-muted {
+  background-color: var(--cta-muted-bg);
+  color: var(--cta-secondary-bg);
+}
+
+.btn-muted:hover:not(:disabled) {
+  background-color: var(--cta-muted-hover-bg);
+}
+
+.dark .btn-muted {
+  color: var(--text-secondary);
+}
+
+/* ========== Card Styles ========== */
+.card-plain {
+  background-color: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 1rem;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.card-accent {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid rgba(198, 31, 43, 0.28);
+  background-color: var(--surface-card);
+  background-image: linear-gradient(140deg, rgba(198, 31, 43, 0.1), rgba(11, 79, 122, 0.05), rgba(255, 255, 255, 0.9));
+  transition: transform 0.22s ease-out, box-shadow 0.22s ease-out, border-color 0.22s ease-out, background-color 0.3s ease;
+}
+
+.dark .card-accent {
+  background-image: linear-gradient(140deg, rgba(198, 31, 43, 0.15), rgba(11, 79, 122, 0.1), rgba(30, 41, 59, 0.9));
+}
+
+.card-accent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 0.4rem;
+  background: linear-gradient(90deg, var(--cta-primary-bg), rgba(255, 255, 255, 0.8), rgba(11, 79, 122, 0.2));
+  pointer-events: none;
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+}
+
+.card-accent:hover,
+.card-accent:focus-within {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 32px -18px rgba(15, 23, 42, 0.28);
+  border-color: rgba(198, 31, 43, 0.55);
+}
+
+/* ========== Shadow Utility ========== */
+.shadow-soft {
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.1);
+}
+
+.dark .shadow-soft {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* ========== Form Input Styles ========== */
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 0.75rem;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+
+.form-input:hover:not(:focus):not(:disabled) {
+  border-color: var(--input-border-hover);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgba(11, 79, 122, 0.15);
+}
+
+/* Dark mode: stronger focus ring for visibility */
+.dark .form-input:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+}
+
+.form-input:disabled {
+  background-color: var(--surface-elevated);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-input.error {
+  border-color: var(--brand-red);
+}
+
+.form-input.error:focus {
+  box-shadow: 0 0 0 3px rgba(198, 31, 43, 0.15);
+}
+
+/* Dark mode: stronger error focus ring */
+.dark .form-input.error:focus {
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.4);
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.375rem;
+}
+
+.form-label-required::after {
+  content: ' *';
+  color: var(--brand-red);
+}
+
+/* ========== FormField Component Styles (Apple HIG Validation) ========== */
+.form-field {
+  margin-bottom: 1rem;
+}
+
+.form-field-input-wrapper {
+  position: relative;
+}
+
+/* Error state - red border + shake animation */
+.form-field-error .form-input,
+.form-field-error input,
+.form-field-error select,
+.form-field-error textarea {
+  border-color: var(--brand-red) !important;
+  animation: shake 0.3s ease-in-out;
+}
+
+.form-field-error .form-input:focus,
+.form-field-error input:focus,
+.form-field-error select:focus,
+.form-field-error textarea:focus {
+  box-shadow: 0 0 0 3px rgba(198, 31, 43, 0.15);
+}
+
+/* Error text styling */
+.form-field-error-text {
+  margin-top: 0.375rem;
+  font-size: 0.8125rem;
+  color: var(--brand-red);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Helper text styling */
+.form-field-helper-text {
+  margin-top: 0.375rem;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+/* Shake animation for validation errors - per Apple HIG */
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+/* Direct error class on form inputs (for use without wrapper) */
+.form-input-error {
+  border-color: var(--brand-red) !important;
+  animation: shake 0.3s ease-in-out;
+}
+
+.form-input-error:focus {
+  box-shadow: 0 0 0 3px rgba(198, 31, 43, 0.15);
+}
+
+/* Dark mode: stronger error focus ring */
+.dark .form-input-error:focus {
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.4);
+}
+
+/* ========== Invoice Preview Styles ========== */
+.invoice-preview {
+  background-color: var(--surface-card);
+  border-radius: 0.75rem;
+  padding: 2rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+}
+
+.invoice-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.invoice-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.invoice-preview-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background-color: var(--surface-elevated);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.invoice-preview-table th:first-child {
+  border-top-left-radius: 0.5rem;
+}
+
+.invoice-preview-table th:last-child {
+  border-top-right-radius: 0.5rem;
+}
+
+.invoice-preview-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--surface-border);
+  font-size: 0.875rem;
+}
+
+.invoice-preview-table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* ========== Skeleton Loading ========== */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-border) 0%,
+    var(--surface-elevated) 50%,
+    var(--surface-border) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 0.375rem;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-text {
+  height: 1rem;
+  width: 100%;
+}
+
+.skeleton-title {
+  height: 1.5rem;
+  width: 60%;
+}
+
+.skeleton-avatar {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+}
+
+.skeleton-button {
+  height: 2.75rem;
+  width: 100%;
+  border-radius: 0.75rem;
+}
+
+/* ========== iOS Safe Area Utilities ========== */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* ========== Theme Toggle Button ========== */
+/* Updated to meet 44px minimum touch target (Apple HIG) */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 50%;
+  background-color: var(--surface-elevated);
+  border: 1px solid var(--surface-border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle:hover {
+  background-color: var(--cta-muted-bg);
+  color: var(--text-primary);
+  transform: scale(1.05);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+/* ========== Responsive Reduced Motion ========== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .skeleton {
+    animation: none;
+    background: var(--surface-border);
+  }
+}
+
+/* ========== Mobile Touch Target Rules (Apple HIG / Google Material) ========== */
+/* Minimum touch target: 44x44pt (Apple), 48x48dp (Google) */
+/* Applied on touch devices to ensure comfortable tapping */
+
+@media (hover: none) and (pointer: coarse) {
+  /* Form inputs - ensure minimum 44px height */
+  .form-input {
+    min-height: 44px;
+    padding: 12px 14px;
+  }
+
+  /* All interactive buttons - minimum 44px touch target */
+  button,
+  [role="button"],
+  .btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Wizard radio options - larger touch target */
+  .wizard-option,
+  label:has(input[type="radio"]),
+  label:has(input[type="checkbox"]) {
+    min-height: 56px;
+    padding: 14px 16px;
+  }
+
+  /* Small icon buttons - expand touch target */
+  .icon-button,
+  button:has(svg:only-child) {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 10px;
+  }
+
+  /* Collapsible section headers */
+  .collapsible-header {
+    min-height: 56px;
+  }
+
+  /* Select dropdowns */
+  select.form-input {
+    min-height: 44px;
+  }
+
+  /* Links in navigation */
+  nav a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Checkbox and radio inputs - larger touch targets */
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-width: 24px;
+    min-height: 24px;
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Checkbox/radio labels - ensure full row is tappable */
+  label:has(> input[type="checkbox"]),
+  label:has(> input[type="radio"]),
+  .checkbox-label,
+  .radio-label {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 8px 0;
+  }
+}
+
+/* ========== Mobile-specific improvements ========== */
+@media (max-width: 640px) {
+  /* Increase form input padding on small screens */
+  .form-input {
+    padding: 14px 16px;
+  }
+
+  /* Ensure buttons are fully tappable */
+  .btn {
+    padding: 14px 20px;
+  }
+
+  /* Card padding adjustments for mobile */
+  .card-plain,
+  .card-accent {
+    padding: 16px;
+  }
+
+  /* Wizard step content - more breathing room */
+  .wizard-content {
+    padding: 16px;
+  }
+}
+
+/* ========== Print Styles ========== */
+@media print {
+  /* Hide non-essential UI elements */
+  header,
+  footer,
+  nav,
+  .btn,
+  button,
+  .theme-toggle,
+  [role="button"],
+  .no-print {
+    display: none !important;
+  }
+
+  /* Reset colors for print */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Page setup */
+  @page {
+    size: A4;
+    margin: 1.5cm;
+  }
+
+  html, body {
+    background: white !important;
+    color: black !important;
+    font-size: 11pt;
+  }
+
+  /* Make invoice preview full width */
+  .invoice-preview {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: white !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Hide form columns, show only preview */
+  .lg\:col-span-2 {
+    display: none !important;
+  }
+
+  .lg\:col-span-1 {
+    grid-column: span 3 / span 3 !important;
+    width: 100% !important;
+  }
+
+  /* Card styling for print */
+  .card-plain,
+  .card-accent {
+    background: white !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  /* Ensure tables print well */
+  table {
+    page-break-inside: avoid;
+  }
+
+  /* Headers should not be orphaned */
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+
+  /* Keep sections together */
+  section, .card {
+    page-break-inside: avoid;
+  }
+
+  /* Ensure links are readable */
+  a {
+    text-decoration: none !important;
+    color: inherit !important;
+  }
+
+  /* Show only invoice preview section */
+  .sticky {
+    position: static !important;
+  }
 }

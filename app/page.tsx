@@ -1,65 +1,430 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useCallback, useRef, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import { toast } from 'sonner';
+import { motion, AnimatePresence } from 'framer-motion';
+import { siteConfig } from '@/config/site';
+import { BUSINESS_TYPE_LABELS } from '@/config/constants';
+import PageHeader from '@/components/ui/PageHeader';
+import Card from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
+import Badge from '@/components/ui/Badge';
+import { InvoiceIcon } from '@/components/ui/icons';
+import ErrorBoundary, { PDFErrorBoundary } from '@/components/ui/ErrorBoundary';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { useCompanyStore } from '@/stores/companyStore';
+import { useInvoiceStore } from '@/stores/invoiceStore';
+import { useHistoryStore, type SavedInvoice } from '@/stores/historyStore';
+import { useSettingsStore } from '@/stores/settingsStore';
+import { useKeyboardShortcuts, APP_SHORTCUTS } from '@/hooks/useKeyboardShortcuts';
+import { useInvoiceData } from '@/hooks/useInvoiceData';
+import OnboardingWizard from '@/components/wizard/OnboardingWizard';
+import {
+  CompanyDetailsSummary,
+  CustomerDetailsForm,
+  InvoiceDetailsForm,
+  LineItemsTable,
+  BankDetailsSummary,
+  InvoicePreview,
+  InvoiceTotalsSection,
+  SuccessState,
+  InvoiceToolbar,
+} from '@/components/invoice';
+import InvoiceHistoryPanel from '@/components/invoice/InvoiceHistoryPanel';
+import SettingsPanel from '@/components/settings/SettingsPanel';
+import ThemeToggle from '@/components/ui/ThemeToggle';
+
+// Dynamically import PDF components to avoid SSR issues
+const PDFDownloadButton = dynamic(
+  () => import('@/components/pdf/PDFDownloadButton'),
+  {
+    ssr: false,
+    loading: () => (
+      <Button variant="primary" fullWidth loading>
+        Loading...
+      </Button>
+    ),
+  }
+);
+
+const PDFPreviewModal = dynamic(
+  () => import('@/components/pdf/PDFPreviewModal'),
+  { ssr: false }
+);
 
 export default function Home() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+  // UI state
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showNewInvoiceConfirm, setShowNewInvoiceConfirm] = useState(false);
+  const [showResetAllConfirm, setShowResetAllConfirm] = useState(false);
+  const [showHistoryPanel, setShowHistoryPanel] = useState(false);
+  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [showPDFPreview, setShowPDFPreview] = useState(false);
+
+  // Ref for triggering PDF download via keyboard shortcut
+  const pdfButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Consolidated invoice data (from useInvoiceData hook)
+  const { invoiceData, totals, customer, details, lineItems } = useInvoiceData();
+
+  // Company store - only what's not in useInvoiceData
+  const isOnboarded = useCompanyStore((state) => state.isOnboarded);
+  const businessType = useCompanyStore((state) => state.businessType);
+  const resetOnboarding = useCompanyStore((state) => state.resetOnboarding);
+  const isCisSubcontractor = useCompanyStore((state) => state.isCisSubcontractor);
+
+  // Invoice store - actions only
+  const resetInvoice = useInvoiceStore((state) => state.resetInvoice);
+  const setCustomerDetails = useInvoiceStore((state) => state.setCustomerDetails);
+  const setInvoiceDetails = useInvoiceStore((state) => state.setInvoiceDetails);
+  const addLineItem = useInvoiceStore((state) => state.addLineItem);
+  const updateLineItem = useInvoiceStore((state) => state.updateLineItem);
+
+  // History store
+  const saveInvoice = useHistoryStore((state) => state.saveInvoice);
+
+  // Settings store
+  const useNextInvoiceNumber = useSettingsStore((state) => state.useNextInvoiceNumber);
+
+  // Auto-fill invoice number on initial load (when empty and onboarded)
+  useEffect(() => {
+    if (isOnboarded && !details.invoiceNumber) {
+      const nextNumber = useNextInvoiceNumber();
+      setInvoiceDetails({ invoiceNumber: nextNumber });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnboarded]);
+
+  // ===== Action Handlers =====
+
+  // Helper: Reset invoice and auto-fill next number
+  const resetWithNewNumber = useCallback(() => {
+    resetInvoice(isCisSubcontractor());
+    const nextNumber = useNextInvoiceNumber();
+    setInvoiceDetails({ invoiceNumber: nextNumber });
+  }, [resetInvoice, isCisSubcontractor, useNextInvoiceNumber, setInvoiceDetails]);
+
+  const handlePDFSuccess = useCallback(() => {
+    saveInvoice(invoiceData, totals);
+    setShowSuccess(true);
+  }, [saveInvoice, invoiceData, totals]);
+
+  const handleCreateAnother = useCallback(() => {
+    resetWithNewNumber();
+    setShowSuccess(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [resetWithNewNumber]);
+
+  const handleStayHere = useCallback(() => {
+    setShowSuccess(false);
+  }, []);
+
+  const handleNewInvoice = useCallback(() => {
+    const hasData = customer.name || customer.address || details.invoiceNumber || lineItems.some((item) => item.description);
+    if (hasData) {
+      setShowNewInvoiceConfirm(true);
+    } else {
+      resetWithNewNumber();
+    }
+  }, [customer.name, customer.address, details.invoiceNumber, lineItems, resetWithNewNumber]);
+
+  const handleConfirmNewInvoice = useCallback(() => {
+    resetWithNewNumber();
+    setShowNewInvoiceConfirm(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [resetWithNewNumber]);
+
+  const handleResetAllData = useCallback(() => {
+    resetInvoice(false);
+    sessionStorage.removeItem('invease-invoice-draft');
+    resetOnboarding();
+    setShowResetAllConfirm(false);
+  }, [resetInvoice, resetOnboarding]);
+
+  const handleDuplicateInvoice = useCallback(
+    (saved: SavedInvoice) => {
+      setCustomerDetails({
+        name: saved.invoice.customer.name,
+        address: saved.invoice.customer.address,
+        postCode: saved.invoice.customer.postCode,
+      });
+
+      setInvoiceDetails({
+        invoiceNumber: useNextInvoiceNumber(),
+        date: new Date().toISOString().split('T')[0],
+        paymentTerms: saved.invoice.details.paymentTerms,
+        notes: saved.invoice.details.notes || '',
+      });
+
+      resetInvoice(isCisSubcontractor());
+
+      saved.invoice.lineItems.forEach((item, index) => {
+        const currentItems = useInvoiceStore.getState().lineItems;
+        if (index === 0 && currentItems[0]) {
+          updateLineItem(currentItems[0].id, {
+            description: item.description,
+            quantity: item.quantity,
+            netAmount: item.netAmount,
+            vatRate: item.vatRate,
+            cisCategory: item.cisCategory,
+          });
+        } else {
+          addLineItem(isCisSubcontractor());
+          const items = useInvoiceStore.getState().lineItems;
+          const lastItem = items[items.length - 1];
+          if (lastItem) {
+            updateLineItem(lastItem.id, {
+              description: item.description,
+              quantity: item.quantity,
+              netAmount: item.netAmount,
+              vatRate: item.vatRate,
+              cisCategory: item.cisCategory,
+            });
+          }
+        }
+      });
+
+      setShowHistoryPanel(false);
+      toast.success('Invoice duplicated', { description: `Created from ${saved.invoiceNumber}` });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+    [setCustomerDetails, setInvoiceDetails, resetInvoice, addLineItem, updateLineItem, useNextInvoiceNumber, isCisSubcontractor]
+  );
+
+  // ===== Keyboard Shortcuts =====
+  useKeyboardShortcuts([
+    { ...APP_SHORTCUTS.DOWNLOAD_PDF, action: () => pdfButtonRef.current?.click() },
+    { ...APP_SHORTCUTS.NEW_INVOICE, action: handleNewInvoice },
+    { ...APP_SHORTCUTS.OPEN_SETTINGS, action: () => setShowSettingsPanel(true) },
+    { ...APP_SHORTCUTS.OPEN_PREVIEW, action: () => setShowPDFPreview(true) },
+  ]);
+
+  // ===== Render =====
+
+  // Show onboarding wizard if not completed
+  if (!isOnboarded) {
+    return (
+      <main className="min-h-screen">
+        <PageHeader
+          gradient
+          title="Welcome to Invease"
+          description="Free invoice generator for UK businesses"
+          icon={<InvoiceIcon />}
+          actions={<ThemeToggle />}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <ErrorBoundary errorMessage="Something went wrong during setup. Please refresh the page and try again." showRetry>
+          <OnboardingWizard />
+        </ErrorBoundary>
+      </main>
+    );
+  }
+
+  const businessTypeLabel = businessType ? BUSINESS_TYPE_LABELS[businessType] : 'Business';
+
+  return (
+    <>
+      {/* Header landmark */}
+      <header role="banner">
+        <PageHeader
+          gradient
+          title={siteConfig.name}
+          description={siteConfig.tagline}
+          icon={<InvoiceIcon />}
+          actions={<ThemeToggle />}
+        />
+      </header>
+
+      {/* Main content landmark */}
+      <main className="min-h-screen">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Form Column - primary content */}
+            <section aria-label="Invoice form" className="lg:col-span-2 space-y-6">
+              {/* Company Details */}
+              <Card variant="plain" className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <h2 id="company-details-heading" className="text-xl font-semibold text-[var(--brand-blue)]">
+                      Your {businessTypeLabel} Details
+                    </h2>
+                    <Badge variant="info" size="sm">Saved</Badge>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={resetOnboarding}
+                    className="cursor-pointer text-sm text-slate-500 hover:text-[var(--brand-blue)] transition-colors"
+                  >
+                    Edit Details
+                  </button>
+                </div>
+                <CompanyDetailsSummary />
+              </Card>
+
+              {/* Customer Details */}
+              <Card variant="plain" className="p-6">
+                <h2 id="customer-details-heading" className="text-xl font-semibold text-[var(--brand-blue)] mb-4">Customer Details</h2>
+                <CustomerDetailsForm />
+              </Card>
+
+              {/* Invoice Details */}
+              <Card variant="plain" className="p-6">
+                <h2 id="invoice-details-heading" className="text-xl font-semibold text-[var(--brand-blue)] mb-4">Invoice Details</h2>
+                <InvoiceDetailsForm />
+              </Card>
+
+              {/* Line Items */}
+              <Card variant="plain" className="p-6">
+                <h2 id="line-items-heading" className="text-xl font-semibold text-[var(--brand-blue)] mb-4">Line Items</h2>
+                <LineItemsTable />
+              </Card>
+
+              {/* Bank Details */}
+              <Card variant="plain" className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <h2 id="bank-details-heading" className="text-xl font-semibold text-[var(--brand-blue)]">Bank Details</h2>
+                    <Badge variant="info" size="sm">Saved</Badge>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={resetOnboarding}
+                    className="cursor-pointer text-sm text-slate-500 hover:text-[var(--brand-blue)] transition-colors"
+                  >
+                    Edit Details
+                  </button>
+                </div>
+                <BankDetailsSummary />
+              </Card>
+            </section>
+
+            {/* Preview Column - complementary content */}
+            <aside aria-label="Invoice preview" className="lg:col-span-1">
+            <div className="sticky top-6">
+              <Card variant="accent" className="p-6 overflow-hidden">
+                <AnimatePresence mode="wait">
+                  {showSuccess ? (
+                    <motion.div
+                      key="success"
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    >
+                      <SuccessState
+                        invoiceNumber={details.invoiceNumber}
+                        onCreateAnother={handleCreateAnother}
+                        onStayHere={handleStayHere}
+                      />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="preview"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <InvoiceToolbar
+                        invoice={invoiceData}
+                        totals={totals}
+                        onOpenPreview={() => setShowPDFPreview(true)}
+                        onOpenHistory={() => setShowHistoryPanel(true)}
+                        onOpenSettings={() => setShowSettingsPanel(true)}
+                      />
+
+                      <div className="invoice-preview text-sm">
+                        <InvoicePreview totals={totals} />
+                      </div>
+                      <InvoiceTotalsSection totals={totals} />
+
+                      {/* Actions */}
+                      <div className="mt-6 space-y-3">
+                        <PDFErrorBoundary>
+                          <PDFDownloadButton
+                            ref={pdfButtonRef}
+                            invoice={invoiceData}
+                            totals={totals}
+                            onSuccess={handlePDFSuccess}
+                          />
+                        </PDFErrorBoundary>
+                        <Button variant="ghost" fullWidth onClick={handleNewInvoice}>
+                          New Invoice
+                        </Button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </Card>
+
+              {/* Help */}
+              <div className="mt-4 text-center text-sm text-slate-500 space-y-2">
+                <p>
+                  Free tool by{' '}
+                  <a
+                    href={siteConfig.support.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[var(--brand-blue)] hover:underline"
+                  >
+                    K&R Accountants
+                  </a>
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowResetAllConfirm(true)}
+                  className="text-xs text-[var(--text-muted)] hover:text-[var(--brand-red)] transition-colors cursor-pointer"
+                >
+                  Start Over
+                </button>
+              </div>
+            </div>
+            </aside>
+          </div>
         </div>
       </main>
-    </div>
+
+      {/* Modals & Panels */}
+      <ConfirmDialog
+        isOpen={showNewInvoiceConfirm}
+        onClose={() => setShowNewInvoiceConfirm(false)}
+        onConfirm={handleConfirmNewInvoice}
+        title="Start New Invoice?"
+        message="This will clear all current invoice data. Your company and bank details will be preserved."
+        confirmText="Clear & Start New"
+        cancelText="Keep Current"
+        isDestructive
+      />
+
+      <ConfirmDialog
+        isOpen={showResetAllConfirm}
+        onClose={() => setShowResetAllConfirm(false)}
+        onConfirm={handleResetAllData}
+        title="Start Over?"
+        message="This will clear ALL saved data including your company details, bank details, and current invoice. You'll need to complete setup again."
+        confirmText="Clear Everything"
+        cancelText="Cancel"
+        isDestructive
+      />
+
+      <InvoiceHistoryPanel
+        isOpen={showHistoryPanel}
+        onClose={() => setShowHistoryPanel(false)}
+        onDuplicate={handleDuplicateInvoice}
+      />
+
+      <SettingsPanel
+        isOpen={showSettingsPanel}
+        onClose={() => setShowSettingsPanel(false)}
+      />
+
+      <PDFPreviewModal
+        isOpen={showPDFPreview}
+        onClose={() => setShowPDFPreview(false)}
+        invoice={invoiceData}
+        totals={totals}
+        onDownload={handlePDFSuccess}
+      />
+    </>
   );
 }
