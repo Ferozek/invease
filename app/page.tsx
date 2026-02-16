@@ -241,61 +241,96 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Form Column - primary content */}
             <section aria-label="Invoice form" className="lg:col-span-2 space-y-6">
-              {/* Company Details */}
-              <Card variant="plain" className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <h2 id="company-details-heading" className="text-xl font-semibold text-[var(--brand-blue)]">
-                      Your {businessTypeLabel} Details
-                    </h2>
-                    <Badge variant="info" size="sm">Saved</Badge>
+              {/* Company Details - scroll fade-in */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+              >
+                <Card variant="plain" className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <h2 id="company-details-heading" className="text-xl font-semibold text-[var(--brand-blue)]">
+                        Your {businessTypeLabel} Details
+                      </h2>
+                      <Badge variant="info" size="sm">Saved</Badge>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={resetOnboarding}
+                      className="cursor-pointer text-sm text-slate-500 hover:text-[var(--brand-blue)] transition-colors"
+                    >
+                      Edit Details
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={resetOnboarding}
-                    className="cursor-pointer text-sm text-slate-500 hover:text-[var(--brand-blue)] transition-colors"
-                  >
-                    Edit Details
-                  </button>
-                </div>
-                <CompanyDetailsSummary />
-              </Card>
+                  <CompanyDetailsSummary />
+                </Card>
+              </motion.div>
 
-              {/* Customer Details */}
-              <Card variant="plain" className="p-6">
-                <h2 id="customer-details-heading" className="text-xl font-semibold text-[var(--brand-blue)] mb-4">Customer Details</h2>
-                <CustomerDetailsForm />
-              </Card>
+              {/* Customer Details - scroll fade-in */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{ duration: 0.4, ease: 'easeOut', delay: 0.1 }}
+              >
+                <Card variant="plain" className="p-6">
+                  <h2 id="customer-details-heading" className="text-xl font-semibold text-[var(--brand-blue)] mb-4">Customer Details</h2>
+                  <CustomerDetailsForm />
+                </Card>
+              </motion.div>
 
-              {/* Invoice Details */}
-              <Card variant="plain" className="p-6">
-                <h2 id="invoice-details-heading" className="text-xl font-semibold text-[var(--brand-blue)] mb-4">Invoice Details</h2>
-                <InvoiceDetailsForm />
-              </Card>
+              {/* Invoice Details - scroll fade-in */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{ duration: 0.4, ease: 'easeOut', delay: 0.1 }}
+              >
+                <Card variant="plain" className="p-6">
+                  <h2 id="invoice-details-heading" className="text-xl font-semibold text-[var(--brand-blue)] mb-4">Invoice Details</h2>
+                  <InvoiceDetailsForm />
+                </Card>
+              </motion.div>
 
-              {/* Line Items */}
-              <Card variant="plain" className="p-6">
-                <h2 id="line-items-heading" className="text-xl font-semibold text-[var(--brand-blue)] mb-4">Line Items</h2>
-                <LineItemsTable />
-              </Card>
+              {/* Line Items - scroll fade-in */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{ duration: 0.4, ease: 'easeOut', delay: 0.1 }}
+              >
+                <Card variant="plain" className="p-6">
+                  <h2 id="line-items-heading" className="text-xl font-semibold text-[var(--brand-blue)] mb-4">Line Items</h2>
+                  <LineItemsTable />
+                </Card>
+              </motion.div>
 
-              {/* Bank Details */}
-              <Card variant="plain" className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <h2 id="bank-details-heading" className="text-xl font-semibold text-[var(--brand-blue)]">Bank Details</h2>
-                    <Badge variant="info" size="sm">Saved</Badge>
+              {/* Bank Details - scroll fade-in */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{ duration: 0.4, ease: 'easeOut', delay: 0.1 }}
+              >
+                <Card variant="plain" className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <h2 id="bank-details-heading" className="text-xl font-semibold text-[var(--brand-blue)]">Bank Details</h2>
+                      <Badge variant="info" size="sm">Saved</Badge>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={resetOnboarding}
+                      className="cursor-pointer text-sm text-slate-500 hover:text-[var(--brand-blue)] transition-colors"
+                    >
+                      Edit Details
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={resetOnboarding}
-                    className="cursor-pointer text-sm text-slate-500 hover:text-[var(--brand-blue)] transition-colors"
-                  >
-                    Edit Details
-                  </button>
-                </div>
-                <BankDetailsSummary />
-              </Card>
+                  <BankDetailsSummary />
+                </Card>
+              </motion.div>
             </section>
 
             {/* Preview Column - complementary content */}

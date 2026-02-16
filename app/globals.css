@@ -294,6 +294,21 @@
   outline: none;
   border-color: var(--brand-blue);
   box-shadow: 0 0 0 3px rgba(11, 79, 122, 0.15);
+  transform: scale(1.01);
+}
+
+/* Subtle lift on focus - Apple HIG delight */
+@media (prefers-reduced-motion: no-preference) {
+  .form-input:focus {
+    transition: all 0.2s ease, transform 0.15s ease;
+  }
+}
+
+/* Disable scale for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .form-input:focus {
+    transform: none;
+  }
 }
 
 /* Dark mode: stronger focus ring for visibility */

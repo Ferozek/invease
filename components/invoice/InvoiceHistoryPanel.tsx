@@ -134,7 +134,16 @@ export default function InvoiceHistoryPanel({
             <div className="flex-1 overflow-y-auto">
               {Object.keys(groupedInvoices).length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                  <div className="w-16 h-16 rounded-full bg-[var(--surface-elevated)] flex items-center justify-center mb-4">
+                  {/* Floating animation for empty state icon */}
+                  <motion.div
+                    animate={{ y: [0, -6, 0] }}
+                    transition={{
+                      repeat: Infinity,
+                      duration: 2.5,
+                      ease: 'easeInOut',
+                    }}
+                    className="w-16 h-16 rounded-full bg-[var(--surface-elevated)] flex items-center justify-center mb-4"
+                  >
                     <svg
                       className="w-8 h-8 text-[var(--text-muted)]"
                       fill="none"
@@ -148,7 +157,7 @@ export default function InvoiceHistoryPanel({
                         d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
                       />
                     </svg>
-                  </div>
+                  </motion.div>
                   <p className="text-[var(--text-secondary)] font-medium">No invoices yet</p>
                   <p className="text-sm text-[var(--text-muted)] mt-1">
                     {searchQuery ? 'Try a different search' : 'Save an invoice to see it here'}
@@ -164,15 +173,35 @@ export default function InvoiceHistoryPanel({
                       </p>
                     </div>
 
-                    {/* Invoices in month */}
-                    {invoices.map((inv) => (
-                      <InvoiceHistoryItem
-                        key={inv.id}
-                        invoice={inv}
-                        onDuplicate={() => onDuplicate(inv)}
-                        onDelete={() => deleteInvoice(inv.id)}
-                      />
-                    ))}
+                    {/* Invoices in month - staggered animation */}
+                    <motion.div
+                      initial="hidden"
+                      animate="visible"
+                      variants={{
+                        visible: {
+                          transition: {
+                            staggerChildren: 0.05,
+                          },
+                        },
+                      }}
+                    >
+                      {invoices.map((inv, index) => (
+                        <motion.div
+                          key={inv.id}
+                          variants={{
+                            hidden: { opacity: 0, x: 20 },
+                            visible: { opacity: 1, x: 0 },
+                          }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <InvoiceHistoryItem
+                            invoice={inv}
+                            onDuplicate={() => onDuplicate(inv)}
+                            onDelete={() => deleteInvoice(inv.id)}
+                          />
+                        </motion.div>
+                      ))}
+                    </motion.div>
                   </div>
                 ))
               )}
