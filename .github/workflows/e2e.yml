@@ -30,7 +30,7 @@ jobs:
         run: npm run build
 
       - name: Run E2E tests
-        run: npx playwright test --project=chromium
+        run: npx playwright test --project="Desktop Chrome"
 
       - name: Upload test results
         if: failure()
