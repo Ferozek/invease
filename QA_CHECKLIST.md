@@ -125,6 +125,24 @@ npm run build         # Production build
 - [ ] App installable on iOS (Add to Home Screen)
 - [ ] App opens in standalone mode
 - [ ] Correct icon on home screen
+- [ ] Offline page shows when disconnected
+
+### 10. Legal Pages
+
+- [ ] /privacy page loads correctly
+- [ ] /terms page loads correctly (includes MTD disclaimer)
+- [ ] /accessibility page loads correctly
+- [ ] Footer links present and working
+- [ ] Back navigation works from legal pages
+- [ ] K&R Accountants attribution correct
+
+### 11. Rate Limiting & Security Headers
+
+- [ ] API returns 429 after 30 requests/minute
+- [ ] Content-Security-Policy header present
+- [ ] X-Frame-Options: DENY
+- [ ] X-Content-Type-Options: nosniff
+- [ ] Strict-Transport-Security present (production)
 
 ---
 

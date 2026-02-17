@@ -36,6 +36,7 @@ import {
 import InvoiceHistoryPanel from '@/components/invoice/InvoiceHistoryPanel';
 import SettingsPanel from '@/components/settings/SettingsPanel';
 import ThemeToggle from '@/components/ui/ThemeToggle';
+import Footer from '@/components/shared/Footer';
 
 // Dynamically import PDF components to avoid SSR issues
 const PDFDownloadButton = dynamic(
@@ -470,6 +471,9 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <Footer />
 
       {/* Modals & Panels */}
       <ConfirmDialog

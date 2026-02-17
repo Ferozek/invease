@@ -1,7 +1,11 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Strict mode for React
+  reactStrictMode: true,
+
+  // Remove X-Powered-By header for security
+  poweredByHeader: false,
 };
 
 export default nextConfig;

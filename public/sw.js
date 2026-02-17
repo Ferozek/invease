@@ -8,12 +8,13 @@
  * - HTML pages: Network-first with offline page fallback
  */
 
-const CACHE_NAME = 'invease-v1';
+const CACHE_NAME = 'invease-v2';
 const OFFLINE_URL = '/offline.html';
 
 // Assets to cache on install
 const STATIC_ASSETS = [
   '/',
+  '/offline.html',
   '/manifest.json',
   '/icons/icon.svg',
   '/icons/apple-touch-icon.svg',
@@ -140,7 +141,12 @@ async function networkFirstWithOfflineFallback(request) {
     if (cached) {
       return cached;
     }
-    // Return the main page from cache as fallback
+    // Return offline page from cache as fallback
+    const offlinePage = await caches.match(OFFLINE_URL);
+    if (offlinePage) {
+      return offlinePage;
+    }
+    // Final fallback - try the main page
     const mainPage = await caches.match('/');
     if (mainPage) {
       return mainPage;

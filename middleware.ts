@@ -2,6 +2,40 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 /**
+ * Simple in-memory rate limiter
+ * Note: In production with multiple instances, use Redis or similar
+ */
+const rateLimit = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 30; // Max requests per window for API
+
+function checkRateLimit(ip: string): { allowed: boolean; remaining: number } {
+  const now = Date.now();
+  const record = rateLimit.get(ip);
+
+  // Clean up expired entries periodically (every 100th request)
+  if (Math.random() < 0.01) {
+    for (const [key, value] of rateLimit.entries()) {
+      if (now > value.resetTime) {
+        rateLimit.delete(key);
+      }
+    }
+  }
+
+  if (!record || now > record.resetTime) {
+    rateLimit.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - 1 };
+  }
+
+  if (record.count >= RATE_LIMIT_MAX_REQUESTS) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  record.count++;
+  return { allowed: true, remaining: RATE_LIMIT_MAX_REQUESTS - record.count };
+}
+
+/**
  * Next.js Middleware
  * Adds security headers including Content Security Policy
  *
@@ -11,8 +45,36 @@ import type { NextRequest } from 'next/server';
  * - X-Content-Type-Options to prevent MIME sniffing
  * - Referrer-Policy for privacy
  * - Permissions-Policy to control browser features
+ * - Rate limiting for API routes
  */
-export function middleware(_request: NextRequest) {
+export function middleware(request: NextRequest) {
+  // Rate limit API routes
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ??
+               request.headers.get('x-real-ip') ??
+               'unknown';
+
+    const { allowed, remaining } = checkRateLimit(ip);
+
+    if (!allowed) {
+      return new NextResponse(
+        JSON.stringify({ error: 'Too many requests. Please try again later.' }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': '60',
+          },
+        }
+      );
+    }
+
+    // Add rate limit headers to API responses
+    const response = NextResponse.next();
+    response.headers.set('X-RateLimit-Limit', RATE_LIMIT_MAX_REQUESTS.toString());
+    response.headers.set('X-RateLimit-Remaining', remaining.toString());
+    return response;
+  }
   const response = NextResponse.next();
 
   // Content Security Policy
