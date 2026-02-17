@@ -14,7 +14,7 @@ import { InvoiceIcon } from '@/components/ui/icons';
 import ErrorBoundary, { PDFErrorBoundary } from '@/components/ui/ErrorBoundary';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { useCompanyStore } from '@/stores/companyStore';
-import { useInvoiceStore } from '@/stores/invoiceStore';
+import { useInvoiceStore, undo, redo } from '@/stores/invoiceStore';
 import { useHistoryStore, type SavedInvoice } from '@/stores/historyStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useKeyboardShortcuts, APP_SHORTCUTS } from '@/hooks/useKeyboardShortcuts';
@@ -244,6 +244,8 @@ export default function Home() {
     { ...APP_SHORTCUTS.NEW_INVOICE, action: handleNewInvoice },
     { ...APP_SHORTCUTS.OPEN_SETTINGS, action: () => setShowSettingsPanel(true) },
     { ...APP_SHORTCUTS.OPEN_PREVIEW, action: () => setShowPDFPreview(true) },
+    { ...APP_SHORTCUTS.UNDO, action: undo },
+    { ...APP_SHORTCUTS.REDO, action: redo },
   ]);
 
   // ===== Render =====

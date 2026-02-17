@@ -1,6 +1,8 @@
 'use client';
 
 import ExportMenu from './ExportMenu';
+import ShareButton from './ShareButton';
+import AutoSaveIndicator from '@/components/ui/AutoSaveIndicator';
 import { ExpandIcon, HistoryIcon, SettingsIcon } from '@/components/ui/icons';
 import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
 
@@ -52,9 +54,12 @@ export default function InvoiceToolbar({
 }: InvoiceToolbarProps) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-xl font-semibold text-[var(--brand-blue)]">
-        Invoice Preview
-      </h2>
+      <div className="flex items-center gap-3">
+        <h2 className="text-xl font-semibold text-[var(--brand-blue)]">
+          Invoice Preview
+        </h2>
+        <AutoSaveIndicator />
+      </div>
       <div className="flex items-center gap-1">
         <ToolbarButton
           onClick={onOpenPreview}
@@ -64,6 +69,7 @@ export default function InvoiceToolbar({
           <ExpandIcon />
         </ToolbarButton>
         <ExportMenu invoice={invoice} totals={totals} />
+        <ShareButton invoice={invoice} totals={totals} />
         <ToolbarButton
           onClick={onOpenHistory}
           title="Invoice History"

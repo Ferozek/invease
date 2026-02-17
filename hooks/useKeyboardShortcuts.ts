@@ -92,6 +92,8 @@ export const APP_SHORTCUTS = {
   TOGGLE_THEME: { key: 't', meta: true, shift: true, description: 'Toggle Theme' },
   OPEN_SETTINGS: { key: ',', meta: true, description: 'Open Settings' },
   OPEN_PREVIEW: { key: 'p', meta: true, shift: true, description: 'Preview PDF' },
+  UNDO: { key: 'z', meta: true, description: 'Undo' },
+  REDO: { key: 'z', meta: true, shift: true, description: 'Redo' },
 } as const;
 
 export default useKeyboardShortcuts;

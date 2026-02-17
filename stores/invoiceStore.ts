@@ -1,11 +1,15 @@
 /**
  * Invoice Store
  * Zustand store for current invoice state
- * Now persisted to sessionStorage for autosave (survives refresh, not tab close)
+ * Features:
+ * - Persisted to sessionStorage for autosave (survives refresh, not tab close)
+ * - Undo/Redo support via temporal middleware (Cmd+Z / Cmd+Shift+Z)
  */
 
 import { create } from 'zustand';
+import { useStore } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { temporal, type TemporalState } from 'zundo';
 import type { CustomerDetails, InvoiceDetails, LineItem, VatRate, InvoiceTotals, CisStatus, CisCategory } from '@/types/invoice';
 
 interface InvoiceState {
@@ -129,46 +133,61 @@ const calculateTotals = (lineItems: LineItem[], cisStatus: CisStatus = 'not_appl
 
 export const useInvoiceStore = create<InvoiceState>()(
   persist(
-    (set, get) => ({
-      customer: defaultCustomer,
-      details: defaultInvoiceDetails,
-      lineItems: [createEmptyLineItem()],
-
-      setCustomerDetails: (details) => set((state) => ({
-        customer: { ...state.customer, ...details },
-      })),
-
-      setInvoiceDetails: (details) => set((state) => ({
-        details: { ...state.details, ...details },
-      })),
-
-      addLineItem: (isCis = false) => set((state) => ({
-        lineItems: [...state.lineItems, createEmptyLineItem(isCis)],
-      })),
-
-      removeLineItem: (id) => set((state) => ({
-        lineItems: state.lineItems.filter((item) => item.id !== id),
-      })),
-
-      updateLineItem: (id, updates) => set((state) => ({
-        lineItems: state.lineItems.map((item) =>
-          item.id === id ? { ...item, ...updates } : item
-        ),
-      })),
-
-      resetInvoice: (isCis = false) => set({
+    temporal(
+      (set, get) => ({
         customer: defaultCustomer,
-        details: {
-          ...defaultInvoiceDetails,
-          date: new Date().toISOString().split('T')[0],
-          paymentTerms: '30',
-          notes: '',
-        },
-        lineItems: [createEmptyLineItem(isCis)],
-      }),
+        details: defaultInvoiceDetails,
+        lineItems: [createEmptyLineItem()],
 
-      getTotals: (cisStatus = 'not_applicable') => calculateTotals(get().lineItems, cisStatus),
-    }),
+        setCustomerDetails: (details) => set((state) => ({
+          customer: { ...state.customer, ...details },
+        })),
+
+        setInvoiceDetails: (details) => set((state) => ({
+          details: { ...state.details, ...details },
+        })),
+
+        addLineItem: (isCis = false) => set((state) => ({
+          lineItems: [...state.lineItems, createEmptyLineItem(isCis)],
+        })),
+
+        removeLineItem: (id) => set((state) => ({
+          lineItems: state.lineItems.filter((item) => item.id !== id),
+        })),
+
+        updateLineItem: (id, updates) => set((state) => ({
+          lineItems: state.lineItems.map((item) =>
+            item.id === id ? { ...item, ...updates } : item
+          ),
+        })),
+
+        resetInvoice: (isCis = false) => set({
+          customer: defaultCustomer,
+          details: {
+            ...defaultInvoiceDetails,
+            date: new Date().toISOString().split('T')[0],
+            paymentTerms: '30',
+            notes: '',
+          },
+          lineItems: [createEmptyLineItem(isCis)],
+        }),
+
+        getTotals: (cisStatus = 'not_applicable') => calculateTotals(get().lineItems, cisStatus),
+      }),
+      {
+        // Limit history to 50 states to prevent memory issues
+        limit: 50,
+        // Only track meaningful data changes
+        partialize: (state) => ({
+          customer: state.customer,
+          details: state.details,
+          lineItems: state.lineItems,
+        }),
+        // Equality function to avoid tracking trivial changes
+        equality: (pastState, currentState) =>
+          JSON.stringify(pastState) === JSON.stringify(currentState),
+      }
+    ),
     {
       name: 'invease-invoice-draft',
       storage: createJSONStorage(() => sessionStorage),
@@ -181,3 +200,27 @@ export const useInvoiceStore = create<InvoiceState>()(
     }
   )
 );
+
+// Type for the temporal store
+type InvoiceTemporalState = TemporalState<{
+  customer: CustomerDetails;
+  details: InvoiceDetails;
+  lineItems: LineItem[];
+}>;
+
+// Export undo/redo functions for keyboard shortcuts
+export const undo = () => useInvoiceStore.temporal.getState().undo();
+export const redo = () => useInvoiceStore.temporal.getState().redo();
+export const clearHistory = () => useInvoiceStore.temporal.getState().clear();
+
+// Hook for accessing temporal state (undo/redo availability)
+export const useInvoiceHistory = () => {
+  const temporal = useStore(useInvoiceStore.temporal);
+
+  return {
+    canUndo: temporal.pastStates.length > 0,
+    canRedo: temporal.futureStates.length > 0,
+    undo: temporal.undo,
+    redo: temporal.redo,
+  };
+};
