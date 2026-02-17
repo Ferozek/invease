@@ -8,12 +8,14 @@ interface BusinessTypeStepProps {
   selected: BusinessType | null;
   onSelect: (type: BusinessType) => void;
   onNext: () => void;
+  onQuickStart?: () => void;
 }
 
 export default function BusinessTypeStep({
   selected,
   onSelect,
   onNext,
+  onQuickStart,
 }: BusinessTypeStepProps) {
   return (
     <div>
@@ -59,6 +61,22 @@ export default function BusinessTypeStep({
       >
         Continue
       </Button>
+
+      {/* Quick Start option */}
+      {onQuickStart && (
+        <div className="mt-6 pt-6 border-t border-[var(--surface-border)]">
+          <button
+            type="button"
+            onClick={onQuickStart}
+            className="cursor-pointer w-full text-center text-sm text-[var(--text-secondary)] hover:text-[var(--brand-blue)] transition-colors"
+          >
+            Skip setup, start invoicing now →
+          </button>
+          <p className="text-xs text-[var(--text-muted)] text-center mt-2">
+            You can add your details anytime
+          </p>
+        </div>
+      )}
     </div>
   );
 }

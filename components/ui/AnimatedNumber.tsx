@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSpring, useMotionValue, useTransform, motion } from 'framer-motion';
 
 interface AnimatedNumberProps {
@@ -31,29 +31,48 @@ export default function AnimatedNumber({
   duration = 0.8,
   className = '',
 }: AnimatedNumberProps) {
-  const motionValue = useMotionValue(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const motionValue = useMotionValue(value);
   const ref = useRef<HTMLSpanElement>(null);
+
+  // Check reduced motion preference on mount
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
 
   // Spring configuration for smooth animation
   const springValue = useSpring(motionValue, {
     stiffness: 100,
     damping: 30,
-    duration: duration * 1000,
+    duration: prefersReducedMotion ? 0 : duration * 1000,
   });
 
-  // Transform to rounded number
+  // Transform to formatted string
   const displayValue = useTransform(springValue, (latest) => formatFn(latest));
 
   useEffect(() => {
-    // Check for reduced motion preference
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
     if (prefersReducedMotion) {
-      motionValue.set(value);
+      // Skip animation - jump directly to value
+      motionValue.jump(value);
     } else {
+      // Animate to new value
       motionValue.set(value);
     }
-  }, [value, motionValue]);
+  }, [value, motionValue, prefersReducedMotion]);
+
+  // For reduced motion, render plain span without motion
+  if (prefersReducedMotion) {
+    return (
+      <span ref={ref} className={className}>
+        {formatFn(value)}
+      </span>
+    );
+  }
 
   return (
     <motion.span ref={ref} className={className}>
@@ -67,17 +86,33 @@ export default function AnimatedNumber({
  * Use this when you need more control over the animation
  */
 export function useAnimatedNumber(value: number, duration = 0.8) {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const motionValue = useMotionValue(0);
+
+  // Detecting reduced motion preference - setState is intentional for initial setup
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPrefersReducedMotion(mediaQuery.matches);
+
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
 
   const springValue = useSpring(motionValue, {
     stiffness: 100,
     damping: 30,
-    duration: duration * 1000,
+    duration: prefersReducedMotion ? 0 : duration * 1000,
   });
 
   useEffect(() => {
-    motionValue.set(value);
-  }, [value, motionValue]);
+    if (prefersReducedMotion) {
+      motionValue.jump(value);
+    } else {
+      motionValue.set(value);
+    }
+  }, [value, motionValue, prefersReducedMotion]);
 
   return springValue;
 }

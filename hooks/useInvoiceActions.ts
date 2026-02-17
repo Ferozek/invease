@@ -39,14 +39,14 @@ export function useInvoiceActions({
     useInvoiceStore();
   const { isCisSubcontractor, resetOnboarding } = useCompanyStore();
   const saveInvoice = useHistoryStore((state) => state.saveInvoice);
-  const useNextInvoiceNumber = useSettingsStore((state) => state.useNextInvoiceNumber);
+  const consumeNextInvoiceNumber = useSettingsStore((state) => state.consumeNextInvoiceNumber);
 
   // Helper: Reset and auto-fill invoice number
   const resetWithNewNumber = useCallback(() => {
     resetInvoice(isCisSubcontractor());
-    const nextNumber = useNextInvoiceNumber();
+    const nextNumber = consumeNextInvoiceNumber();
     setInvoiceDetails({ invoiceNumber: nextNumber });
-  }, [resetInvoice, isCisSubcontractor, useNextInvoiceNumber, setInvoiceDetails]);
+  }, [resetInvoice, isCisSubcontractor, consumeNextInvoiceNumber, setInvoiceDetails]);
 
   // Helper: Check if form has data
   const hasFormData = useCallback(() => {
@@ -112,7 +112,7 @@ export function useInvoiceActions({
 
       // Set new invoice number and today's date
       setInvoiceDetails({
-        invoiceNumber: useNextInvoiceNumber(),
+        invoiceNumber: consumeNextInvoiceNumber(),
         date: new Date().toISOString().split('T')[0],
         paymentTerms: saved.invoice.details.paymentTerms,
         notes: saved.invoice.details.notes || '',
@@ -164,7 +164,7 @@ export function useInvoiceActions({
       resetInvoice,
       addLineItem,
       updateLineItem,
-      useNextInvoiceNumber,
+      consumeNextInvoiceNumber,
       isCisSubcontractor,
       setShowHistoryPanel,
     ]

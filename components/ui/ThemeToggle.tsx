@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Theme = 'light' | 'dark' | 'system';
@@ -18,37 +18,14 @@ export default function ThemeToggle() {
   // Get resolved theme (what's actually showing)
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
 
+  // Track current theme for media query handler
+  const themeRef = useRef(theme);
   useEffect(() => {
-    setMounted(true);
+    themeRef.current = theme;
+  }, [theme]);
 
-    // Get stored preference or default to system
-    const stored = localStorage.getItem('theme') as Theme | null;
-    const initialTheme = stored || 'system';
-    setTheme(initialTheme);
-
-    // Apply initial theme
-    applyTheme(initialTheme);
-
-    // Listen for system preference changes
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = () => {
-      if (theme === 'system') {
-        applyTheme('system');
-      }
-    };
-
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-
-  // Apply theme changes
-  useEffect(() => {
-    if (mounted) {
-      applyTheme(theme);
-    }
-  }, [theme, mounted]);
-
-  const applyTheme = (newTheme: Theme) => {
+  // Apply theme helper
+  const applyTheme = useCallback((newTheme: Theme) => {
     const isDark =
       newTheme === 'dark' ||
       (newTheme === 'system' &&
@@ -61,7 +38,40 @@ export default function ThemeToggle() {
       document.documentElement.classList.remove('dark');
       setResolvedTheme('light');
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+
+    // Get stored preference or default to system
+    const stored = localStorage.getItem('theme') as Theme | null;
+    const initialTheme = stored || 'system';
+     
+    setTheme(initialTheme);
+
+    // Apply initial theme
+    applyTheme(initialTheme);
+
+    // Listen for system preference changes
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => {
+      if (themeRef.current === 'system') {
+        applyTheme('system');
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [applyTheme]);
+
+  // Apply theme changes - this intentionally calls applyTheme which sets state
+  useEffect(() => {
+    if (mounted) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      applyTheme(theme);
+    }
+  }, [theme, mounted, applyTheme]);
 
   const toggleTheme = () => {
     const newTheme = resolvedTheme === 'light' ? 'dark' : 'light';

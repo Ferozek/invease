@@ -28,8 +28,8 @@ export default function PageHeader({
     ? 'bg-gradient-to-br from-[var(--brand-blue)] via-[#0e618f] to-[var(--brand-red)]'
     : '';
 
-  const textColor = gradient ? 'text-white' : 'text-slate-900';
-  const descriptionColor = gradient ? 'text-white/90' : 'text-slate-600';
+  const textColor = gradient ? 'text-white' : 'text-[var(--text-primary)]';
+  const descriptionColor = gradient ? 'text-white/90' : 'text-[var(--text-secondary)]';
 
   return (
     <div className={`${backgroundStyle} ${gradient ? 'py-12' : 'mb-8'} ${className}`}>

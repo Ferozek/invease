@@ -141,14 +141,14 @@ export default function ConfirmDialog({
                 type="button"
                 onClick={onClose}
                 data-cancel-button
-                className="flex-1 px-4 py-3 text-[var(--brand-blue)] font-medium hover:bg-[var(--surface-elevated)] transition-colors border-r border-[var(--surface-border)] focus:outline-none focus:bg-[var(--surface-elevated)]"
+                className="cursor-pointer flex-1 px-4 py-3 text-[var(--brand-blue)] font-medium hover:bg-[var(--surface-elevated)] transition-colors border-r border-[var(--surface-border)] focus:outline-none focus:bg-[var(--surface-elevated)]"
               >
                 {cancelText}
               </button>
               <button
                 type="button"
                 onClick={handleConfirm}
-                className={`flex-1 px-4 py-3 font-semibold transition-colors focus:outline-none ${
+                className={`cursor-pointer flex-1 px-4 py-3 font-semibold transition-colors focus:outline-none ${
                   isDestructive
                     ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 focus:bg-red-50 dark:focus:bg-red-900/20'
                     : 'text-[var(--brand-blue)] hover:bg-[var(--surface-elevated)] focus:bg-[var(--surface-elevated)]'

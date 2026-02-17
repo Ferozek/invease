@@ -3,8 +3,8 @@
  * Single import point for all invoice-related components
  */
 
-export { default as LogoUpload } from './LogoUpload';
-export { default as CompanySearch } from './CompanySearch';
+// Re-export shared components for backwards compatibility
+export { LogoUpload, CompanySearch } from '@/components/shared';
 export { default as CompanyDetailsForm } from './CompanyDetailsForm';
 export { default as CompanyDetailsSummary } from './CompanyDetailsSummary';
 export { default as CustomerDetailsForm } from './CustomerDetailsForm';

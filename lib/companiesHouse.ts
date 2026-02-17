@@ -3,7 +3,8 @@
  * Provides search and lookup functionality for UK companies
  */
 
-import { env } from './env';
+// Note: Reading COMPANIES_HOUSE_API_KEY directly from process.env
+// to avoid module caching issues with env validation
 
 export type CompanyLite = {
   name: string;
@@ -14,8 +15,38 @@ export type CompanyLite = {
   incorporationDate?: string;
 };
 
+// Companies House API response types
+interface CompanySearchItem {
+  title?: string;
+  company_number?: string;
+  company_status?: string;
+  address_snippet?: string;
+}
+
+interface CompanySearchResponse {
+  items?: CompanySearchItem[];
+}
+
+interface CompanyProfileAddress {
+  address_line_1?: string;
+  address_line_2?: string;
+  locality?: string;
+  postal_code?: string;
+}
+
+interface CompanyProfileResponse {
+  company_name?: string;
+  company_number?: string;
+  company_status?: string;
+  registered_office_address?: CompanyProfileAddress;
+  type?: string;
+  company_type?: string;
+  date_of_creation?: string;
+}
+
 function authHeader(): string | undefined {
-  const key = env.COMPANIES_HOUSE_API_KEY;
+  // Read directly from process.env to bypass validation module caching issues
+  const key = process.env.COMPANIES_HOUSE_API_KEY;
   if (!key) return undefined;
   // Basic auth: API key as username, blank password
   const token = Buffer.from(`${key}:`).toString('base64');
@@ -23,12 +54,13 @@ function authHeader(): string | undefined {
 }
 
 export async function searchCompanies(q: string, limit = 5): Promise<CompanyLite[]> {
-  const auth = authHeader();
-  if (!auth) {
+  const key = process.env.COMPANIES_HOUSE_API_KEY;
+  if (!key) {
     console.warn('[companiesHouse] No API key set - returning empty search results.');
     return [];
   }
 
+  const auth = `Basic ${Buffer.from(`${key}:`).toString('base64')}`;
   const url = new URL('https://api.company-information.service.gov.uk/search/companies');
   url.searchParams.set('q', q);
   url.searchParams.set('items_per_page', String(limit));
@@ -39,10 +71,10 @@ export async function searchCompanies(q: string, limit = 5): Promise<CompanyLite
     return [];
   }
 
-  const data = await res.json();
-  const items = Array.isArray((data as any)?.items) ? (data as any).items : [];
+  const data: CompanySearchResponse = await res.json();
+  const items = Array.isArray(data?.items) ? data.items : [];
 
-  return items.map((it: any): CompanyLite => ({
+  return items.map((it): CompanyLite => ({
     name: it?.title ?? '',
     number: it?.company_number ?? '',
     status: it?.company_status ?? '',
@@ -67,7 +99,7 @@ export async function getCompanyByNumber(number: string): Promise<CompanyLite | 
     return null;
   }
 
-  const d: any = await res.json();
+  const d: CompanyProfileResponse = await res.json();
 
   const parts = [
     d?.registered_office_address?.address_line_1,

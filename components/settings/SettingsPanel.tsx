@@ -51,7 +51,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               <button
                 type="button"
                 onClick={onClose}
-                className="p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
+                className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
                 aria-label="Close"
               >
                 <svg

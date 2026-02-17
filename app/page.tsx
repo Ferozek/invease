@@ -19,7 +19,9 @@ import { useHistoryStore, type SavedInvoice } from '@/stores/historyStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useKeyboardShortcuts, APP_SHORTCUTS } from '@/hooks/useKeyboardShortcuts';
 import { useInvoiceData } from '@/hooks/useInvoiceData';
+import WelcomeSlides from '@/components/onboarding/WelcomeSlides';
 import OnboardingWizard from '@/components/wizard/OnboardingWizard';
+import { SAMPLE_COMPANY, SAMPLE_BANK_DETAILS, SAMPLE_CUSTOMER, SAMPLE_LINE_ITEM } from '@/config/sampleData';
 import {
   CompanyDetailsSummary,
   CustomerDetailsForm,
@@ -69,9 +71,15 @@ export default function Home() {
   const { invoiceData, totals, customer, details, lineItems } = useInvoiceData();
 
   // Company store - only what's not in useInvoiceData
+  const hasSeenWelcome = useCompanyStore((state) => state.hasSeenWelcome);
   const isOnboarded = useCompanyStore((state) => state.isOnboarded);
   const businessType = useCompanyStore((state) => state.businessType);
+  const companyName = useCompanyStore((state) => state.companyName);
+  const markWelcomeSeen = useCompanyStore((state) => state.markWelcomeSeen);
+  const setCompanyDetails = useCompanyStore((state) => state.setCompanyDetails);
+  const setBankDetails = useCompanyStore((state) => state.setBankDetails);
   const resetOnboarding = useCompanyStore((state) => state.resetOnboarding);
+  const startOver = useCompanyStore((state) => state.startOver);
   const isCisSubcontractor = useCompanyStore((state) => state.isCisSubcontractor);
 
   // Invoice store - actions only
@@ -85,25 +93,63 @@ export default function Home() {
   const saveInvoice = useHistoryStore((state) => state.saveInvoice);
 
   // Settings store
-  const useNextInvoiceNumber = useSettingsStore((state) => state.useNextInvoiceNumber);
+  const consumeNextInvoiceNumber = useSettingsStore((state) => state.consumeNextInvoiceNumber);
 
   // Auto-fill invoice number on initial load (when empty and onboarded)
   useEffect(() => {
     if (isOnboarded && !details.invoiceNumber) {
-      const nextNumber = useNextInvoiceNumber();
+      const nextNumber = consumeNextInvoiceNumber();
       setInvoiceDetails({ invoiceNumber: nextNumber });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnboarded]);
+
+  // Handle welcome completion - pre-fill with sample data
+  const handleWelcomeComplete = useCallback(() => {
+    // Set default business type
+    useCompanyStore.getState().setBusinessType('sole_trader');
+
+    // Pre-fill sample company data if empty
+    if (!companyName) {
+      setCompanyDetails({
+        companyName: SAMPLE_COMPANY.companyName,
+        address: SAMPLE_COMPANY.address,
+        postCode: SAMPLE_COMPANY.postCode,
+      });
+      setBankDetails(SAMPLE_BANK_DETAILS);
+    }
+
+    // Pre-fill sample customer and line item if empty
+    if (!customer.name) {
+      setCustomerDetails(SAMPLE_CUSTOMER);
+    }
+
+    // Pre-fill sample line item if empty
+    const currentItems = useInvoiceStore.getState().lineItems;
+    if (currentItems.length > 0 && !currentItems[0].description) {
+      updateLineItem(currentItems[0].id, SAMPLE_LINE_ITEM);
+    }
+
+    // Auto-fill invoice number
+    const nextNumber = consumeNextInvoiceNumber();
+    setInvoiceDetails({
+      invoiceNumber: nextNumber,
+      date: new Date().toISOString().split('T')[0],
+      paymentTerms: '30',
+      notes: 'Thank you for your business.',
+    });
+
+    markWelcomeSeen();
+  }, [companyName, customer.name, setCompanyDetails, setBankDetails, setCustomerDetails, setInvoiceDetails, updateLineItem, consumeNextInvoiceNumber, markWelcomeSeen]);
 
   // ===== Action Handlers =====
 
   // Helper: Reset invoice and auto-fill next number
   const resetWithNewNumber = useCallback(() => {
     resetInvoice(isCisSubcontractor());
-    const nextNumber = useNextInvoiceNumber();
+    const nextNumber = consumeNextInvoiceNumber();
     setInvoiceDetails({ invoiceNumber: nextNumber });
-  }, [resetInvoice, isCisSubcontractor, useNextInvoiceNumber, setInvoiceDetails]);
+  }, [resetInvoice, isCisSubcontractor, consumeNextInvoiceNumber, setInvoiceDetails]);
 
   const handlePDFSuccess = useCallback(() => {
     saveInvoice(invoiceData, totals);
@@ -138,9 +184,9 @@ export default function Home() {
   const handleResetAllData = useCallback(() => {
     resetInvoice(false);
     sessionStorage.removeItem('invease-invoice-draft');
-    resetOnboarding();
+    startOver();
     setShowResetAllConfirm(false);
-  }, [resetInvoice, resetOnboarding]);
+  }, [resetInvoice, startOver]);
 
   const handleDuplicateInvoice = useCallback(
     (saved: SavedInvoice) => {
@@ -151,7 +197,7 @@ export default function Home() {
       });
 
       setInvoiceDetails({
-        invoiceNumber: useNextInvoiceNumber(),
+        invoiceNumber: consumeNextInvoiceNumber(),
         date: new Date().toISOString().split('T')[0],
         paymentTerms: saved.invoice.details.paymentTerms,
         notes: saved.invoice.details.notes || '',
@@ -189,7 +235,7 @@ export default function Home() {
       toast.success('Invoice duplicated', { description: `Created from ${saved.invoiceNumber}` });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     },
-    [setCustomerDetails, setInvoiceDetails, resetInvoice, addLineItem, updateLineItem, useNextInvoiceNumber, isCisSubcontractor]
+    [setCustomerDetails, setInvoiceDetails, resetInvoice, addLineItem, updateLineItem, consumeNextInvoiceNumber, isCisSubcontractor]
   );
 
   // ===== Keyboard Shortcuts =====
@@ -202,18 +248,22 @@ export default function Home() {
 
   // ===== Render =====
 
-  // Show onboarding wizard if not completed
+  // Show welcome slides for first-time users
+  if (!hasSeenWelcome) {
+    return (
+      <main id="main-content" className="min-h-screen bg-[var(--surface-page)]">
+        <ErrorBoundary errorMessage="Something went wrong. Please refresh the page." showRetry>
+          <WelcomeSlides onComplete={handleWelcomeComplete} />
+        </ErrorBoundary>
+      </main>
+    );
+  }
+
+  // Show onboarding wizard if not yet completed (or editing details)
   if (!isOnboarded) {
     return (
-      <main className="min-h-screen">
-        <PageHeader
-          gradient
-          title="Welcome to Invease"
-          description="Free invoice generator for UK businesses"
-          icon={<InvoiceIcon />}
-          actions={<ThemeToggle />}
-        />
-        <ErrorBoundary errorMessage="Something went wrong during setup. Please refresh the page and try again." showRetry>
+      <main id="main-content" className="min-h-screen bg-[var(--surface-page)]">
+        <ErrorBoundary errorMessage="Something went wrong. Please refresh the page." showRetry>
           <OnboardingWizard />
         </ErrorBoundary>
       </main>
@@ -236,7 +286,7 @@ export default function Home() {
       </header>
 
       {/* Main content landmark */}
-      <main className="min-h-screen">
+      <main id="main-content" className="min-h-screen">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Form Column - primary content */}

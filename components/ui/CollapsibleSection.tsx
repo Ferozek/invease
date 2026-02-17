@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useId } from 'react';
 
 interface CollapsibleSectionProps {
   title: string;
@@ -23,6 +23,7 @@ export default function CollapsibleSection({
   className = '',
 }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const contentId = useId();
 
   return (
     <div className={`border border-[var(--surface-border)] rounded-lg overflow-hidden ${className}`}>
@@ -31,9 +32,10 @@ export default function CollapsibleSection({
         className="w-full flex items-center justify-between p-4 hover:bg-[var(--surface-elevated)] transition-colors text-left cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
+        aria-controls={contentId}
       >
         <div className="flex-1">
-          <h4 className="font-medium text-[var(--text-primary)]">{title}</h4>
+          <h4 id={`${contentId}-label`} className="font-medium text-[var(--text-primary)]">{title}</h4>
           {description && !isOpen && (
             <p className="text-sm text-[var(--text-secondary)] mt-0.5">{description}</p>
           )}
@@ -47,6 +49,7 @@ export default function CollapsibleSection({
           className={`w-5 h-5 text-[var(--text-muted)] transition-transform duration-200 ${
             isOpen ? 'rotate-180' : ''
           }`}
+          aria-hidden="true"
         >
           <path
             strokeLinecap="round"
@@ -58,6 +61,9 @@ export default function CollapsibleSection({
 
       {/* Animated content area */}
       <div
+        id={contentId}
+        role="region"
+        aria-labelledby={`${contentId}-label`}
         className={`transition-all duration-200 ease-in-out ${
           isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
         }`}

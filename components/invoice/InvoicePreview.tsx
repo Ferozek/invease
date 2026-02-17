@@ -11,6 +11,7 @@ import {
   getPaymentTermsText,
   getVatRateLabel,
 } from '@/lib/formatters';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import type { InvoiceTotals } from '@/types/invoice';
 
 interface InvoicePreviewProps {
@@ -75,11 +76,11 @@ export default function InvoicePreview({ totals }: InvoicePreviewProps) {
           )}
           <p className="font-bold text-[var(--brand-blue)]">{companyName}</p>
           {address && (
-            <p className="text-slate-600 whitespace-pre-line text-xs">{address}</p>
+            <p className="text-[var(--text-secondary)] whitespace-pre-line text-xs">{address}</p>
           )}
-          {postCode && <p className="text-slate-600 text-xs">{postCode}</p>}
-          {vatNumber && <p className="text-slate-500 text-xs">VAT: {vatNumber}</p>}
-          {isCis && cisUtr && <p className="text-slate-500 text-xs">UTR: {cisUtr}</p>}
+          {postCode && <p className="text-[var(--text-secondary)] text-xs">{postCode}</p>}
+          {vatNumber && <p className="text-[var(--text-muted)] text-xs">VAT: {vatNumber}</p>}
+          {isCis && cisUtr && <p className="text-[var(--text-muted)] text-xs">UTR: {cisUtr}</p>}
         </div>
       )}
 
@@ -91,13 +92,13 @@ export default function InvoicePreview({ totals }: InvoicePreviewProps) {
           )}
           {details.date && (
             <>
-              <p className="text-slate-600 text-xs">
+              <p className="text-[var(--text-secondary)] text-xs">
                 Date: {formatDateUK(details.date)}
               </p>
-              <p className="text-slate-600 text-xs">
+              <p className="text-[var(--text-secondary)] text-xs">
                 Due: {formatDateUK(calculateDueDate(details.date, details.paymentTerms).toISOString())}
               </p>
-              <p className="text-slate-500 text-xs">
+              <p className="text-[var(--text-muted)] text-xs">
                 Terms: {getPaymentTermsText(details.paymentTerms)}
               </p>
             </>
@@ -108,15 +109,15 @@ export default function InvoicePreview({ totals }: InvoicePreviewProps) {
       {/* Customer */}
       {customer.name && (
         <div className="border-t pt-3">
-          <p className="text-xs text-slate-500 mb-1">Bill To:</p>
+          <p className="text-xs text-[var(--text-muted)] mb-1">Bill To:</p>
           <p className="font-medium">{customer.name}</p>
           {customer.address && (
-            <p className="text-slate-600 whitespace-pre-line text-xs">
+            <p className="text-[var(--text-secondary)] whitespace-pre-line text-xs">
               {customer.address}
             </p>
           )}
           {customer.postCode && (
-            <p className="text-slate-600 text-xs">{customer.postCode}</p>
+            <p className="text-[var(--text-secondary)] text-xs">{customer.postCode}</p>
           )}
         </div>
       )}
@@ -155,8 +156,8 @@ export default function InvoicePreview({ totals }: InvoicePreviewProps) {
       {/* Notes/Terms */}
       {details.notes && (
         <div className="border-t pt-3">
-          <p className="text-xs text-slate-500 mb-1">Notes:</p>
-          <p className="text-xs text-slate-600 whitespace-pre-line">{details.notes}</p>
+          <p className="text-xs text-[var(--text-muted)] mb-1">Notes:</p>
+          <p className="text-xs text-[var(--text-secondary)] whitespace-pre-line">{details.notes}</p>
         </div>
       )}
     </div>
@@ -192,47 +193,61 @@ export function InvoiceTotalsSection({ totals }: InvoiceTotalsSectionProps) {
           </p>
           <div className="flex justify-between text-xs">
             <span className="text-amber-700">Labour</span>
-            <span className="font-medium text-amber-800">{formatCurrency(totals.cisBreakdown.labourTotal)}</span>
+            <span className="font-medium text-amber-800">
+              <AnimatedNumber value={totals.cisBreakdown.labourTotal} formatFn={formatCurrency} />
+            </span>
           </div>
           <div className="flex justify-between text-xs">
             <span className="text-amber-700">Materials</span>
-            <span className="font-medium text-amber-800">{formatCurrency(totals.cisBreakdown.materialsTotal)}</span>
+            <span className="font-medium text-amber-800">
+              <AnimatedNumber value={totals.cisBreakdown.materialsTotal} formatFn={formatCurrency} />
+            </span>
           </div>
           {totals.cisBreakdown.deductionAmount > 0 && (
             <div className="flex justify-between text-xs border-t border-amber-200 pt-1 mt-1">
               <span className="text-amber-700">CIS Deduction ({Math.round(totals.cisBreakdown.deductionRate * 100)}%)</span>
-              <span className="font-medium text-red-600">-{formatCurrency(totals.cisBreakdown.deductionAmount)}</span>
+              <span className="font-medium text-red-600">
+                -<AnimatedNumber value={totals.cisBreakdown.deductionAmount} formatFn={formatCurrency} />
+              </span>
             </div>
           )}
         </div>
       )}
 
       <div className="flex justify-between text-sm">
-        <span className="text-slate-600">Subtotal</span>
-        <span className="font-medium">{formatCurrency(totals.subtotal)}</span>
+        <span className="text-[var(--text-secondary)]">Subtotal</span>
+        <span className="font-medium">
+          <AnimatedNumber value={totals.subtotal} formatFn={formatCurrency} />
+        </span>
       </div>
       {totals.vatBreakdown.map((vat) => (
         <div key={vat.rate} className="flex justify-between text-sm">
-          <span className="text-slate-600">{getVatRateLabel(vat.rate)}</span>
-          <span className="font-medium">{formatCurrency(vat.amount)}</span>
+          <span className="text-[var(--text-secondary)]">{getVatRateLabel(vat.rate)}</span>
+          <span className="font-medium">
+            <AnimatedNumber value={vat.amount} formatFn={formatCurrency} />
+          </span>
         </div>
       ))}
       {totals.vatBreakdown.length === 0 && (
         <div className="flex justify-between text-sm">
-          <span className="text-slate-600">VAT</span>
+          <span className="text-[var(--text-secondary)]">VAT</span>
           <span className="font-medium">{formatCurrency(0)}</span>
         </div>
       )}
       <div className="flex justify-between text-lg font-bold border-t border-slate-200 pt-2">
         <span>Total</span>
-        <span className="text-[var(--brand-blue)]">{formatCurrency(totals.total)}</span>
+        <span className="text-[var(--brand-blue)]">
+          <AnimatedNumber value={totals.total} formatFn={formatCurrency} />
+        </span>
       </div>
 
       {/* Net Payable after CIS deduction */}
       {hasCisBreakdown && totals.cisBreakdown && totals.cisBreakdown.deductionAmount > 0 && (
         <div className="flex justify-between text-lg font-bold text-green-700 bg-green-50 rounded-md p-2 -mx-2">
           <span>Net Payable</span>
-          <span>{formatCurrency(totals.cisBreakdown.netPayable)}</span>
+          <span>
+            <AnimatedNumber value={totals.cisBreakdown.netPayable} formatFn={formatCurrency} />
+          </span>
         </div>
       )}
     </div>

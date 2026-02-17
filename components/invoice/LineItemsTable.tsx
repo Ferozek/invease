@@ -28,10 +28,10 @@ const LineItemRow = memo(function LineItemRow({
 }: LineItemRowProps) {
   return (
     <tr>
-      <td className="py-2 px-2">
+      <td className="py-2 px-2" data-label="Description">
         <input
           type="text"
-          className="form-input"
+          className="form-input w-full"
           placeholder="Service description"
           aria-label="Line item description"
           value={item.description}
@@ -39,9 +39,9 @@ const LineItemRow = memo(function LineItemRow({
         />
       </td>
       {isCis && (
-        <td className="py-2 px-2">
+        <td className="py-2 px-2" data-label="Category">
           <select
-            className="form-input"
+            className="form-input w-full"
             aria-label="CIS category"
             value={item.cisCategory || 'labour'}
             onChange={(e) =>
@@ -56,10 +56,10 @@ const LineItemRow = memo(function LineItemRow({
           </select>
         </td>
       )}
-      <td className="py-2 px-2">
+      <td className="py-2 px-2" data-label="Qty">
         <input
           type="number"
-          className="form-input"
+          className="form-input w-full"
           aria-label="Quantity"
           value={item.quantity}
           min={1}
@@ -68,10 +68,10 @@ const LineItemRow = memo(function LineItemRow({
           }
         />
       </td>
-      <td className="py-2 px-2">
+      <td className="py-2 px-2" data-label="Net">
         <input
           type="number"
-          className="form-input"
+          className="form-input w-full"
           aria-label="Net amount"
           placeholder="0.00"
           step="0.01"
@@ -81,9 +81,9 @@ const LineItemRow = memo(function LineItemRow({
           }
         />
       </td>
-      <td className="py-2 px-2">
+      <td className="py-2 px-2" data-label="VAT">
         <select
-          className="form-input"
+          className="form-input w-full"
           aria-label="VAT rate"
           value={item.vatRate}
           onChange={(e) =>
@@ -97,7 +97,7 @@ const LineItemRow = memo(function LineItemRow({
           ))}
         </select>
       </td>
-      <td className="py-2 px-2 text-right font-medium text-[var(--text-primary)]">
+      <td className="py-2 px-2 text-right font-medium text-[var(--text-primary)]" data-label="Total">
         {formatCurrency(calculateLineTotal(item.quantity, item.netAmount, item.vatRate))}
       </td>
       <td className="py-2 px-2">
@@ -158,8 +158,8 @@ export default function LineItemsTable() {
 
   return (
     <>
-      <div className="overflow-x-auto">
-        <table className="w-full" role="table">
+      <div className="overflow-x-auto line-items-mobile">
+        <table className="w-full min-w-0" role="table">
           <thead>
             <tr className="border-b border-[var(--surface-border)]">
               <th

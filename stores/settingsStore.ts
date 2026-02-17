@@ -33,7 +33,7 @@ interface SettingsState {
   // Actions - Numbering
   setNumberingConfig: (config: Partial<NumberingConfig>) => void;
   getNextInvoiceNumber: () => string;
-  useNextInvoiceNumber: () => string;
+  consumeNextInvoiceNumber: () => string;
   resetNumberingSequence: () => void;
 }
 
@@ -63,7 +63,7 @@ export const useSettingsStore = create<SettingsState>()(
         return generateInvoiceNumber(numbering);
       },
 
-      useNextInvoiceNumber: () => {
+      consumeNextInvoiceNumber: () => {
         const { numbering } = get();
         const number = generateInvoiceNumber(numbering);
         // Increment for next use

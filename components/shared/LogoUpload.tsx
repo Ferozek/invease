@@ -88,10 +88,10 @@ export default function LogoUpload() {
           <button
             type="button"
             onClick={handleRemove}
-            className="cursor-pointer text-red-500 hover:text-red-700 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
-            title="Remove logo"
+            className="cursor-pointer text-red-500 hover:text-red-700 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+            aria-label="Remove logo"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
           </button>
@@ -99,7 +99,11 @@ export default function LogoUpload() {
       ) : (
         <div
           onClick={handleClick}
-          className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-[var(--input-border)] rounded-xl cursor-pointer hover:border-[var(--brand-blue)] hover:bg-[var(--surface-elevated)] transition-colors"
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } }}
+          role="button"
+          tabIndex={0}
+          aria-label="Upload company logo. PNG or JPEG, max 2MB"
+          className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-[var(--input-border)] rounded-xl cursor-pointer hover:border-[var(--brand-blue)] hover:bg-[var(--surface-elevated)] focus:outline-none focus:border-[var(--brand-blue)] focus:ring-2 focus:ring-[var(--brand-blue)]/20 transition-colors"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -107,6 +111,7 @@ export default function LogoUpload() {
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
+            aria-hidden="true"
           >
             <path
               strokeLinecap="round"

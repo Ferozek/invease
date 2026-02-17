@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import LogoUpload from '@/components/invoice/LogoUpload';
-import CompanySearch from '@/components/invoice/CompanySearch';
+import LogoUpload from '@/components/shared/LogoUpload';
+import CompanySearch from '@/components/shared/CompanySearch';
 import { useCompanyStore } from '@/stores/companyStore';
-import { toTitleCase, formatPostcode } from '@/lib/textFormatters';
+import { toTitleCase } from '@/lib/textFormatters';
 import type { BusinessType } from '@/types/invoice';
 import {
   validateRequired,

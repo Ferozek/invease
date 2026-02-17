@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" fill="none">
+  <!-- Background - Apple requires solid corners for touch icons -->
+  <rect width="180" height="180" fill="#0b4f7a"/>
+
+  <!-- Invoice document -->
+  <rect x="45" y="28" width="90" height="124" rx="8" fill="white"/>
+
+  <!-- Header -->
+  <rect x="56" y="42" width="45" height="6" rx="3" fill="#0b4f7a" opacity="0.3"/>
+
+  <!-- Lines -->
+  <rect x="56" y="60" width="68" height="4" rx="2" fill="#0b4f7a" opacity="0.15"/>
+  <rect x="56" y="72" width="56" height="4" rx="2" fill="#0b4f7a" opacity="0.15"/>
+  <rect x="56" y="84" width="62" height="4" rx="2" fill="#0b4f7a" opacity="0.15"/>
+
+  <!-- Divider -->
+  <rect x="56" y="98" width="68" height="1" fill="#0b4f7a" opacity="0.1"/>
+
+  <!-- Table -->
+  <rect x="56" y="108" width="50" height="4" rx="2" fill="#0b4f7a" opacity="0.2"/>
+  <rect x="112" y="108" width="12" height="4" rx="2" fill="#0b4f7a" opacity="0.2"/>
+
+  <rect x="56" y="118" width="42" height="4" rx="2" fill="#0b4f7a" opacity="0.15"/>
+  <rect x="112" y="118" width="12" height="4" rx="2" fill="#0b4f7a" opacity="0.15"/>
+
+  <!-- Total -->
+  <rect x="90" y="132" width="34" height="6" rx="3" fill="#0b4f7a"/>
+
+  <!-- Checkmark -->
+  <circle cx="135" cy="135" r="22" fill="#c61f2b"/>
+  <path d="M124 135L131 142L146 127" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

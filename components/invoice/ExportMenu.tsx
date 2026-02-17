@@ -29,7 +29,7 @@ interface ExportMenuProps {
  */
 export default function ExportMenu({ invoice, totals }: ExportMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [focusedIndex, setFocusedIndex] = useState(0);
+  const [_focusedIndex, setFocusedIndex] = useState(0);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuItemsRef = useRef<(HTMLButtonElement | null)[]>([]);
@@ -51,7 +51,7 @@ export default function ExportMenu({ invoice, totals }: ExportMenuProps) {
   // Focus first item when menu opens
   useEffect(() => {
     if (isOpen && menuItemsRef.current[0]) {
-      setFocusedIndex(0);
+      // Focus the first menu item for keyboard navigation
       menuItemsRef.current[0]?.focus();
     }
   }, [isOpen]);
@@ -118,7 +118,7 @@ export default function ExportMenu({ invoice, totals }: ExportMenuProps) {
       toast.success('CSV exported', {
         description: 'Line items exported successfully',
       });
-    } catch (error) {
+    } catch {
       toast.error('Export failed', {
         description: 'Could not generate CSV file',
       });
@@ -134,7 +134,7 @@ export default function ExportMenu({ invoice, totals }: ExportMenuProps) {
       toast.success('CSV exported', {
         description: 'Summary exported successfully',
       });
-    } catch (error) {
+    } catch {
       toast.error('Export failed', {
         description: 'Could not generate CSV file',
       });
@@ -150,7 +150,7 @@ export default function ExportMenu({ invoice, totals }: ExportMenuProps) {
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         onKeyDown={handleTriggerKeyDown}
-        className="flex items-center gap-2 px-3 py-2 min-h-[44px] text-sm font-medium
+        className="cursor-pointer flex items-center gap-2 px-3 py-2 min-h-[44px] text-sm font-medium
           text-[var(--text-secondary)] hover:text-[var(--text-primary)]
           hover:bg-[var(--surface-elevated)] rounded-lg transition-colors
           focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)] focus:ring-offset-2"
@@ -204,7 +204,7 @@ export default function ExportMenu({ invoice, totals }: ExportMenuProps) {
               ref={(el) => { menuItemsRef.current[0] = el; }}
               type="button"
               onClick={handleExportLineItems}
-              className="w-full px-3 py-3 min-h-[44px] text-left hover:bg-[var(--surface-elevated)]
+              className="cursor-pointer w-full px-3 py-3 min-h-[44px] text-left hover:bg-[var(--surface-elevated)]
                 focus:bg-[var(--surface-elevated)] focus:outline-none
                 flex items-center gap-3 transition-colors"
               role="menuitem"
@@ -226,7 +226,7 @@ export default function ExportMenu({ invoice, totals }: ExportMenuProps) {
               ref={(el) => { menuItemsRef.current[1] = el; }}
               type="button"
               onClick={handleExportSummary}
-              className="w-full px-3 py-3 min-h-[44px] text-left hover:bg-[var(--surface-elevated)]
+              className="cursor-pointer w-full px-3 py-3 min-h-[44px] text-left hover:bg-[var(--surface-elevated)]
                 focus:bg-[var(--surface-elevated)] focus:outline-none
                 flex items-center gap-3 transition-colors"
               role="menuitem"

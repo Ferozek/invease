@@ -38,10 +38,13 @@ const stepTransition = {
 };
 
 export default function OnboardingWizard() {
-  const [step, setStep] = useState(1);
-  const [direction, setDirection] = useState(0);
-  const [selectedType, setSelectedType] = useState<BusinessType | null>(null);
   const { businessType, setBusinessType, completeOnboarding } = useCompanyStore();
+
+  // If businessType already exists (editing), skip step 1 and go straight to Identity
+  const [step, setStep] = useState(() => businessType ? 2 : 1);
+  const [direction, setDirection] = useState(0);
+  // Pre-select the stored business type for edit flow (so Back shows current selection)
+  const [selectedType, setSelectedType] = useState<BusinessType | null>(businessType);
 
   // Use stored business type if available (for returning users)
   const effectiveBusinessType = selectedType || businessType;
@@ -65,6 +68,14 @@ export default function OnboardingWizard() {
   const handleComplete = useCallback(() => {
     completeOnboarding();
   }, [completeOnboarding]);
+
+  // Quick Start: Skip setup entirely with sensible defaults
+  const handleQuickStart = useCallback(() => {
+    // Set default business type (most common for small businesses)
+    setBusinessType('sole_trader');
+    // Mark as onboarded - user can edit details later
+    completeOnboarding();
+  }, [setBusinessType, completeOnboarding]);
 
   // Check if current step is valid
   const isCurrentStepValid = useCallback(() => {
@@ -125,6 +136,7 @@ export default function OnboardingWizard() {
                     selected={selectedType}
                     onSelect={setSelectedType}
                     onNext={handleNext}
+                    onQuickStart={handleQuickStart}
                   />
                 )}
                 {step === 2 && effectiveBusinessType && (

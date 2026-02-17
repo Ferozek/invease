@@ -86,7 +86,8 @@ export function generateInvoiceNumber(
   config: NumberingConfig,
   date: Date = new Date()
 ): string {
-  let { pattern, prefix, currentNumber, resetYearly, lastResetYear, startNumber } = config;
+  const { pattern, prefix, resetYearly, lastResetYear, startNumber } = config;
+  let { currentNumber } = config;
 
   // Check for yearly reset
   const currentYear = date.getFullYear();

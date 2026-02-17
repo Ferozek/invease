@@ -73,23 +73,24 @@ export default function RecentCustomersDropdown() {
 
   return (
     <div ref={dropdownRef} className="relative" onKeyDown={handleKeyDown}>
-      {/* Trigger button */}
+      {/* Trigger button - 44px touch target per Apple HIG */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg
+        className="cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg
           text-[var(--text-muted)] hover:text-[var(--text-primary)]
           hover:bg-[var(--surface-elevated)] transition-colors"
-        title="Recent customers"
         aria-label="Show recent customers"
         aria-expanded={isOpen}
+        aria-haspopup="listbox"
       >
         <svg
-          className="w-4 h-4"
+          className="w-5 h-5"
           fill="none"
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
+          aria-hidden="true"
         >
           <path
             strokeLinecap="round"
@@ -119,7 +120,7 @@ export default function RecentCustomersDropdown() {
                   type="button"
                   onClick={() => handleSelect(customer)}
                   onMouseEnter={() => setHighlightedIndex(index)}
-                  className={`w-full px-3 py-2.5 text-left transition-colors
+                  className={`cursor-pointer w-full px-3 py-2.5 text-left transition-colors
                     ${highlightedIndex === index
                       ? 'bg-[var(--brand-blue-50)]'
                       : 'hover:bg-[var(--surface-elevated)]'

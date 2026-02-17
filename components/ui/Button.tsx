@@ -7,6 +7,7 @@
 'use client';
 
 import { ButtonHTMLAttributes, ReactNode, forwardRef } from 'react';
+import { hapticFeedback } from '@/lib/haptics';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'muted';
@@ -25,10 +26,22 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
     className = '',
     disabled,
     children,
+    onClick,
     ...props
   },
   ref
 ) {
+  // Haptic feedback on click (Apple HIG)
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (disabled || loading) return;
+    // Primary buttons get medium haptic, others get light
+    if (variant === 'primary') {
+      hapticFeedback.medium();
+    } else {
+      hapticFeedback.light();
+    }
+    onClick?.(e);
+  };
   // Base styles
   const baseStyles = 'cursor-pointer inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
 
@@ -50,8 +63,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   // Width style
   const widthStyle = fullWidth ? 'w-full' : '';
 
-  // Disabled/loading state
-  const disabledStyles = (disabled || loading) ? 'opacity-50 cursor-not-allowed' : '';
+  // Disabled/loading state - opacity-70 for better contrast (WCAG AA ~3.5:1)
+  const disabledStyles = (disabled || loading) ? 'opacity-70 cursor-not-allowed pointer-events-none' : '';
 
   const combinedClassName = `${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${widthStyle} ${disabledStyles} ${className}`.trim();
 
@@ -60,6 +73,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
       ref={ref}
       className={combinedClassName}
       disabled={disabled || loading}
+      aria-disabled={disabled || loading || undefined}
+      onClick={handleClick}
       {...props}
     >
       {loading && (

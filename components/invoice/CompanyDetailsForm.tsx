@@ -2,7 +2,7 @@
 
 import { useCompanyStore } from '@/stores/companyStore';
 import { toTitleCase, formatPostcode } from '@/lib/textFormatters';
-import LogoUpload from './LogoUpload';
+import LogoUpload from '@/components/shared/LogoUpload';
 
 export default function CompanyDetailsForm() {
   const {

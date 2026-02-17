@@ -7,7 +7,6 @@ import {
   validateRequired,
   validateAccountNumber,
   validateSortCode,
-  normaliseSortCode,
 } from '@/lib/validationPatterns';
 import { FieldError } from '@/components/ui/FormField';
 
@@ -17,7 +16,7 @@ import { FieldError } from '@/components/ui/FormField';
  * Features Apple-style inline validation (red border + shake on blur)
  */
 export default function BankDetailsStep() {
-  const { bankDetails, setBankDetails } = useCompanyStore();
+  const { bankDetails, setBankDetails, rememberBankDetails, setRememberBankDetails } = useCompanyStore();
 
   // Validation state for each field
   const [errors, setErrors] = useState<Record<string, string | null>>({
@@ -188,24 +187,48 @@ export default function BankDetailsStep() {
         </div>
       </div>
 
-      {/* Security Note */}
-      <div className="flex items-start gap-3 p-4 bg-[var(--surface-elevated)] rounded-xl text-sm">
-        <svg
-          className="w-5 h-5 text-[var(--text-muted)] flex-shrink-0 mt-0.5"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+      {/* Remember Bank Details Option */}
+      <div className="p-4 bg-[var(--surface-elevated)] rounded-xl space-y-3">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={rememberBankDetails}
+            onChange={(e) => setRememberBankDetails(e.target.checked)}
+            className="mt-1 w-5 h-5 rounded border-[var(--surface-border)]
+              text-[var(--brand-blue)] focus:ring-[var(--brand-blue)] cursor-pointer"
           />
-        </svg>
-        <p className="text-[var(--text-secondary)]">
-          Your bank details are stored locally on your device and never sent to any server.
-        </p>
+          <div>
+            <span className="font-medium text-[var(--text-primary)]">
+              Remember my bank details on this device
+            </span>
+            <p className="text-sm text-[var(--text-secondary)] mt-0.5">
+              Save time on future invoices
+            </p>
+          </div>
+        </label>
+
+        {/* Security Note - changes based on checkbox */}
+        <div className="flex items-start gap-2 text-sm">
+          <svg
+            className="w-4 h-4 text-[var(--text-muted)] flex-shrink-0 mt-0.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+            />
+          </svg>
+          <p className="text-[var(--text-muted)]">
+            {rememberBankDetails
+              ? "Your bank details will be saved locally on this device. Don't use on shared computers."
+              : "Your bank details are only kept during this session and never sent to any server."
+            }
+          </p>
+        </div>
       </div>
     </div>
   );

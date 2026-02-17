@@ -13,6 +13,7 @@ import {
   normaliseUtr,
 } from '@/lib/validationPatterns';
 import { FieldError } from '@/components/ui/FormField';
+import InfoIcon from '@/components/ui/InfoIcon';
 
 /**
  * Step 3: Tax & Compliance (Optional)
@@ -84,9 +85,15 @@ export default function TaxComplianceStep() {
       <div className="p-4 rounded-xl border border-[var(--surface-border)] bg-[var(--surface-card)]">
         <div className="flex items-start gap-3">
           <div className="flex-1">
-            <h3 className="font-medium text-[var(--text-primary)]">VAT Registered</h3>
+            <h3 className="font-medium text-[var(--text-primary)] flex items-center gap-1.5">
+              VAT Registered
+              <InfoIcon
+                content="Value Added Tax registration. Required if your taxable turnover exceeds £90,000. VAT number starts with 'GB' followed by 9 digits."
+                learnMoreUrl="https://www.gov.uk/vat-registration"
+              />
+            </h3>
             <p className="text-sm text-[var(--text-secondary)] mt-0.5">
-              If you're registered for VAT, enter your number
+              If you&apos;re registered for VAT, enter your number
             </p>
           </div>
         </div>
@@ -108,7 +115,13 @@ export default function TaxComplianceStep() {
       <div className="p-4 rounded-xl border border-[var(--surface-border)] bg-[var(--surface-card)]">
         <div className="flex items-start gap-3">
           <div className="flex-1">
-            <h3 className="font-medium text-[var(--text-primary)]">EORI Number</h3>
+            <h3 className="font-medium text-[var(--text-primary)] flex items-center gap-1.5">
+              EORI Number
+              <InfoIcon
+                content="Economic Operators Registration and Identification. Required for businesses that import or export goods to/from the UK. Format: GB followed by 12 digits."
+                learnMoreUrl="https://www.gov.uk/eori"
+              />
+            </h3>
             <p className="text-sm text-[var(--text-secondary)] mt-0.5">
               For importing or exporting goods
             </p>
@@ -144,7 +157,13 @@ export default function TaxComplianceStep() {
             }}
           />
           <div className="flex-1">
-            <h3 className="font-medium text-[var(--text-primary)]">CIS Subcontractor</h3>
+            <h3 className="font-medium text-[var(--text-primary)] flex items-center gap-1.5">
+              CIS Subcontractor
+              <InfoIcon
+                content="Construction Industry Scheme. If you work as a subcontractor in construction, contractors deduct tax from your payments. Your deduction rate (0%, 20%, or 30%) depends on your registration status with HMRC."
+                learnMoreUrl="https://www.gov.uk/what-is-the-construction-industry-scheme"
+              />
+            </h3>
             <p className="text-sm text-[var(--text-secondary)] mt-0.5">
               I receive payments from contractors in the construction industry
             </p>
@@ -154,8 +173,11 @@ export default function TaxComplianceStep() {
         {isCisEnabled && (
           <div className="mt-4 pt-4 border-t border-[var(--surface-border)] space-y-4">
             <div>
-              <label htmlFor="cisUtr" className="form-label form-label-required">
+              <label htmlFor="cisUtr" className="form-label form-label-required flex items-center gap-1.5">
                 UTR Number
+                <InfoIcon
+                  content="Unique Taxpayer Reference. A 10-digit number issued by HMRC when you register for Self Assessment. You'll find it on your Self Assessment letters or tax returns."
+                />
               </label>
               <input
                 id="cisUtr"

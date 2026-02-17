@@ -83,6 +83,13 @@ const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
       setIsMounted(true);
     }, []);
 
+    // Compute validation state for proactive feedback (Apple HIG: prevent before report)
+    const validationErrors = validateInvoice(invoice);
+    const isValid = validationErrors.length === 0;
+    const hasNoLineItems = invoice.lineItems.filter(
+      (item) => item.description?.trim() && item.netAmount > 0
+    ).length === 0;
+
     const handleDownload = useCallback(async () => {
       // Validate first
       const errors = validateInvoice(invoice);
@@ -135,17 +142,35 @@ const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
       );
     }
 
+    // Determine button state and message
+    const buttonDisabled = disabled || isGenerating || !isValid;
+    const buttonText = isGenerating
+      ? 'Generating PDF...'
+      : hasNoLineItems
+        ? 'Add line items to download'
+        : !isValid
+          ? 'Complete required fields'
+          : 'Download Invoice PDF';
+
     return (
-      <Button
-        ref={ref}
-        variant="primary"
-        fullWidth
-        onClick={handleDownload}
-        loading={isGenerating}
-        disabled={disabled || isGenerating}
-      >
-        {isGenerating ? 'Generating PDF...' : 'Download Invoice PDF'}
-      </Button>
+      <div className="space-y-2">
+        <Button
+          ref={ref}
+          variant="primary"
+          fullWidth
+          onClick={handleDownload}
+          loading={isGenerating}
+          disabled={buttonDisabled}
+        >
+          {buttonText}
+        </Button>
+        {/* Validation hint - shows when invalid but not generating */}
+        {!isValid && !isGenerating && (
+          <p className="text-xs text-center text-[var(--text-muted)]">
+            {validationErrors.length} {validationErrors.length === 1 ? 'field' : 'fields'} missing
+          </p>
+        )}
+      </div>
     );
   }
 );

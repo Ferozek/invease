@@ -2,8 +2,8 @@
 
 import Button from '@/components/ui/Button';
 import CollapsibleSection from '@/components/ui/CollapsibleSection';
-import LogoUpload from '@/components/invoice/LogoUpload';
-import CompanySearch from '@/components/invoice/CompanySearch';
+import LogoUpload from '@/components/shared/LogoUpload';
+import CompanySearch from '@/components/shared/CompanySearch';
 import { useCompanyStore } from '@/stores/companyStore';
 import { toTitleCase, formatPostcode } from '@/lib/textFormatters';
 import type { BusinessType, CisStatus } from '@/types/invoice';
@@ -71,7 +71,7 @@ export default function CompanyDetailsStep({
       <h2 className="text-xl font-semibold text-[var(--brand-blue)] mb-2">
         Your Business Details
       </h2>
-      <p className="text-slate-600 mb-6">
+      <p className="text-[var(--text-secondary)] mb-6">
         These details will be saved and used on all your invoices.
       </p>
 
@@ -151,7 +151,7 @@ export default function CompanyDetailsStep({
               value={vatNumber}
               onChange={(e) => setCompanyDetails({ vatNumber: e.target.value })}
             />
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-[var(--text-muted)] mt-1">
               Only if VAT registered
             </p>
           </div>
@@ -164,7 +164,7 @@ export default function CompanyDetailsStep({
               value={eoriNumber}
               onChange={(e) => setCompanyDetails({ eoriNumber: e.target.value })}
             />
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-[var(--text-muted)] mt-1">
               For importing/exporting goods
             </p>
           </div>
@@ -178,7 +178,7 @@ export default function CompanyDetailsStep({
         defaultOpen={isCisEnabled}
         className="mb-6"
       >
-        <p className="text-slate-600 text-sm mb-4">
+        <p className="text-[var(--text-secondary)] text-sm mb-4">
           If you work in construction and receive payments from contractors, you may need to register for CIS.
         </p>
 
@@ -214,7 +214,7 @@ export default function CompanyDetailsStep({
                   setCisDetails({ cisUtr: value });
                 }}
               />
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-[var(--text-muted)] mt-1">
                 Your Unique Taxpayer Reference from HMRC
               </p>
             </div>
@@ -229,7 +229,7 @@ export default function CompanyDetailsStep({
                 <option value="standard">Verified (20% deduction)</option>
                 <option value="unverified">Unverified (30% deduction)</option>
               </select>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-[var(--text-muted)] mt-1">
                 Check with your contractor or HMRC for your status
               </p>
             </div>
@@ -241,7 +241,7 @@ export default function CompanyDetailsStep({
       <h3 className="text-lg font-semibold text-slate-700 mb-2">
         Bank Details
       </h3>
-      <p className="text-slate-600 text-sm mb-4">
+      <p className="text-[var(--text-secondary)] text-sm mb-4">
         These will appear on your invoices for customers to pay you.
       </p>
 

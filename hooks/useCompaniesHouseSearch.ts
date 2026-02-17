@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { useCompanyStore } from '@/stores/companyStore';
 
 // Companies House search configuration
 const COMPANIES_HOUSE = {
@@ -25,14 +27,28 @@ export type CompanyMeta = {
 /**
  * Hook for searching Companies House data
  * Provides autocomplete and lookup functionality for UK companies
+ * Syncs with companyStore to restore state on page load
  */
 export function useCompaniesHouseSearch() {
-  const [companyName, setCompanyName] = useState<string>('');
-  const [companyNumber, setCompanyNumber] = useState<string>('');
+  // Get initial values from store to restore state on page load
+  const { companyName: storedName, companyNumber: storedNumber } = useCompanyStore();
+
+  const [companyName, setCompanyName] = useState<string>(storedName || '');
+  const [companyNumber, setCompanyNumber] = useState<string>(storedNumber || '');
   const [companyHits, setCompanyHits] = useState<CompanyItem[]>([]);
   const [companyOpen, setCompanyOpen] = useState<boolean>(false);
   const [companyMeta, setCompanyMeta] = useState<CompanyMeta>({});
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Sync with store when it rehydrates (for SSR/hydration)
+  useEffect(() => {
+    if (storedName && !companyName) {
+      setCompanyName(storedName);
+    }
+    if (storedNumber && !companyNumber) {
+      setCompanyNumber(storedNumber);
+    }
+  }, [storedName, storedNumber, companyName, companyNumber]);
 
   const abortRef = useRef<AbortController | null>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -48,6 +64,9 @@ export function useCompaniesHouseSearch() {
       setCompanyMeta(item);
     } catch (error) {
       console.warn('[invease] Company lookup failed', error);
+      toast.error('Company lookup failed', {
+        description: 'Could not fetch company details. You can enter them manually.',
+      });
       setCompanyMeta({});
     }
   }, []);
@@ -71,9 +90,12 @@ export function useCompaniesHouseSearch() {
       const items = Array.isArray(data.items) ? data.items : [];
       setCompanyHits(items);
       setCompanyOpen(items.length > 0);
-    } catch (error: any) {
-      if (error.name !== 'AbortError') {
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name !== 'AbortError') {
         console.warn('[invease] Company search failed', error);
+        toast.error('Search unavailable', {
+          description: 'Companies House search is temporarily unavailable.',
+        });
       }
       setCompanyHits([]);
       setCompanyOpen(false);

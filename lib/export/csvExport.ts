@@ -5,8 +5,7 @@
  * Design: Pure functions, no side effects, easily testable
  */
 
-import type { InvoiceData, InvoiceTotals, LineItem } from '@/types/invoice';
-import { formatCurrency } from '@/lib/formatters';
+import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
 
 // ===== Types =====
 
@@ -39,7 +38,7 @@ const LINE_ITEM_HEADERS = [
  */
 export function invoiceToLineItemRows(
   invoice: InvoiceData,
-  totals: InvoiceTotals
+  _totals: InvoiceTotals
 ): CsvRow[] {
   const dateFormatted = formatDateUK(invoice.details.date);
 

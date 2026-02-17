@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { pdf } from '@react-pdf/renderer';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
 import InvoicePDF from './InvoicePDF';
 import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
@@ -13,6 +14,22 @@ interface PDFPreviewModalProps {
   invoice: InvoiceData;
   totals: InvoiceTotals;
   onDownload?: () => void;
+}
+
+/**
+ * Check if Web Share API supports sharing files
+ * Works on iOS Safari 14.5+, Android Chrome, Android Firefox
+ */
+function canShareFiles(): boolean {
+  if (typeof navigator === 'undefined' || !navigator.share) {
+    return false;
+  }
+  // Check if canShare exists and can share files
+  if (navigator.canShare) {
+    const testFile = new File(['test'], 'test.pdf', { type: 'application/pdf' });
+    return navigator.canShare({ files: [testFile] });
+  }
+  return false;
 }
 
 /**
@@ -32,8 +49,15 @@ export default function PDFPreviewModal({
   onDownload,
 }: PDFPreviewModalProps) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [canShare, setCanShare] = useState(false);
+
+  // Check if sharing is supported on mount
+  useEffect(() => {
+    setCanShare(canShareFiles());
+  }, []);
 
   // Generate PDF when modal opens
   useEffect(() => {
@@ -42,6 +66,7 @@ export default function PDFPreviewModal({
       if (pdfUrl) {
         URL.revokeObjectURL(pdfUrl);
         setPdfUrl(null);
+        setPdfBlob(null);
       }
       return;
     }
@@ -63,6 +88,9 @@ export default function PDFPreviewModal({
         const blob = await pdf(
           <InvoicePDF invoice={cleanedInvoice} totals={totals} />
         ).toBlob();
+
+        // Store blob for sharing
+        setPdfBlob(blob);
 
         // Create URL for iframe
         const url = URL.createObjectURL(blob);
@@ -119,6 +147,31 @@ export default function PDFPreviewModal({
     onDownload?.();
   }, [pdfUrl, invoice.details.invoiceNumber, onDownload]);
 
+  // Handle share via Web Share API
+  const handleShare = useCallback(async () => {
+    if (!pdfBlob) return;
+
+    const filename = `Invoice-${invoice.details.invoiceNumber || 'DRAFT'}.pdf`;
+    const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+
+    try {
+      await navigator.share({
+        title: `Invoice ${invoice.details.invoiceNumber || 'DRAFT'}`,
+        text: `Invoice from ${invoice.invoicer.companyName || 'Your Company'}`,
+        files: [file],
+      });
+      toast.success('Shared successfully');
+    } catch (err) {
+      // User cancelled or share failed
+      if (err instanceof Error && err.name !== 'AbortError') {
+        toast.error('Share failed', {
+          description: 'Could not share the invoice',
+        });
+        console.error('Share error:', err);
+      }
+    }
+  }, [pdfBlob, invoice.details.invoiceNumber, invoice.invoicer.companyName]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -146,7 +199,22 @@ export default function PDFPreviewModal({
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">
                 Invoice Preview
               </h2>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
+                {/* Share button - only shown on devices that support file sharing */}
+                {canShare && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleShare}
+                    disabled={!pdfBlob || isLoading}
+                    aria-label="Share invoice"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" />
+                    </svg>
+                    <span className="hidden sm:inline">Share</span>
+                  </Button>
+                )}
                 <Button
                   variant="primary"
                   size="sm"
@@ -156,12 +224,13 @@ export default function PDFPreviewModal({
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
                   </svg>
-                  Download PDF
+                  <span className="hidden sm:inline">Download PDF</span>
+                  <span className="sm:hidden">Download</span>
                 </Button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
+                  className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
                   aria-label="Close preview"
                 >
                   <svg

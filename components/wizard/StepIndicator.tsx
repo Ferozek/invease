@@ -33,6 +33,7 @@ export default function StepIndicator({ currentStep, totalSteps }: StepIndicator
             stiffness: 500,
             damping: 30,
           }}
+          aria-current={step === currentStep ? 'step' : undefined}
           aria-label={`Step ${step} of ${totalSteps}${step === currentStep ? ' (current)' : step < currentStep ? ' (completed)' : ''}`}
         />
       ))}

@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useInvoiceStore } from '@/stores/invoiceStore';
-import { toTitleCase, formatPostcode } from '@/lib/textFormatters';
+import { toTitleCase } from '@/lib/textFormatters';
 import {
   validateRequired,
   validatePostcode,

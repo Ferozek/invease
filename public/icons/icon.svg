@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#0b4f7a"/>
+
+  <!-- Invoice document -->
+  <rect x="128" y="80" width="256" height="352" rx="24" fill="white"/>
+
+  <!-- Header line -->
+  <rect x="160" y="120" width="128" height="16" rx="8" fill="#0b4f7a" opacity="0.3"/>
+
+  <!-- Content lines -->
+  <rect x="160" y="168" width="192" height="12" rx="6" fill="#0b4f7a" opacity="0.15"/>
+  <rect x="160" y="196" width="160" height="12" rx="6" fill="#0b4f7a" opacity="0.15"/>
+  <rect x="160" y="224" width="176" height="12" rx="6" fill="#0b4f7a" opacity="0.15"/>
+
+  <!-- Divider -->
+  <rect x="160" y="260" width="192" height="2" fill="#0b4f7a" opacity="0.1"/>
+
+  <!-- Table rows -->
+  <rect x="160" y="284" width="144" height="10" rx="5" fill="#0b4f7a" opacity="0.2"/>
+  <rect x="320" y="284" width="32" height="10" rx="5" fill="#0b4f7a" opacity="0.2"/>
+
+  <rect x="160" y="308" width="128" height="10" rx="5" fill="#0b4f7a" opacity="0.15"/>
+  <rect x="320" y="308" width="32" height="10" rx="5" fill="#0b4f7a" opacity="0.15"/>
+
+  <rect x="160" y="332" width="136" height="10" rx="5" fill="#0b4f7a" opacity="0.15"/>
+  <rect x="320" y="332" width="32" height="10" rx="5" fill="#0b4f7a" opacity="0.15"/>
+
+  <!-- Total -->
+  <rect x="256" y="372" width="96" height="16" rx="8" fill="#0b4f7a"/>
+
+  <!-- Checkmark circle -->
+  <circle cx="384" cy="384" r="64" fill="#c61f2b"/>
+  <path d="M352 384L372 404L416 360" stroke="white" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
