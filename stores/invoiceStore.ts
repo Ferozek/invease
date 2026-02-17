@@ -11,6 +11,7 @@ import { useStore } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { temporal, type TemporalState } from 'zundo';
 import type { CustomerDetails, InvoiceDetails, LineItem, VatRate, InvoiceTotals, CisStatus, CisCategory } from '@/types/invoice';
+import { getTodayISO } from '@/lib/dateUtils';
 
 interface InvoiceState {
   // Customer details
@@ -51,12 +52,13 @@ const createEmptyLineItem = (isCis: boolean = false): LineItem => ({
 
 const defaultCustomer: CustomerDetails = {
   name: '',
+  email: '',
   address: '',
   postCode: '',
 };
 
 const defaultInvoiceDetails: InvoiceDetails = {
-  date: new Date().toISOString().split('T')[0],
+  date: getTodayISO(),
   invoiceNumber: '',
   paymentTerms: '30', // Default to 30 days
   notes: '', // Optional notes/terms
@@ -165,7 +167,7 @@ export const useInvoiceStore = create<InvoiceState>()(
           customer: defaultCustomer,
           details: {
             ...defaultInvoiceDetails,
-            date: new Date().toISOString().split('T')[0],
+            date: getTodayISO(),
             paymentTerms: '30',
             notes: '',
           },

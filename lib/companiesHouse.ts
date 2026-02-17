@@ -3,6 +3,8 @@
  * Provides search and lookup functionality for UK companies
  */
 
+import logger from '@/lib/logger';
+
 // Note: Reading COMPANIES_HOUSE_API_KEY directly from process.env
 // to avoid module caching issues with env validation
 
@@ -56,7 +58,7 @@ function authHeader(): string | undefined {
 export async function searchCompanies(q: string, limit = 5): Promise<CompanyLite[]> {
   const key = process.env.COMPANIES_HOUSE_API_KEY;
   if (!key) {
-    console.warn('[companiesHouse] No API key set - returning empty search results.');
+    logger.warn('[companiesHouse] No API key set - returning empty search results.');
     return [];
   }
 
@@ -85,7 +87,7 @@ export async function searchCompanies(q: string, limit = 5): Promise<CompanyLite
 export async function getCompanyByNumber(number: string): Promise<CompanyLite | null> {
   const auth = authHeader();
   if (!auth) {
-    console.warn('[companiesHouse] No API key set - skipping company lookup.');
+    logger.warn('[companiesHouse] No API key set - skipping company lookup.');
     return null;
   }
 

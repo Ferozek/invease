@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
 import InvoicePDF from './InvoicePDF';
+import logger from '@/lib/logger';
+import { getValidLineItems } from '@/lib/invoiceUtils';
 import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
 
 interface PDFPreviewModalProps {
@@ -79,9 +81,7 @@ export default function PDFPreviewModal({
         // Filter out empty line items
         const cleanedInvoice: InvoiceData = {
           ...invoice,
-          lineItems: invoice.lineItems.filter(
-            (item) => item.description?.trim() && item.netAmount > 0
-          ),
+          lineItems: getValidLineItems(invoice.lineItems),
         };
 
         // Generate PDF blob
@@ -97,7 +97,7 @@ export default function PDFPreviewModal({
         setPdfUrl(url);
       } catch (err) {
         setError('Failed to generate PDF preview');
-        console.error('PDF preview error:', err);
+        logger.error('PDF preview generation failed', err);
       } finally {
         setIsLoading(false);
       }
@@ -167,10 +167,76 @@ export default function PDFPreviewModal({
         toast.error('Share failed', {
           description: 'Could not share the invoice',
         });
-        console.error('Share error:', err);
+        logger.error('Invoice share failed', err);
       }
     }
   }, [pdfBlob, invoice.details.invoiceNumber, invoice.invoicer.companyName]);
+
+  // Handle email - uses Web Share on mobile, mailto: on desktop
+  const handleEmail = useCallback(async () => {
+    if (!pdfBlob) return;
+
+    const invoiceNumber = invoice.details.invoiceNumber || 'DRAFT';
+    const companyName = invoice.invoicer.companyName || 'Your Company';
+    const customerEmail = invoice.customer.email?.trim() || '';
+
+    const emailSubject = `Invoice ${invoiceNumber} from ${companyName}`;
+    const emailBody = `Dear ${invoice.customer.name || 'Customer'},
+
+Please find attached Invoice ${invoiceNumber} for £${totals.total.toFixed(2)}.
+
+Payment is due within ${invoice.details.paymentTerms || '30'} days.
+
+Bank Details for Payment:
+${invoice.bankDetails.bankName}
+Account: ${invoice.bankDetails.accountNumber}
+Sort Code: ${invoice.bankDetails.sortCode}
+Reference: ${invoiceNumber}
+
+Thank you for your business.
+
+Best regards,
+${companyName}`;
+
+    // Mobile: Use Web Share API with file
+    if (canShare) {
+      const filename = `Invoice-${invoiceNumber}.pdf`;
+      const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+
+      try {
+        await navigator.share({
+          title: emailSubject,
+          text: emailBody,
+          files: [file],
+        });
+        toast.success('Shared successfully');
+      } catch (err) {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          toast.error('Share failed');
+        }
+      }
+      return;
+    }
+
+    // Desktop: Download PDF + open mailto:
+    // First download
+    const downloadUrl = URL.createObjectURL(pdfBlob);
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `Invoice-${invoiceNumber}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(downloadUrl);
+
+    // Then open mailto:
+    const mailtoUrl = `mailto:${encodeURIComponent(customerEmail)}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody + '\n\n[Please attach the downloaded PDF]')}`;
+    window.open(mailtoUrl, '_blank');
+
+    toast.success('PDF downloaded', {
+      description: 'Attach it to the email that opened',
+    });
+  }, [pdfBlob, invoice, totals, canShare]);
 
   return (
     <AnimatePresence>
@@ -200,6 +266,19 @@ export default function PDFPreviewModal({
                 Invoice Preview
               </h2>
               <div className="flex items-center gap-2 sm:gap-3">
+                {/* Email button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleEmail}
+                  disabled={!pdfBlob || isLoading}
+                  aria-label="Email invoice"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                  </svg>
+                  <span className="hidden sm:inline">Email</span>
+                </Button>
                 {/* Share button - only shown on devices that support file sharing */}
                 {canShare && (
                   <Button

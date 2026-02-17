@@ -10,11 +10,30 @@ export const metadata: Metadata = {
   description: siteConfig.description,
   keywords: ['invoice', 'invoice generator', 'free invoice', 'UK VAT', 'sales invoice', 'K&R Accountants'],
   authors: [{ name: 'K&R Accountants', url: siteConfig.support.website }],
+  metadataBase: new URL(siteConfig.url),
+  alternates: {
+    canonical: '/',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
   openGraph: {
     title: siteConfig.name,
     description: siteConfig.description,
+    url: siteConfig.url,
+    siteName: siteConfig.name,
     type: 'website',
     locale: 'en_GB',
+  },
+  twitter: {
+    card: 'summary',
+    title: siteConfig.name,
+    description: siteConfig.description,
   },
   // PWA Configuration
   manifest: '/manifest.json',

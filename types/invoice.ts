@@ -26,6 +26,7 @@ export interface InvoicerDetails {
 
 export interface CustomerDetails {
   name: string;
+  email: string;
   address: string;
   postCode: string;
 }

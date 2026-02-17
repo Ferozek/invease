@@ -1,6 +1,6 @@
 # Production Readiness Plan
 
-## Current Score: 8.5/10 (Updated: Feb 2026)
+## Current Score: 9.5/10 (Updated: 2026-02-18)
 
 ### Overview
 
@@ -13,7 +13,7 @@ This document outlines all remaining work to achieve full production readiness.
 ### 1. Legal & Compliance ✅ (2/10 → 9/10)
 
 - [x] Create `/app/privacy/page.tsx` - Privacy Policy page
-- [x] Create `/app/terms/page.tsx` - Terms of Service page
+- [x] Create `/app/terms/page.tsx` - Terms of Service page (includes MTD disclaimer Section 7)
 - [x] Create `/app/accessibility/page.tsx` - Accessibility Statement
 - [x] Add footer links to legal pages (`/components/shared/Footer.tsx`)
 - [x] GDPR compliance information in privacy policy
@@ -23,7 +23,7 @@ This document outlines all remaining work to achieve full production readiness.
 
 - [x] Companies House API key in backend proxy (`/app/api/company-search/route.ts`)
 - [x] Rate limiting middleware (30 req/min per IP)
-- [x] CSP headers (`/middleware.ts`)
+- [x] CSP headers (`/middleware.ts`) including `frame-src blob:` for PDF preview
 - [x] X-Frame-Options, X-Content-Type-Options
 - [x] Referrer-Policy, Permissions-Policy
 - [x] HSTS in production
@@ -79,10 +79,12 @@ This document outlines all remaining work to achieve full production readiness.
 
 ## 🟢 ALREADY COMPLETE (10/10)
 
-- ✅ Apple HIG Touch Targets (44px minimum)
-- ✅ Haptic Feedback (Vibration API)
+- ✅ Apple HIG Touch Targets (44px minimum, including InfoIcon)
+- ✅ Haptic Feedback (Vibration API, including validation errors)
 - ✅ Animation System (Framer Motion)
-- ✅ Reduced Motion Support
+- ✅ Reduced Motion Support (CollapsibleSection, EmptyState)
+- ✅ Autocomplete attributes on form inputs
+- ✅ Quick Start mode (Skip → straight to invoice with sample data)
 - ✅ Dark Mode Support
 - ✅ Responsive Design (18 device profiles tested)
 - ✅ E2E Test Coverage (290+ tests passing)
@@ -96,6 +98,14 @@ This document outlines all remaining work to achieve full production readiness.
 - ✅ Legal pages (Privacy, Terms, Accessibility)
 - ✅ Security headers & rate limiting
 - ✅ Offline fallback page
+- ✅ Email Invoice (Web Share API on mobile, mailto: on desktop)
+- ✅ Customer email field in invoice form
+- ✅ Bank details security (never persisted to localStorage)
+- ✅ CSP hardened (no unsafe-eval in production)
+- ✅ Centralized logging utility (ready for Sentry upgrade)
+- ✅ Zod validation schemas (lib/schemas.ts)
+- ✅ Shared utilities (invoiceUtils.ts, dateUtils.ts)
+- ✅ Code deduplication (getValidLineItems, getTodayISO)
 
 ---
 
@@ -131,11 +141,24 @@ The app is now ready for beta testing with real users. All critical items have b
 3. `/app/accessibility/page.tsx` - Accessibility Statement
 4. `/components/shared/Footer.tsx` - Footer with legal links
 5. `/public/offline.html` - Offline fallback page
+6. `/components/invoice/EmailInvoiceButton.tsx` - Standalone email button (Web Share + mailto)
 
 ## Files Modified This Session
 
 1. `/app/page.tsx` - Added Footer import and component
-2. `/middleware.ts` - Added rate limiting
+2. `/middleware.ts` - Added rate limiting, CSP (unsafe-eval only in dev)
 3. `/next.config.ts` - Added security options
 4. `/public/sw.js` - Added offline.html caching, bumped to v2
 5. `/public/manifest.json` - Updated to use SVG icons
+6. `/types/invoice.ts` - Added email to CustomerDetails
+7. `/stores/invoiceStore.ts` - Added email to default customer
+8. `/config/sampleData.ts` - Added email to sample customer
+9. `/components/invoice/CustomerDetailsForm.tsx` - Added email input field
+10. `/components/pdf/PDFPreviewModal.tsx` - Added Email button with handleEmail
+11. `/stores/companyStore.ts` - Removed bank details persistence (security)
+12. `/components/wizard/BankDetailsStep.tsx` - Removed "Remember" checkbox
+13. `/lib/logger.ts` - NEW: Centralized logging utility
+14. `/lib/companiesHouse.ts` - Replaced console.warn with logger
+15. `/lib/env.ts` - Replaced console.error with logger
+16. `/components/ui/ErrorBoundary.tsx` - Replaced console.error with logger
+17. `/components/ServiceWorkerRegister.tsx` - Replaced console with logger

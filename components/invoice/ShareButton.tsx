@@ -5,6 +5,8 @@ import { pdf } from '@react-pdf/renderer';
 import { toast } from 'sonner';
 import { ShareIcon } from '@/components/ui/icons';
 import InvoicePDF from '@/components/pdf/InvoicePDF';
+import logger from '@/lib/logger';
+import { getValidLineItems } from '@/lib/invoiceUtils';
 import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
 
 interface ShareButtonProps {
@@ -47,9 +49,7 @@ export default function ShareButton({ invoice, totals }: ShareButtonProps) {
 
   const handleShare = useCallback(async () => {
     // Validate invoice has basic data
-    const validLineItems = invoice.lineItems.filter(
-      (item) => item.description?.trim() && item.netAmount > 0
-    );
+    const validLineItems = getValidLineItems(invoice.lineItems);
     if (validLineItems.length === 0) {
       toast.error('Add line items first', { description: 'Invoice needs at least one item to share' });
       return;
@@ -92,7 +92,7 @@ export default function ShareButton({ invoice, totals }: ShareButtonProps) {
       }
       // Fall back to download if share fails
       toast.error('Unable to share', { description: 'Try downloading the PDF instead' });
-      console.error('Share failed:', error);
+      logger.error('Share failed', error);
     } finally {
       setIsSharing(false);
     }

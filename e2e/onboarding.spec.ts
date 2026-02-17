@@ -44,6 +44,7 @@ test.describe('Edit Details Flow', () => {
     // Start with a completed onboarding
     await page.goto('/');
     await page.evaluate(() => {
+      // Note: Bank details are never persisted for security
       localStorage.setItem('invease-company-details', JSON.stringify({
         state: {
           hasSeenWelcome: true,
@@ -57,14 +58,6 @@ test.describe('Edit Details Flow', () => {
           eoriNumber: '',
           cisStatus: 'not_applicable',
           cisUtr: '',
-          rememberBankDetails: false,
-          bankDetails: {
-            bankName: 'Test Bank',
-            accountName: 'Test Account',
-            accountNumber: '12345678',
-            sortCode: '12-34-56',
-            reference: '',
-          },
         },
         version: 0,
       }));

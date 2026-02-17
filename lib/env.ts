@@ -6,6 +6,7 @@
  */
 
 import { z } from 'zod';
+import logger from '@/lib/logger';
 
 /**
  * Server-side environment variables schema
@@ -46,10 +47,9 @@ function validateEnv() {
   });
 
   if (!parsed.success) {
-    console.error(
-      '❌ Invalid environment variables:',
-      JSON.stringify(parsed.error.format(), null, 2)
-    );
+    logger.error('Invalid environment variables', new Error('Env validation failed'), {
+      errors: parsed.error.format(),
+    });
 
     // In development, throw to alert developer
     // In production, log but don't crash (graceful degradation)

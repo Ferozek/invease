@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { motion, AnimatePresence, type PanInfo } from 'framer-motion';
 import Button from '@/components/ui/Button';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 
@@ -31,28 +31,71 @@ const slides = [
 ];
 
 /**
- * WelcomeSlides - Brief 2-slide intro following Google's "Top User Benefits" model
- * Auto-advances every 4 seconds, fully skippable
+ * WelcomeSlides - Apple HIG compliant onboarding
+ *
+ * Features:
+ * - Swipe gestures (primary navigation)
+ * - Tappable pagination dots (44px touch targets)
+ * - Auto-advance (pauses on interaction)
+ * - Reduced motion support
  */
 export default function WelcomeSlides({ onComplete }: WelcomeSlidesProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [direction, setDirection] = useState(0); // -1 = left, 1 = right
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Check for reduced motion preference
+  const prefersReducedMotion =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // Auto-advance slides
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || prefersReducedMotion) return;
 
     const timer = setInterval(() => {
       setCurrentSlide((prev) => {
         if (prev >= slides.length - 1) {
           return prev; // Stay on last slide
         }
+        setDirection(1);
         return prev + 1;
       });
     }, 4000);
 
     return () => clearInterval(timer);
-  }, [isPaused]);
+  }, [isPaused, prefersReducedMotion]);
+
+  // Handle swipe gestures
+  const handleDragEnd = useCallback(
+    (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      const threshold = 50; // Minimum swipe distance
+      const velocity = 0.5; // Minimum velocity
+
+      if (Math.abs(info.velocity.x) >= velocity || Math.abs(info.offset.x) >= threshold) {
+        if (info.offset.x > 0 && currentSlide > 0) {
+          // Swipe right - go to previous
+          setDirection(-1);
+          setCurrentSlide(currentSlide - 1);
+        } else if (info.offset.x < 0 && currentSlide < slides.length - 1) {
+          // Swipe left - go to next
+          setDirection(1);
+          setCurrentSlide(currentSlide + 1);
+        }
+      }
+    },
+    [currentSlide]
+  );
+
+  const goToSlide = useCallback(
+    (index: number) => {
+      setDirection(index > currentSlide ? 1 : -1);
+      setCurrentSlide(index);
+      setIsPaused(true); // Pause auto-advance after manual navigation
+    },
+    [currentSlide]
+  );
 
   const handleSkip = useCallback(() => {
     onComplete();
@@ -62,12 +105,28 @@ export default function WelcomeSlides({ onComplete }: WelcomeSlidesProps) {
     onComplete();
   }, [onComplete]);
 
+  // Slide animation variants
+  const slideVariants = {
+    enter: (dir: number) => ({
+      x: dir > 0 ? 300 : -300,
+      opacity: 0,
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+    },
+    exit: (dir: number) => ({
+      x: dir < 0 ? 300 : -300,
+      opacity: 0,
+    }),
+  };
+
   return (
     <div
-      className="min-h-screen flex flex-col items-center justify-center p-6"
+      ref={containerRef}
+      className="min-h-screen flex flex-col items-center justify-center p-6 overflow-hidden"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      onTouchStart={() => setIsPaused(true)}
     >
       <div className="max-w-md w-full text-center">
         {/* Header with theme toggle and skip */}
@@ -76,48 +135,66 @@ export default function WelcomeSlides({ onComplete }: WelcomeSlidesProps) {
           <button
             type="button"
             onClick={handleSkip}
-            className="cursor-pointer text-sm text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
+            className="cursor-pointer min-h-[44px] min-w-[44px] flex items-center justify-center
+              text-sm text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors"
           >
             Skip
           </button>
         </div>
 
-        {/* Slide content */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-            className="mb-8"
-          >
-            <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-[var(--brand-blue-50)] flex items-center justify-center text-[var(--brand-blue)]">
-              {slides[currentSlide].icon}
-            </div>
-            <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-3">
-              {slides[currentSlide].title}
-            </h1>
-            <p className="text-[var(--text-secondary)] leading-relaxed">
-              {slides[currentSlide].description}
-            </p>
-          </motion.div>
-        </AnimatePresence>
+        {/* Swipeable slide content */}
+        <div className="relative h-[280px] touch-pan-y">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={currentSlide}
+              custom={direction}
+              variants={prefersReducedMotion ? undefined : slideVariants}
+              initial={prefersReducedMotion ? { opacity: 0 } : 'enter'}
+              animate={prefersReducedMotion ? { opacity: 1 } : 'center'}
+              exit={prefersReducedMotion ? { opacity: 0 } : 'exit'}
+              transition={{
+                x: { type: 'spring', stiffness: 300, damping: 30 },
+                opacity: { duration: 0.2 },
+              }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={handleDragEnd}
+              className="absolute inset-0 cursor-grab active:cursor-grabbing"
+            >
+              <div className="w-24 h-24 mx-auto mb-6 rounded-2xl bg-[var(--brand-blue-50)] flex items-center justify-center text-[var(--brand-blue)]">
+                {slides[currentSlide].icon}
+              </div>
+              <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-3">
+                {slides[currentSlide].title}
+              </h1>
+              <p className="text-[var(--text-secondary)] leading-relaxed px-4">
+                {slides[currentSlide].description}
+              </p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
-        {/* Pagination dots */}
-        <div className="flex justify-center gap-2 mb-8">
+        {/* Pagination dots - 44px touch targets (Apple HIG) */}
+        <div className="flex justify-center gap-4 mb-8" role="tablist" aria-label="Slides">
           {slides.map((_, index) => (
             <button
               key={index}
               type="button"
-              onClick={() => setCurrentSlide(index)}
-              className={`cursor-pointer w-2 h-2 rounded-full transition-all ${
-                index === currentSlide
-                  ? 'w-6 bg-[var(--brand-blue)]'
-                  : 'bg-[var(--surface-border)] hover:bg-[var(--text-muted)]'
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
+              role="tab"
+              aria-selected={index === currentSlide}
+              aria-label={`Slide ${index + 1} of ${slides.length}`}
+              onClick={() => goToSlide(index)}
+              className="cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center"
+            >
+              <span
+                className={`block rounded-full transition-all duration-200 ${
+                  index === currentSlide
+                    ? 'w-6 h-2 bg-[var(--brand-blue)]'
+                    : 'w-2 h-2 bg-[var(--surface-border)]'
+                }`}
+              />
+            </button>
           ))}
         </div>
 

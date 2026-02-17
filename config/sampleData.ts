@@ -24,6 +24,7 @@ export const SAMPLE_BANK_DETAILS: BankDetails = {
 
 export const SAMPLE_CUSTOMER: CustomerDetails = {
   name: 'Sample Customer Ltd',
+  email: 'customer@example.com',
   address: '456 Client Road\nManchester',
   postCode: 'M1 1AA',
 };

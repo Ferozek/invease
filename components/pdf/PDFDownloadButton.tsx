@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, forwardRef } from 'react';
 import { pdf } from '@react-pdf/renderer';
 import Button from '@/components/ui/Button';
 import { showInvoiceSuccess, handlePDFError, handleValidationError } from '@/lib/errorHandler';
+import { getValidLineItems } from '@/lib/invoiceUtils';
 import InvoicePDF from './InvoicePDF';
 import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
 
@@ -49,9 +50,7 @@ function validateInvoice(invoice: InvoiceData): string[] {
   }
 
   // Line items
-  const validLineItems = invoice.lineItems.filter(
-    (item) => item.description?.trim() && item.netAmount > 0
-  );
+  const validLineItems = getValidLineItems(invoice.lineItems);
   if (validLineItems.length === 0) {
     errors.push('At least one line item with description and amount is required');
   }
@@ -86,9 +85,7 @@ const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
     // Compute validation state for proactive feedback (Apple HIG: prevent before report)
     const validationErrors = validateInvoice(invoice);
     const isValid = validationErrors.length === 0;
-    const hasNoLineItems = invoice.lineItems.filter(
-      (item) => item.description?.trim() && item.netAmount > 0
-    ).length === 0;
+    const hasNoLineItems = getValidLineItems(invoice.lineItems).length === 0;
 
     const handleDownload = useCallback(async () => {
       // Validate first
@@ -104,9 +101,7 @@ const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
         // Filter out empty line items
         const cleanedInvoice: InvoiceData = {
           ...invoice,
-          lineItems: invoice.lineItems.filter(
-            (item) => item.description?.trim() && item.netAmount > 0
-          ),
+          lineItems: getValidLineItems(invoice.lineItems),
         };
 
         // Generate PDF blob

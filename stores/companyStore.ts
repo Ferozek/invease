@@ -3,8 +3,9 @@
  * Zustand store with localStorage persistence for company details
  * Persists across browser sessions so users don't have to re-enter details
  *
- * SECURITY NOTE: Bank details are only persisted if user explicitly opts in
- * via the "Remember my bank details" checkbox.
+ * SECURITY: Bank details are NEVER persisted to localStorage.
+ * They exist only in memory and must be re-entered each session.
+ * This protects against XSS attacks that could steal banking information.
  */
 
 import { create } from 'zustand';
@@ -31,9 +32,8 @@ interface CompanyState {
   cisStatus: CisStatus;
   cisUtr: string; // 10-digit Unique Taxpayer Reference
 
-  // Bank details
+  // Bank details (memory only - never persisted for security)
   bankDetails: BankDetails;
-  rememberBankDetails: boolean; // User opt-in to persist bank details locally
 
   // Actions - Onboarding
   markWelcomeSeen: () => void;
@@ -46,7 +46,6 @@ interface CompanyState {
   setCompanyDetails: (details: Partial<InvoicerDetails>) => void;
   setCisDetails: (details: { cisStatus?: CisStatus; cisUtr?: string }) => void;
   setBankDetails: (details: Partial<BankDetails>) => void;
-  setRememberBankDetails: (remember: boolean) => void;
   clearAllDetails: () => void;
 
   // Helpers
@@ -77,8 +76,8 @@ const defaultCompanyState = {
   // CIS defaults
   cisStatus: 'not_applicable' as CisStatus,
   cisUtr: '',
+  // Bank details in memory only (never persisted)
   bankDetails: defaultBankDetails,
-  rememberBankDetails: false,
 };
 
 export const useCompanyStore = create<CompanyState>()(
@@ -115,8 +114,6 @@ export const useCompanyStore = create<CompanyState>()(
         bankDetails: { ...state.bankDetails, ...details },
       })),
 
-      setRememberBankDetails: (remember) => set({ rememberBankDetails: remember }),
-
       clearAllDetails: () => set(defaultCompanyState),
 
       getInvoicerDetails: () => {
@@ -142,6 +139,7 @@ export const useCompanyStore = create<CompanyState>()(
     }),
     {
       name: 'invease-company-details',
+      // SECURITY: Bank details are intentionally excluded - never persisted
       partialize: (state) => ({
         hasSeenWelcome: state.hasSeenWelcome,
         isOnboarded: state.isOnboarded,
@@ -156,22 +154,20 @@ export const useCompanyStore = create<CompanyState>()(
         postCode: state.postCode,
         cisStatus: state.cisStatus,
         cisUtr: state.cisUtr,
-        rememberBankDetails: state.rememberBankDetails,
-        // Only persist bank details if user explicitly opted in
-        ...(state.rememberBankDetails && { bankDetails: state.bankDetails }),
+        // Note: bankDetails intentionally omitted for security
       }),
-      // Migration: Only keep bank details if user opted in
+      // Migration: Remove any previously saved bank details
       onRehydrateStorage: () => {
         return (_state, error) => {
           if (error) return;
-          // Remove bank details from old data if user didn't opt in
+          // Clean up any bank details from old versions
           try {
             const stored = localStorage.getItem('invease-company-details');
             if (stored) {
               const parsed = JSON.parse(stored);
-              // If rememberBankDetails is false/undefined but bankDetails exists, remove it
-              if (parsed.state?.bankDetails && !parsed.state?.rememberBankDetails) {
+              if (parsed.state?.bankDetails || parsed.state?.rememberBankDetails !== undefined) {
                 delete parsed.state.bankDetails;
+                delete parsed.state.rememberBankDetails;
                 localStorage.setItem('invease-company-details', JSON.stringify(parsed));
               }
             }

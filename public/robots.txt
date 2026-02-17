@@ -1,0 +1,11 @@
+# Invease - Free Invoice Generator
+# https://invease.vercel.app
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://invease.vercel.app/sitemap.xml
+
+# Disallow API routes
+Disallow: /api/

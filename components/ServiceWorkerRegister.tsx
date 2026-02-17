@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import logger from '@/lib/logger';
 
 /**
  * ServiceWorkerRegister Component
@@ -21,7 +22,7 @@ export default function ServiceWorkerRegister() {
         navigator.serviceWorker
           .register('/sw.js')
           .then((registration) => {
-            console.log('[SW] Registration successful:', registration.scope);
+            logger.info('Service worker registered', { scope: registration.scope });
 
             // Check for updates periodically
             setInterval(() => {
@@ -38,7 +39,7 @@ export default function ServiceWorkerRegister() {
                     navigator.serviceWorker.controller
                   ) {
                     // New version available
-                    console.log('[SW] New version available');
+                    logger.info('New service worker version available');
                     // Could show a toast notification here
                   }
                 });
@@ -46,7 +47,7 @@ export default function ServiceWorkerRegister() {
             });
           })
           .catch((error) => {
-            console.error('[SW] Registration failed:', error);
+            logger.error('Service worker registration failed', error);
           });
       });
     }

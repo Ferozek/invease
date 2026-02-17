@@ -9,6 +9,7 @@ import {
   normalisePostcode,
 } from '@/lib/validationPatterns';
 import { FieldError } from '@/components/ui/FormField';
+import { hapticFeedback } from '@/lib/haptics';
 
 /**
  * CustomerDetailsForm - Captures customer billing information
@@ -49,6 +50,11 @@ export default function CustomerDetailsForm() {
     }
 
     setErrors((prev) => ({ ...prev, [field]: result.error }));
+
+    // Trigger haptic feedback on validation error
+    if (result.error) {
+      hapticFeedback.error();
+    }
   }, []);
 
   return (
@@ -58,6 +64,7 @@ export default function CustomerDetailsForm() {
         <input
           id="customerName"
           type="text"
+          autoComplete="organization"
           className={`form-input ${touched.name && errors.name ? 'form-input-error' : ''}`}
           placeholder="Customer or company name"
           value={customer.name}
@@ -71,10 +78,24 @@ export default function CustomerDetailsForm() {
         <FieldError error={touched.name ? errors.name : null} />
       </div>
       <div>
+        <label htmlFor="customerEmail" className="form-label">Email</label>
+        <input
+          id="customerEmail"
+          type="email"
+          autoComplete="email"
+          className="form-input"
+          placeholder="customer@example.com"
+          value={customer.email}
+          onChange={(e) => setCustomerDetails({ email: e.target.value.toLowerCase() })}
+        />
+        <p className="text-xs text-[var(--text-muted)] mt-1">For sending invoice</p>
+      </div>
+      <div>
         <label htmlFor="customerPostCode" className="form-label form-label-required">Post Code</label>
         <input
           id="customerPostCode"
           type="text"
+          autoComplete="postal-code"
           className={`form-input ${touched.postCode && errors.postCode ? 'form-input-error' : ''}`}
           placeholder="e.g., SW1A 1AA"
           value={customer.postCode}
@@ -91,6 +112,7 @@ export default function CustomerDetailsForm() {
         <label htmlFor="customerAddress" className="form-label form-label-required">Address</label>
         <textarea
           id="customerAddress"
+          autoComplete="street-address"
           className={`form-input ${touched.address && errors.address ? 'form-input-error' : ''}`}
           rows={3}
           placeholder="Customer address"

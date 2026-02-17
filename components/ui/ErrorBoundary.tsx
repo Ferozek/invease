@@ -2,6 +2,7 @@
 
 import { Component, type ReactNode } from 'react';
 import Button from './Button';
+import logger from '@/lib/logger';
 
 interface ErrorBoundaryProps {
   /** Child components to render */
@@ -50,8 +51,10 @@ export default class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log error to console in development
-    console.error('ErrorBoundary caught an error:', error, errorInfo);
+    // Log error via centralized logger
+    logger.error('ErrorBoundary caught an error', error, {
+      componentStack: errorInfo.componentStack,
+    });
 
     // Call custom error handler if provided
     this.props.onError?.(error, errorInfo);
@@ -126,8 +129,7 @@ export function PDFErrorBoundary({ children }: { children: ReactNode }) {
       errorMessage="Failed to generate PDF. Please check all fields are filled correctly and try again."
       showRetry
       onError={(error) => {
-        // Could integrate with error logging service here
-        console.error('[PDF Error]', error);
+        logger.error('PDF generation error', error, { type: 'pdf_error' });
       }}
     >
       {children}

@@ -79,12 +79,19 @@ export function middleware(request: NextRequest) {
 
   // Content Security Policy
   // Note: 'unsafe-inline' required for Next.js inline styles and Framer Motion
+  // SECURITY: 'unsafe-eval' only allowed in development (for Next.js hot reload)
+  const isDev = process.env.NODE_ENV !== 'production';
+  const scriptSrc = isDev
+    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+    : "script-src 'self' 'unsafe-inline'";
+
   const csp = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js requires unsafe-eval in dev
+    scriptSrc,
     "style-src 'self' 'unsafe-inline'", // Tailwind/CSS-in-JS requires unsafe-inline
     "img-src 'self' data: blob:", // data: for base64 logo, blob: for PDF preview
     "font-src 'self'",
+    "frame-src 'self' blob:", // blob: for PDF preview iframe
     "connect-src 'self' https://api.company-information.service.gov.uk https://vitals.vercel-insights.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",

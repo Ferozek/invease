@@ -9,14 +9,18 @@ import {
   validateSortCode,
 } from '@/lib/validationPatterns';
 import { FieldError } from '@/components/ui/FormField';
+import { hapticFeedback } from '@/lib/haptics';
 
 /**
  * Step 4: Bank Details
  * Payment information that appears on invoices
  * Features Apple-style inline validation (red border + shake on blur)
+ *
+ * SECURITY: Bank details are never saved to localStorage.
+ * They exist only in memory and must be re-entered each session.
  */
 export default function BankDetailsStep() {
-  const { bankDetails, setBankDetails, rememberBankDetails, setRememberBankDetails } = useCompanyStore();
+  const { bankDetails, setBankDetails } = useCompanyStore();
 
   // Validation state for each field
   const [errors, setErrors] = useState<Record<string, string | null>>({
@@ -53,6 +57,12 @@ export default function BankDetailsStep() {
 
     setErrors((prev) => ({ ...prev, [field]: error }));
     setTouched((prev) => ({ ...prev, [field]: true }));
+
+    // Trigger haptic feedback on validation error
+    if (error) {
+      hapticFeedback.error();
+    }
+
     return error === null;
   }, []);
 
@@ -96,6 +106,7 @@ export default function BankDetailsStep() {
         <input
           id="bankName"
           type="text"
+          autoComplete="organization"
           className={`form-input ${touched.bankName && errors.bankName ? 'form-input-error' : ''}`}
           placeholder="e.g., Barclays, HSBC, Lloyds"
           value={bankDetails.bankName}
@@ -118,6 +129,7 @@ export default function BankDetailsStep() {
         <input
           id="accountName"
           type="text"
+          autoComplete="name"
           className={`form-input ${touched.accountName && errors.accountName ? 'form-input-error' : ''}`}
           placeholder="Name on the account"
           value={bankDetails.accountName}
@@ -187,30 +199,11 @@ export default function BankDetailsStep() {
         </div>
       </div>
 
-      {/* Remember Bank Details Option */}
-      <div className="p-4 bg-[var(--surface-elevated)] rounded-xl space-y-3">
-        <label className="flex items-start gap-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={rememberBankDetails}
-            onChange={(e) => setRememberBankDetails(e.target.checked)}
-            className="mt-1 w-5 h-5 rounded border-[var(--surface-border)]
-              text-[var(--brand-blue)] focus:ring-[var(--brand-blue)] cursor-pointer"
-          />
-          <div>
-            <span className="font-medium text-[var(--text-primary)]">
-              Remember my bank details on this device
-            </span>
-            <p className="text-sm text-[var(--text-secondary)] mt-0.5">
-              Save time on future invoices
-            </p>
-          </div>
-        </label>
-
-        {/* Security Note - changes based on checkbox */}
+      {/* Security Notice */}
+      <div className="p-4 bg-[var(--surface-elevated)] rounded-xl">
         <div className="flex items-start gap-2 text-sm">
           <svg
-            className="w-4 h-4 text-[var(--text-muted)] flex-shrink-0 mt-0.5"
+            className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={1.5}
@@ -219,14 +212,11 @@ export default function BankDetailsStep() {
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
+              d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"
             />
           </svg>
           <p className="text-[var(--text-muted)]">
-            {rememberBankDetails
-              ? "Your bank details will be saved locally on this device. Don't use on shared computers."
-              : "Your bank details are only kept during this session and never sent to any server."
-            }
+            Your bank details are never saved. They exist only during this session for security.
           </p>
         </div>
       </div>
