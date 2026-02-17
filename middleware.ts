@@ -78,20 +78,16 @@ export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
   // Content Security Policy
+  // Note: 'unsafe-eval' required by @react-pdf/renderer (PDFKit uses runtime code generation)
   // Note: 'unsafe-inline' required for Next.js inline styles and Framer Motion
-  // SECURITY: 'unsafe-eval' only allowed in development (for Next.js hot reload)
-  const isDev = process.env.NODE_ENV !== 'production';
-  const scriptSrc = isDev
-    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
-    : "script-src 'self' 'unsafe-inline'";
-
   const csp = [
     "default-src 'self'",
-    scriptSrc,
-    "style-src 'self' 'unsafe-inline'", // Tailwind/CSS-in-JS requires unsafe-inline
-    "img-src 'self' data: blob:", // data: for base64 logo, blob: for PDF preview
-    "font-src 'self'",
-    "frame-src 'self' blob:", // blob: for PDF preview iframe
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob:",
+    "font-src 'self' data:",
+    "frame-src 'self' blob:",
+    "worker-src 'self' blob:",
     "connect-src 'self' https://api.company-information.service.gov.uk https://vitals.vercel-insights.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
