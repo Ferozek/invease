@@ -75,32 +75,47 @@ test.describe('Form Validation', () => {
     await expect(page.locator('#companyName')).toHaveValue('Test Company Ltd');
   });
 
-  test('should validate company number format for Ltd companies', async ({ page }) => {
-    // Go back and select Limited Company
-    await page.goto('/');
-    await page.evaluate(() => {
-      localStorage.setItem('invease-company-details', JSON.stringify({
-        state: {
-          hasSeenWelcome: true,
-          isOnboarded: false,
-          businessType: null,
-        },
-        version: 0,
-      }));
-    });
-    await page.reload();
+  test('should validate company number format for Ltd companies', async ({ browser }) => {
+    // Use fresh browser context to avoid state leakage (Firefox issue)
+    const context = await browser.newContext();
+    const page = await context.newPage();
 
-    await page.getByText('Limited Company').click();
-    await page.getByRole('button', { name: 'Continue' }).click();
+    try {
+      // Navigate and set up fresh state
+      await page.goto('http://localhost:3000');
+      await page.evaluate(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+        localStorage.setItem('invease-company-details', JSON.stringify({
+          state: {
+            hasSeenWelcome: true,
+            isOnboarded: false,
+            businessType: null,
+            companyName: '',
+            address: '',
+            postCode: '',
+          },
+          version: 0,
+        }));
+      });
+      await page.reload();
 
-    await expect(page.locator('#companyNumber')).toBeVisible({ timeout: 5000 });
+      // Wait for wizard to load before clicking
+      await expect(page.getByText('What type of business are you?')).toBeVisible({ timeout: 10000 });
+      await page.getByText('Limited Company').click();
+      await page.getByRole('button', { name: 'Continue' }).click();
 
-    // Enter invalid company number (less than 8 chars)
-    await page.fill('#companyNumber', '12345');
-    await page.locator('#companyNumber').blur();
+      await expect(page.locator('#companyNumber')).toBeVisible({ timeout: 5000 });
 
-    // Should show validation error - be specific to avoid matching multiple elements
-    await expect(page.getByText('Company number must be 8 characters')).toBeVisible({ timeout: 3000 });
+      // Enter invalid company number (less than 8 chars)
+      await page.fill('#companyNumber', '12345');
+      await page.locator('#companyNumber').blur();
+
+      // Should show validation error - be specific to avoid matching multiple elements
+      await expect(page.getByText('Company number must be 8 characters')).toBeVisible({ timeout: 3000 });
+    } finally {
+      await context.close();
+    }
   });
 });
 

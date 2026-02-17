@@ -41,7 +41,7 @@ test.describe('CIS Subcontractor Features', () => {
     await expect(cisSection).toBeVisible();
   });
 
-  test('should show CIS deduction rates when enabled', async ({ page }) => {
+  test('should show CIS deduction rates when enabled', async ({ page, isMobile }) => {
     // Set up CIS-enabled state
     await page.evaluate(() => {
       localStorage.setItem('invease-company-details', JSON.stringify({
@@ -62,11 +62,14 @@ test.describe('CIS Subcontractor Features', () => {
     // Line items should have category column for CIS
     await expect(page.getByText('Line Items')).toBeVisible({ timeout: 5000 });
 
-    // Look for Category column header (visible only for CIS users)
-    const categoryHeader = page.locator('th').filter({ hasText: 'Category' });
-    await expect(categoryHeader).toBeVisible({ timeout: 3000 });
+    // On desktop, check for table header; on mobile, table is stacked so check for select directly
+    if (!isMobile) {
+      // Look for Category column header (visible only for CIS users on desktop)
+      const categoryHeader = page.locator('th').filter({ hasText: 'Category' });
+      await expect(categoryHeader).toBeVisible({ timeout: 3000 });
+    }
 
-    // Category select should be visible with aria-label
+    // Category select should be visible with aria-label (works on both mobile and desktop)
     const categorySelect = page.locator('select[aria-label="CIS category"]').first();
     await expect(categorySelect).toBeVisible();
   });
