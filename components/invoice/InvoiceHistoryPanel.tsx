@@ -6,11 +6,15 @@ import { useHistoryStore, type SavedInvoice } from '@/stores/historyStore';
 import { formatCurrency } from '@/lib/formatters';
 import Button from '@/components/ui/Button';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import type { DocumentType } from '@/types/invoice';
+
+type FilterTab = 'all' | 'invoice' | 'credit_note';
 
 interface InvoiceHistoryPanelProps {
   isOpen: boolean;
   onClose: () => void;
   onDuplicate: (invoice: SavedInvoice) => void;
+  onCreateCreditNote?: (invoice: SavedInvoice) => void;
 }
 
 /**
@@ -26,8 +30,10 @@ export default function InvoiceHistoryPanel({
   isOpen,
   onClose,
   onDuplicate,
+  onCreateCreditNote,
 }: InvoiceHistoryPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterTab, setFilterTab] = useState<FilterTab>('all');
   const [invoiceToDelete, setInvoiceToDelete] = useState<SavedInvoice | null>(null);
   const invoices = useHistoryStore((state) => state.invoices);
   const deleteInvoice = useHistoryStore((state) => state.deleteInvoice);
@@ -44,16 +50,29 @@ export default function InvoiceHistoryPanel({
     }
   }, [invoiceToDelete, deleteInvoice]);
 
-  // Filter invoices by search query
+  // Filter invoices by search query and tab
   const filteredInvoices = useMemo(() => {
-    if (!searchQuery.trim()) return invoices;
-    const query = searchQuery.toLowerCase();
-    return invoices.filter(
-      (inv) =>
-        inv.customerName.toLowerCase().includes(query) ||
-        inv.invoiceNumber.toLowerCase().includes(query)
-    );
-  }, [invoices, searchQuery]);
+    let results = invoices;
+
+    // Filter by document type tab
+    if (filterTab === 'invoice') {
+      results = results.filter((inv) => (inv.documentType || 'invoice') === 'invoice');
+    } else if (filterTab === 'credit_note') {
+      results = results.filter((inv) => inv.documentType === 'credit_note');
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      results = results.filter(
+        (inv) =>
+          inv.customerName.toLowerCase().includes(query) ||
+          inv.invoiceNumber.toLowerCase().includes(query)
+      );
+    }
+
+    return results;
+  }, [invoices, searchQuery, filterTab]);
 
   // Group by month
   const groupedInvoices = useMemo(() => {
@@ -93,7 +112,7 @@ export default function InvoiceHistoryPanel({
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-[var(--surface-border)]">
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-                Invoice History
+                History
               </h2>
               <button
                 type="button"
@@ -113,8 +132,8 @@ export default function InvoiceHistoryPanel({
               </button>
             </div>
 
-            {/* Search */}
-            <div className="p-4 border-b border-[var(--surface-border)]">
+            {/* Search + Filter */}
+            <div className="p-4 border-b border-[var(--surface-border)] space-y-3">
               <div className="relative">
                 <svg
                   className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]"
@@ -131,7 +150,7 @@ export default function InvoiceHistoryPanel({
                 </svg>
                 <input
                   type="text"
-                  placeholder="Search invoices..."
+                  placeholder="Search..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl
@@ -140,6 +159,30 @@ export default function InvoiceHistoryPanel({
                     focus:outline-none focus:border-[var(--brand-blue)]
                     focus:ring-2 focus:ring-[var(--brand-blue)]/20"
                 />
+              </div>
+
+              {/* Filter tabs */}
+              <div className="flex rounded-lg bg-[var(--surface-elevated)] p-0.5" role="tablist">
+                {([
+                  { id: 'all' as FilterTab, label: 'All' },
+                  { id: 'invoice' as FilterTab, label: 'Invoices' },
+                  { id: 'credit_note' as FilterTab, label: 'Credit Notes' },
+                ]).map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={filterTab === tab.id}
+                    onClick={() => setFilterTab(tab.id)}
+                    className={`cursor-pointer flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                      filterTab === tab.id
+                        ? 'bg-[var(--surface-card)] text-[var(--text-primary)] shadow-sm'
+                        : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -211,6 +254,11 @@ export default function InvoiceHistoryPanel({
                             invoice={inv}
                             onDuplicate={() => onDuplicate(inv)}
                             onDelete={() => handleDeleteRequest(inv)}
+                            onCreateCreditNote={
+                              onCreateCreditNote && (inv.documentType || 'invoice') === 'invoice'
+                                ? () => onCreateCreditNote(inv)
+                                : undefined
+                            }
                           />
                         </motion.div>
                       ))}
@@ -244,13 +292,15 @@ interface InvoiceHistoryItemProps {
   invoice: SavedInvoice;
   onDuplicate: () => void;
   onDelete: () => void;
+  onCreateCreditNote?: () => void;
 }
 
 // Swipe threshold to reveal delete button
 const SWIPE_THRESHOLD = -80;
 const DELETE_BUTTON_WIDTH = 80;
 
-function InvoiceHistoryItem({ invoice, onDuplicate, onDelete }: InvoiceHistoryItemProps) {
+function InvoiceHistoryItem({ invoice, onDuplicate, onDelete, onCreateCreditNote }: InvoiceHistoryItemProps) {
+  const isCreditNote = (invoice.documentType || 'invoice') === 'credit_note';
   const [showActions, setShowActions] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -320,6 +370,11 @@ function InvoiceHistoryItem({ invoice, onDuplicate, onDelete }: InvoiceHistoryIt
               <p className="font-medium text-[var(--text-primary)] truncate">
                 {invoice.customerName}
               </p>
+              {isCreditNote && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 font-semibold">
+                  CN
+                </span>
+              )}
               <span className="text-xs px-1.5 py-0.5 rounded bg-[var(--surface-elevated)] text-[var(--text-muted)]">
                 #{invoice.invoiceNumber}
               </span>
@@ -331,6 +386,19 @@ function InvoiceHistoryItem({ invoice, onDuplicate, onDelete }: InvoiceHistoryIt
 
           {/* Desktop actions - 44px touch targets per Apple HIG */}
           <div className={`hidden sm:flex items-center transition-opacity ${showActions ? 'opacity-100' : 'opacity-0'}`}>
+            {onCreateCreditNote && (
+              <button
+                type="button"
+                onClick={onCreateCreditNote}
+                className="cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-colors"
+                aria-label="Create credit note"
+                title="Create Credit Note"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+            )}
             <button
               type="button"
               onClick={onDuplicate}
@@ -353,8 +421,20 @@ function InvoiceHistoryItem({ invoice, onDuplicate, onDelete }: InvoiceHistoryIt
             </button>
           </div>
 
-          {/* Mobile: Duplicate button always visible, swipe for delete */}
+          {/* Mobile: action buttons always visible, swipe for delete */}
           <div className="sm:hidden flex items-center">
+            {onCreateCreditNote && (
+              <button
+                type="button"
+                onClick={onCreateCreditNote}
+                className="cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-red-500"
+                aria-label="Create credit note"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </button>
+            )}
             <button
               type="button"
               onClick={onDuplicate}

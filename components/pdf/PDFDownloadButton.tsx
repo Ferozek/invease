@@ -55,6 +55,13 @@ function validateInvoice(invoice: InvoiceData): string[] {
     errors.push('At least one line item with description and amount is required');
   }
 
+  // Credit note specific
+  if (invoice.details.documentType === 'credit_note') {
+    if (!invoice.details.creditNoteFields?.relatedInvoiceNumber?.trim()) {
+      errors.push('Original invoice number is required for credit notes');
+    }
+  }
+
   // Bank details
   if (!invoice.bankDetails.accountNumber?.trim()) {
     errors.push('Account number is required');
@@ -81,6 +88,10 @@ const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
     useEffect(() => {
       setIsMounted(true);
     }, []);
+
+    const isCreditNote = invoice.details.documentType === 'credit_note';
+    const docLabel = isCreditNote ? 'Credit Note' : 'Invoice';
+    const filePrefix = isCreditNote ? 'CreditNote' : 'Invoice';
 
     // Compute validation state for proactive feedback (Apple HIG: prevent before report)
     const validationErrors = validateInvoice(invoice);
@@ -113,7 +124,7 @@ const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `Invoice-${invoice.details.invoiceNumber || 'DRAFT'}.pdf`;
+        link.download = `${filePrefix}-${invoice.details.invoiceNumber || 'DRAFT'}.pdf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -145,7 +156,7 @@ const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
         ? 'Add line items to download'
         : !isValid
           ? 'Complete required fields'
-          : 'Download Invoice PDF';
+          : `Download ${docLabel} PDF`;
 
     return (
       <div className="space-y-2">

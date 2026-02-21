@@ -289,6 +289,31 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
     color: '#ffffff',
   },
+  // Credit note styles
+  creditNoteTitle: {
+    color: '#dc2626',
+  },
+  creditNoteHeader: {
+    borderBottomColor: '#dc2626',
+  },
+  creditNoteGrandTotalRow: {
+    backgroundColor: '#dc2626',
+  },
+  creditNoteReference: {
+    marginTop: 4,
+    fontSize: 9,
+    color: '#64748b',
+    textAlign: 'right' as const,
+  },
+  creditNoteReason: {
+    marginTop: 10,
+    marginBottom: 10,
+    padding: 8,
+    backgroundColor: '#fef2f2',
+    borderRadius: 4,
+    borderLeftWidth: 3,
+    borderLeftColor: '#dc2626',
+  },
   // Notes section
   notesSection: {
     marginTop: 12,
@@ -378,6 +403,7 @@ interface InvoicePDFProps {
 }
 
 export default function InvoicePDF({ invoice, totals }: InvoicePDFProps) {
+  const isCreditNote = invoice.details.documentType === 'credit_note';
   const isCis = invoice.invoicer.cisStatus !== 'not_applicable';
   const cisStatus = invoice.invoicer.cisStatus;
 
@@ -402,7 +428,7 @@ export default function InvoicePDF({ invoice, totals }: InvoicePDFProps) {
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={isCreditNote ? [styles.header, styles.creditNoteHeader] : styles.header}>
           <View style={styles.companySection}>
             {invoice.invoicer.logo && (
               <Image src={invoice.invoicer.logo} style={styles.logo} />
@@ -419,8 +445,15 @@ export default function InvoicePDF({ invoice, totals }: InvoicePDFProps) {
             </Text>
           </View>
           <View>
-            <Text style={styles.invoiceTitle}>INVOICE</Text>
+            <Text style={isCreditNote ? [styles.invoiceTitle, styles.creditNoteTitle] : styles.invoiceTitle}>
+              {isCreditNote ? 'CREDIT NOTE' : 'INVOICE'}
+            </Text>
             <Text style={styles.invoiceNumber}>#{invoice.details.invoiceNumber}</Text>
+            {isCreditNote && invoice.details.creditNoteFields?.relatedInvoiceNumber && (
+              <Text style={styles.creditNoteReference}>
+                Ref: Invoice #{invoice.details.creditNoteFields.relatedInvoiceNumber}
+              </Text>
+            )}
             <Text style={styles.invoiceDate}>Date: {formatDate(invoice.details.date)}</Text>
             <Text style={styles.invoiceDate}>
               Due: {calculateDueDate(invoice.details.date, invoice.details.paymentTerms)}
@@ -494,6 +527,18 @@ export default function InvoicePDF({ invoice, totals }: InvoicePDFProps) {
           </View>
         )}
 
+        {/* Credit Note Reason */}
+        {isCreditNote && invoice.details.creditNoteFields?.reason && (
+          <View style={styles.creditNoteReason}>
+            <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: '#991b1b', marginBottom: 4 }}>
+              Reason for Credit Note
+            </Text>
+            <Text style={{ fontSize: 9, color: '#991b1b' }}>
+              {invoice.details.creditNoteFields.reason}
+            </Text>
+          </View>
+        )}
+
         {/* Totals */}
         <View style={styles.totalsSection}>
           <View style={styles.totalRow}>
@@ -508,8 +553,8 @@ export default function InvoicePDF({ invoice, totals }: InvoicePDFProps) {
               <Text style={styles.totalValue}>{formatCurrency(vat.amount)}</Text>
             </View>
           ))}
-          <View style={styles.grandTotalRow}>
-            <Text style={styles.grandTotalLabel}>Total Due</Text>
+          <View style={isCreditNote ? [styles.grandTotalRow, styles.creditNoteGrandTotalRow] : styles.grandTotalRow}>
+            <Text style={styles.grandTotalLabel}>{isCreditNote ? 'Credit Total' : 'Total Due'}</Text>
             <Text style={styles.grandTotalValue}>{formatCurrency(totals.total)}</Text>
           </View>
 
@@ -593,10 +638,13 @@ export default function InvoicePDF({ invoice, totals }: InvoicePDFProps) {
 
         {/* Footer */}
         <Text style={styles.footer}>
-          Thank you for your business.{' '}
-          {invoice.details.paymentTerms === '0'
-            ? 'Payment is due on receipt.'
-            : `Payment is due within ${invoice.details.paymentTerms} days.`}
+          {isCreditNote
+            ? `This credit note cancels/reduces Invoice #${invoice.details.creditNoteFields?.relatedInvoiceNumber || ''}.`
+            : `Thank you for your business. ${
+                invoice.details.paymentTerms === '0'
+                  ? 'Payment is due on receipt.'
+                  : `Payment is due within ${invoice.details.paymentTerms} days.`
+              }`}
         </Text>
       </Page>
     </Document>

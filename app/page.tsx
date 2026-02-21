@@ -32,7 +32,9 @@ import {
   InvoiceTotalsSection,
   SuccessState,
   InvoiceToolbar,
+  DocumentTypeSelector,
 } from '@/components/invoice';
+import type { DocumentType } from '@/types/invoice';
 import InvoiceHistoryPanel from '@/components/invoice/InvoiceHistoryPanel';
 import SettingsPanel from '@/components/settings/SettingsPanel';
 import ThemeToggle from '@/components/ui/ThemeToggle';
@@ -95,6 +97,7 @@ export default function Home() {
 
   // Settings store
   const consumeNextInvoiceNumber = useSettingsStore((state) => state.consumeNextInvoiceNumber);
+  const consumeNextCreditNoteNumber = useSettingsStore((state) => state.consumeNextCreditNoteNumber);
 
   // Auto-fill invoice number on initial load (when empty and onboarded)
   useEffect(() => {
@@ -151,6 +154,91 @@ export default function Home() {
     const nextNumber = consumeNextInvoiceNumber();
     setInvoiceDetails({ invoiceNumber: nextNumber });
   }, [resetInvoice, isCisSubcontractor, consumeNextInvoiceNumber, setInvoiceDetails]);
+
+  // Handle document type toggle (Invoice <-> Credit Note)
+  const handleDocumentTypeChange = useCallback((type: DocumentType) => {
+    if (type === 'credit_note') {
+      const nextCnNumber = consumeNextCreditNoteNumber();
+      setInvoiceDetails({
+        documentType: 'credit_note',
+        invoiceNumber: nextCnNumber,
+        creditNoteFields: {
+          relatedInvoiceNumber: '',
+          reason: '',
+          isPartial: false,
+        },
+      });
+    } else {
+      const nextInvNumber = consumeNextInvoiceNumber();
+      setInvoiceDetails({
+        documentType: 'invoice',
+        invoiceNumber: nextInvNumber,
+        creditNoteFields: undefined,
+      });
+    }
+  }, [consumeNextCreditNoteNumber, consumeNextInvoiceNumber, setInvoiceDetails]);
+
+  // Create credit note from a saved invoice in history
+  const handleCreateCreditNote = useCallback((saved: SavedInvoice) => {
+    // Reset first, then populate
+    resetInvoice(isCisSubcontractor());
+
+    // Set customer from the original invoice
+    setCustomerDetails({
+      name: saved.invoice.customer.name,
+      address: saved.invoice.customer.address,
+      postCode: saved.invoice.customer.postCode,
+      email: saved.invoice.customer.email,
+    });
+
+    // Set credit note details referencing the original
+    const cnNumber = consumeNextCreditNoteNumber();
+    setInvoiceDetails({
+      documentType: 'credit_note',
+      invoiceNumber: cnNumber,
+      date: new Date().toISOString().split('T')[0],
+      paymentTerms: saved.invoice.details.paymentTerms,
+      notes: saved.invoice.details.notes || '',
+      creditNoteFields: {
+        relatedInvoiceNumber: saved.invoice.details.invoiceNumber,
+        reason: '',
+        isPartial: false,
+      },
+    });
+
+    // Copy line items from the original invoice
+    saved.invoice.lineItems.forEach((item, index) => {
+      const currentItems = useInvoiceStore.getState().lineItems;
+      if (index === 0 && currentItems[0]) {
+        updateLineItem(currentItems[0].id, {
+          description: item.description,
+          quantity: item.quantity,
+          netAmount: item.netAmount,
+          vatRate: item.vatRate,
+          cisCategory: item.cisCategory,
+        });
+      } else {
+        addLineItem(isCisSubcontractor());
+        const items = useInvoiceStore.getState().lineItems;
+        const lastItem = items[items.length - 1];
+        if (lastItem) {
+          updateLineItem(lastItem.id, {
+            description: item.description,
+            quantity: item.quantity,
+            netAmount: item.netAmount,
+            vatRate: item.vatRate,
+            cisCategory: item.cisCategory,
+          });
+        }
+      }
+    });
+
+    setShowHistoryPanel(false);
+    toast.success('Credit note started', {
+      description: `Based on Invoice #${saved.invoice.details.invoiceNumber}`,
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [setCustomerDetails, setInvoiceDetails, resetInvoice, addLineItem, updateLineItem, consumeNextCreditNoteNumber, isCisSubcontractor]);
 
   const handlePDFSuccess = useCallback(() => {
     saveInvoice(invoiceData, totals);
@@ -334,7 +422,7 @@ export default function Home() {
                 </Card>
               </motion.div>
 
-              {/* Invoice Details - scroll fade-in */}
+              {/* Document Type Selector + Invoice Details - scroll fade-in */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -342,7 +430,15 @@ export default function Home() {
                 transition={{ duration: 0.4, ease: 'easeOut', delay: 0.1 }}
               >
                 <Card variant="plain" className="p-6">
-                  <h2 id="invoice-details-heading" className="text-xl font-semibold text-[var(--brand-blue)] mb-4">Invoice Details</h2>
+                  <DocumentTypeSelector
+                    documentType={details.documentType}
+                    onTypeChange={handleDocumentTypeChange}
+                  />
+                  <h2 id="invoice-details-heading" className={`text-xl font-semibold mb-4 ${
+                    details.documentType === 'credit_note' ? 'text-red-600' : 'text-[var(--brand-blue)]'
+                  }`}>
+                    {details.documentType === 'credit_note' ? 'Credit Note Details' : 'Invoice Details'}
+                  </h2>
                   <InvoiceDetailsForm />
                 </Card>
               </motion.div>
@@ -437,7 +533,7 @@ export default function Home() {
                           />
                         </PDFErrorBoundary>
                         <Button variant="ghost" fullWidth onClick={handleNewInvoice}>
-                          New Invoice
+                          {details.documentType === 'credit_note' ? 'New Credit Note' : 'New Invoice'}
                         </Button>
                       </div>
                     </motion.div>
@@ -480,8 +576,8 @@ export default function Home() {
         isOpen={showNewInvoiceConfirm}
         onClose={() => setShowNewInvoiceConfirm(false)}
         onConfirm={handleConfirmNewInvoice}
-        title="Start New Invoice?"
-        message="This will clear all current invoice data. Your company and bank details will be preserved."
+        title={details.documentType === 'credit_note' ? 'Start New Credit Note?' : 'Start New Invoice?'}
+        message="This will clear all current data. Your company and bank details will be preserved."
         confirmText="Clear & Start New"
         cancelText="Keep Current"
         isDestructive
@@ -502,6 +598,7 @@ export default function Home() {
         isOpen={showHistoryPanel}
         onClose={() => setShowHistoryPanel(false)}
         onDuplicate={handleDuplicateInvoice}
+        onCreateCreditNote={handleCreateCreditNote}
       />
 
       <SettingsPanel

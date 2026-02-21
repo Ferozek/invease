@@ -23,6 +23,7 @@ export default function InvoicePreview({ totals }: InvoicePreviewProps) {
   const { customer, details, lineItems } = useInvoiceStore();
 
   const isCis = cisStatus !== 'not_applicable';
+  const isCreditNote = details.documentType === 'credit_note';
 
   const hasContent =
     companyName || logo || customer.name || lineItems.some((item) => item.description);
@@ -38,10 +39,12 @@ export default function InvoicePreview({ totals }: InvoicePreviewProps) {
             duration: 3,
             ease: 'easeInOut',
           }}
-          className="w-20 h-20 rounded-2xl bg-[var(--brand-blue-50)] flex items-center justify-center mb-4"
+          className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-4 ${
+            isCreditNote ? 'bg-red-50' : 'bg-[var(--brand-blue-50)]'
+          }`}
         >
           <svg
-            className="w-10 h-10 text-[var(--brand-blue)]"
+            className={`w-10 h-10 ${isCreditNote ? 'text-red-500' : 'text-[var(--brand-blue)]'}`}
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={1.5}
@@ -54,7 +57,9 @@ export default function InvoicePreview({ totals }: InvoicePreviewProps) {
             />
           </svg>
         </motion.div>
-        <p className="text-[var(--text-secondary)] font-medium">Your invoice preview</p>
+        <p className="text-[var(--text-secondary)] font-medium">
+          Your {isCreditNote ? 'credit note' : 'invoice'} preview
+        </p>
         <p className="text-sm text-[var(--text-muted)] mt-1">
           Fill in the form to see it here
         </p>
@@ -64,6 +69,20 @@ export default function InvoicePreview({ totals }: InvoicePreviewProps) {
 
   return (
     <div className="space-y-4">
+      {/* Credit Note Badge */}
+      {isCreditNote && (
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">
+            CREDIT NOTE
+          </span>
+          {details.creditNoteFields?.relatedInvoiceNumber && (
+            <span className="text-xs text-[var(--text-muted)]">
+              Ref: Invoice #{details.creditNoteFields.relatedInvoiceNumber}
+            </span>
+          )}
+        </div>
+      )}
+
       {/* Company Info */}
       {(companyName || logo) && (
         <div>
@@ -74,7 +93,7 @@ export default function InvoicePreview({ totals }: InvoicePreviewProps) {
               className="h-10 w-auto max-w-[100px] object-contain mb-2"
             />
           )}
-          <p className="font-bold text-[var(--brand-blue)]">{companyName}</p>
+          <p className={`font-bold ${isCreditNote ? 'text-red-600' : 'text-[var(--brand-blue)]'}`}>{companyName}</p>
           {address && (
             <p className="text-[var(--text-secondary)] whitespace-pre-line text-xs">{address}</p>
           )}
@@ -88,7 +107,9 @@ export default function InvoicePreview({ totals }: InvoicePreviewProps) {
       {(details.invoiceNumber || details.date) && (
         <div className="border-t pt-3">
           {details.invoiceNumber && (
-            <p className="font-semibold">Invoice #{details.invoiceNumber}</p>
+            <p className="font-semibold">
+              {isCreditNote ? 'Credit Note' : 'Invoice'} #{details.invoiceNumber}
+            </p>
           )}
           {details.date && (
             <>
@@ -180,8 +201,10 @@ const getCisStatusLabel = (status: string): string => {
 
 export function InvoiceTotalsSection({ totals }: InvoiceTotalsSectionProps) {
   const { cisStatus } = useCompanyStore();
+  const { details } = useInvoiceStore();
   const isCis = cisStatus !== 'not_applicable';
   const hasCisBreakdown = isCis && totals.cisBreakdown;
+  const isCreditNote = details.documentType === 'credit_note';
 
   return (
     <div className="border-t border-slate-200 pt-4 mt-4 space-y-2">
@@ -235,8 +258,8 @@ export function InvoiceTotalsSection({ totals }: InvoiceTotalsSectionProps) {
         </div>
       )}
       <div className="flex justify-between text-lg font-bold border-t border-slate-200 pt-2">
-        <span>Total</span>
-        <span className="text-[var(--brand-blue)]">
+        <span>{isCreditNote ? 'Credit Total' : 'Total'}</span>
+        <span className={isCreditNote ? 'text-red-600' : 'text-[var(--brand-blue)]'}>
           <AnimatedNumber value={totals.total} formatFn={formatCurrency} />
         </span>
       </div>

@@ -133,31 +133,34 @@ export default function PDFPreviewModal({
     };
   }, [isOpen, onClose]);
 
+  const filePrefix = invoice.details.documentType === 'credit_note' ? 'CreditNote' : 'Invoice';
+  const docLabel = invoice.details.documentType === 'credit_note' ? 'Credit Note' : 'Invoice';
+
   // Handle download
   const handleDownload = useCallback(() => {
     if (!pdfUrl) return;
 
     const link = document.createElement('a');
     link.href = pdfUrl;
-    link.download = `Invoice-${invoice.details.invoiceNumber || 'DRAFT'}.pdf`;
+    link.download = `${filePrefix}-${invoice.details.invoiceNumber || 'DRAFT'}.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
     onDownload?.();
-  }, [pdfUrl, invoice.details.invoiceNumber, onDownload]);
+  }, [pdfUrl, invoice.details.invoiceNumber, onDownload, filePrefix]);
 
   // Handle share via Web Share API
   const handleShare = useCallback(async () => {
     if (!pdfBlob) return;
 
-    const filename = `Invoice-${invoice.details.invoiceNumber || 'DRAFT'}.pdf`;
+    const filename = `${filePrefix}-${invoice.details.invoiceNumber || 'DRAFT'}.pdf`;
     const file = new File([pdfBlob], filename, { type: 'application/pdf' });
 
     try {
       await navigator.share({
-        title: `Invoice ${invoice.details.invoiceNumber || 'DRAFT'}`,
-        text: `Invoice from ${invoice.invoicer.companyName || 'Your Company'}`,
+        title: `${docLabel} ${invoice.details.invoiceNumber || 'DRAFT'}`,
+        text: `${docLabel} from ${invoice.invoicer.companyName || 'Your Company'}`,
         files: [file],
       });
       toast.success('Shared successfully');
@@ -180,10 +183,10 @@ export default function PDFPreviewModal({
     const companyName = invoice.invoicer.companyName || 'Your Company';
     const customerEmail = invoice.customer.email?.trim() || '';
 
-    const emailSubject = `Invoice ${invoiceNumber} from ${companyName}`;
+    const emailSubject = `${docLabel} ${invoiceNumber} from ${companyName}`;
     const emailBody = `Dear ${invoice.customer.name || 'Customer'},
 
-Please find attached Invoice ${invoiceNumber} for £${totals.total.toFixed(2)}.
+Please find attached ${docLabel} ${invoiceNumber} for £${totals.total.toFixed(2)}.
 
 Payment is due within ${invoice.details.paymentTerms || '30'} days.
 
@@ -223,7 +226,7 @@ ${companyName}`;
     const downloadUrl = URL.createObjectURL(pdfBlob);
     const link = document.createElement('a');
     link.href = downloadUrl;
-    link.download = `Invoice-${invoiceNumber}.pdf`;
+    link.download = `${filePrefix}-${invoiceNumber}.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -263,7 +266,7 @@ ${companyName}`;
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-[var(--surface-border)]">
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-                Invoice Preview
+                {invoice.details.documentType === 'credit_note' ? 'Credit Note Preview' : 'Invoice Preview'}
               </h2>
               <div className="flex items-center gap-2 sm:gap-3">
                 {/* Email button */}

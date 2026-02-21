@@ -8,7 +8,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
+import type { DocumentType, InvoiceData, InvoiceTotals } from '@/types/invoice';
 
 // ===== Types =====
 
@@ -21,6 +21,7 @@ export interface SavedInvoice {
   customerName: string;
   invoiceNumber: string;
   total: number;
+  documentType: DocumentType;
 }
 
 export interface RecentCustomer {
@@ -62,7 +63,8 @@ export const useHistoryStore = create<HistoryState>()(
       recentCustomers: [],
 
       saveInvoice: (invoice, totals) => {
-        const id = generateId();
+        const docType = invoice.details.documentType || 'invoice';
+        const id = generateId(docType);
         const savedInvoice: SavedInvoice = {
           id,
           invoice,
@@ -71,6 +73,7 @@ export const useHistoryStore = create<HistoryState>()(
           customerName: invoice.customer.name,
           invoiceNumber: invoice.details.invoiceNumber,
           total: totals.total,
+          documentType: docType,
         };
 
         set((state) => {
@@ -123,15 +126,27 @@ export const useHistoryStore = create<HistoryState>()(
     {
       name: 'invease-history',
       storage: createJSONStorage(() => localStorage),
-      version: 1,
+      version: 2,
+      migrate: (persistedState, version) => {
+        const state = persistedState as { invoices?: SavedInvoice[] };
+        if (version < 2 && state.invoices) {
+          // Add documentType to existing entries
+          state.invoices = state.invoices.map((inv) => ({
+            ...inv,
+            documentType: inv.documentType || 'invoice' as DocumentType,
+          }));
+        }
+        return state as HistoryState;
+      },
     }
   )
 );
 
 // ===== Helpers =====
 
-function generateId(): string {
-  return `inv_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+function generateId(docType: DocumentType = 'invoice'): string {
+  const prefix = docType === 'credit_note' ? 'cn' : 'inv';
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
 // ===== Selectors (for performance) =====
@@ -141,11 +156,21 @@ export const selectInvoiceCount = (state: HistoryState) => state.invoices.length
 export const selectRecentInvoices = (state: HistoryState, limit = 10) =>
   state.invoices.slice(0, limit);
 
-export const searchInvoices = (state: HistoryState, query: string) => {
+export const searchInvoices = (state: HistoryState, query: string, docType?: DocumentType) => {
   const lowerQuery = query.toLowerCase();
-  return state.invoices.filter(
+  let results = state.invoices;
+  if (docType) {
+    results = results.filter((inv) => (inv.documentType || 'invoice') === docType);
+  }
+  return results.filter(
     (inv) =>
       inv.customerName.toLowerCase().includes(lowerQuery) ||
       inv.invoiceNumber.toLowerCase().includes(lowerQuery)
   );
 };
+
+export const selectInvoicesOnly = (state: HistoryState) =>
+  state.invoices.filter((inv) => (inv.documentType || 'invoice') === 'invoice');
+
+export const selectCreditNotesOnly = (state: HistoryState) =>
+  state.invoices.filter((inv) => inv.documentType === 'credit_note');

@@ -62,6 +62,8 @@ const defaultInvoiceDetails: InvoiceDetails = {
   invoiceNumber: '',
   paymentTerms: '30', // Default to 30 days
   notes: '', // Optional notes/terms
+  documentType: 'invoice',
+  creditNoteFields: undefined,
 };
 
 // CIS deduction rates: 0% (gross), 20% (verified/standard), 30% (unverified)
@@ -170,6 +172,8 @@ export const useInvoiceStore = create<InvoiceState>()(
             date: getTodayISO(),
             paymentTerms: '30',
             notes: '',
+            documentType: 'invoice',
+            creditNoteFields: undefined,
           },
           lineItems: [createEmptyLineItem(isCis)],
         }),

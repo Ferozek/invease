@@ -5,6 +5,7 @@ import { useInvoiceStore } from '@/stores/invoiceStore';
 import { validateRequired } from '@/lib/validationPatterns';
 import { FieldError } from '@/components/ui/FormField';
 import { PAYMENT_TERMS_OPTIONS } from '@/config/constants';
+import CreditNoteFields from './CreditNoteFields';
 
 /**
  * InvoiceDetailsForm - Invoice metadata (date, number, payment terms)
@@ -86,6 +87,9 @@ export default function InvoiceDetailsForm() {
           </select>
         </div>
       </div>
+
+      {/* Credit Note Fields */}
+      {details.documentType === 'credit_note' && <CreditNoteFields />}
 
       {/* Notes/Terms */}
       <div>

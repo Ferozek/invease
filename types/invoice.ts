@@ -3,6 +3,9 @@
  * TypeScript interfaces for the invoice system
  */
 
+// Document type discriminator
+export type DocumentType = 'invoice' | 'credit_note';
+
 // Business type for wizard selection
 export type BusinessType = 'sole_trader' | 'partnership' | 'limited_company';
 
@@ -31,11 +34,19 @@ export interface CustomerDetails {
   postCode: string;
 }
 
+export interface CreditNoteFields {
+  relatedInvoiceNumber: string; // Original invoice reference (UK legal requirement)
+  reason: string;
+  isPartial: boolean;
+}
+
 export interface InvoiceDetails {
   date: string;
   invoiceNumber: string;
   paymentTerms: string; // Number of days, e.g., "30"
   notes: string; // Optional notes/terms for the invoice
+  documentType: DocumentType; // 'invoice' or 'credit_note'
+  creditNoteFields?: CreditNoteFields; // Only when documentType === 'credit_note'
 }
 
 export type VatRate = '0' | '5' | '20' | 'reverse_charge';

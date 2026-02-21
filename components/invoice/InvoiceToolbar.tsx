@@ -56,7 +56,7 @@ export default function InvoiceToolbar({
     <div className="flex items-center justify-between mb-4">
       <div className="flex items-center gap-3">
         <h2 className="text-xl font-semibold text-[var(--brand-blue)]">
-          Invoice Preview
+          {invoice.details.documentType === 'credit_note' ? 'Credit Note Preview' : 'Invoice Preview'}
         </h2>
         <AutoSaveIndicator />
       </div>

@@ -16,3 +16,5 @@ export { default as InvoicePreview, InvoiceTotalsSection } from './InvoicePrevie
 export { default as SuccessState } from './SuccessState';
 export { default as InvoiceToolbar } from './InvoiceToolbar';
 export { default as EmailInvoiceButton } from './EmailInvoiceButton';
+export { default as DocumentTypeSelector } from './DocumentTypeSelector';
+export { default as CreditNoteFields } from './CreditNoteFields';

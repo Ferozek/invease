@@ -66,7 +66,7 @@ export const NUMBERING_PRESETS: NumberingPreset[] = [
   },
 ];
 
-// ===== Default Config =====
+// ===== Default Configs =====
 
 export const DEFAULT_NUMBERING_CONFIG: NumberingConfig = {
   pattern: 'INV-{SEQ:4}',
@@ -76,6 +76,32 @@ export const DEFAULT_NUMBERING_CONFIG: NumberingConfig = {
   resetYearly: false,
   lastResetYear: new Date().getFullYear(),
 };
+
+export const DEFAULT_CN_NUMBERING_CONFIG: NumberingConfig = {
+  pattern: 'CN-{SEQ:4}',
+  prefix: 'CN',
+  startNumber: 1,
+  currentNumber: 1,
+  resetYearly: false,
+  lastResetYear: new Date().getFullYear(),
+};
+
+// ===== Credit Note Presets =====
+
+export const CN_NUMBERING_PRESETS: NumberingPreset[] = [
+  {
+    id: 'cn_simple',
+    name: 'Simple',
+    pattern: 'CN-{SEQ:4}',
+    example: 'CN-0001',
+  },
+  {
+    id: 'cn_yearly',
+    name: 'Yearly',
+    pattern: 'CN-{YEAR}-{SEQ:3}',
+    example: 'CN-2026-001',
+  },
+];
 
 // ===== Pattern Processing =====
 

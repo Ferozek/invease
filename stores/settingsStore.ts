@@ -10,6 +10,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import {
   DEFAULT_NUMBERING_CONFIG,
+  DEFAULT_CN_NUMBERING_CONFIG,
   type NumberingConfig,
   incrementNumber,
   generateInvoiceNumber,
@@ -26,6 +27,9 @@ interface SettingsState {
   // Invoice Numbering
   numbering: NumberingConfig;
 
+  // Credit Note Numbering (separate sequence)
+  cnNumbering: NumberingConfig;
+
   // Actions - Template
   setTemplateId: (id: string) => void;
   setCustomPrimaryColor: (color: string | null) => void;
@@ -35,6 +39,12 @@ interface SettingsState {
   getNextInvoiceNumber: () => string;
   consumeNextInvoiceNumber: () => string;
   resetNumberingSequence: () => void;
+
+  // Actions - CN Numbering
+  setCnNumberingConfig: (config: Partial<NumberingConfig>) => void;
+  getNextCreditNoteNumber: () => string;
+  consumeNextCreditNoteNumber: () => string;
+  resetCnNumberingSequence: () => void;
 }
 
 // ===== Store =====
@@ -46,6 +56,7 @@ export const useSettingsStore = create<SettingsState>()(
       templateId: DEFAULT_TEMPLATE_ID,
       customPrimaryColor: null,
       numbering: DEFAULT_NUMBERING_CONFIG,
+      cnNumbering: DEFAULT_CN_NUMBERING_CONFIG,
 
       // Template Actions
       setTemplateId: (id) => set({ templateId: id }),
@@ -79,6 +90,33 @@ export const useSettingsStore = create<SettingsState>()(
             lastResetYear: new Date().getFullYear(),
           },
         })),
+
+      // CN Numbering Actions
+      setCnNumberingConfig: (config) =>
+        set((state) => ({
+          cnNumbering: { ...state.cnNumbering, ...config },
+        })),
+
+      getNextCreditNoteNumber: () => {
+        const { cnNumbering } = get();
+        return generateInvoiceNumber(cnNumbering);
+      },
+
+      consumeNextCreditNoteNumber: () => {
+        const { cnNumbering } = get();
+        const number = generateInvoiceNumber(cnNumbering);
+        set({ cnNumbering: incrementNumber(cnNumbering) });
+        return number;
+      },
+
+      resetCnNumberingSequence: () =>
+        set((state) => ({
+          cnNumbering: {
+            ...state.cnNumbering,
+            currentNumber: state.cnNumbering.startNumber,
+            lastResetYear: new Date().getFullYear(),
+          },
+        })),
     }),
     {
       name: 'invease-settings',
@@ -93,3 +131,4 @@ export const useSettingsStore = create<SettingsState>()(
 export const selectTemplateId = (state: SettingsState) => state.templateId;
 export const selectCustomColor = (state: SettingsState) => state.customPrimaryColor;
 export const selectNumberingConfig = (state: SettingsState) => state.numbering;
+export const selectCnNumberingConfig = (state: SettingsState) => state.cnNumbering;
