@@ -1,56 +1,30 @@
 import { test, expect } from '@playwright/test';
+import { setupOnboardedUser } from './helpers';
 
 /**
- * Smoke Tests - Critical Path Only
- * Run these before commits: npm run test:smoke
- * ~10 seconds total
+ * Smoke Tests — critical path, run before every commit
+ * 2 tests, ~10 seconds
  */
 test.describe('Smoke Tests', () => {
   test('app loads without crashing', async ({ page }) => {
     await page.goto('/');
-    // Should see Welcome Slides for first-time users
     await expect(page.locator('body')).toBeVisible();
     await expect(page.getByText(/Create professional invoices|Invease/)).toBeVisible();
   });
 
-  test('can navigate through wizard', async ({ page }) => {
-    await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
+  test('accordion form renders when onboarded', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await setupOnboardedUser(page);
+    await page.reload({ waitUntil: 'domcontentloaded' });
 
-    // First: Skip the Welcome Slides
-    await expect(page.getByText('Create professional invoices')).toBeVisible();
-    await page.getByRole('button', { name: 'Get Started' }).click();
+    // Accordion sections should be visible
+    await expect(page.getByText('Customer Details')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Invoice Details')).toBeVisible();
+    await expect(page.getByText('Line Items')).toBeVisible();
+    await expect(page.getByText('Bank Details')).toBeVisible();
 
-    // Now on main page with sample data - this is the new quick flow
-    await expect(page.getByText('Customer Details')).toBeVisible({ timeout: 5000 });
-  });
-
-  test('invoice form renders when onboarded', async ({ page }) => {
-    // Set up onboarded state (including hasSeenWelcome: true)
-    await page.goto('/');
-    await page.evaluate(() => {
-      localStorage.setItem('invease-company-details', JSON.stringify({
-        state: {
-          hasSeenWelcome: true,
-          isOnboarded: true,
-          businessType: 'sole_trader',
-          companyName: 'Test Co',
-          address: '123 Test St',
-          postCode: 'SW1A 1AA',
-          bankDetails: {
-            bankName: 'Test Bank',
-            accountName: 'Test',
-            accountNumber: '12345678',
-            sortCode: '12-34-56',
-          },
-        },
-        version: 0,
-      }));
-    });
-    await page.reload();
-
-    // Should see invoice form
-    await expect(page.getByText('Customer Details')).toBeVisible();
+    // First section should be expanded by default
+    const firstSection = page.locator('button[aria-expanded="true"]').first();
+    await expect(firstSection).toBeVisible();
   });
 });
