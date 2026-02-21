@@ -139,7 +139,7 @@ const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
 
-        showInvoiceSuccess();
+        showInvoiceSuccess(invoice.details.documentType);
         onSuccess?.();
       } catch (error) {
         handlePDFError(error instanceof Error ? error : new Error('PDF generation failed'));

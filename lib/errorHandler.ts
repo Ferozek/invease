@@ -86,12 +86,11 @@ export function handleStorageError(error: Error): void {
 }
 
 /**
- * Show success notification for invoice creation
+ * Show success notification for invoice/credit note creation
  */
-export function showInvoiceSuccess(): void {
-  toast.success('Invoice created successfully!', {
-    description: 'Your invoice is ready to download.',
-  });
+export function showInvoiceSuccess(documentType?: string): void {
+  const label = documentType === 'credit_note' ? 'Credit note' : 'Invoice';
+  toast.success(`${label} downloaded!`);
 }
 
 /**

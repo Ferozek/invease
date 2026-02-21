@@ -13,7 +13,7 @@ export { default as LineItemsTable } from './LineItemsTable';
 export { default as BankDetailsForm } from './BankDetailsForm';
 export { default as BankDetailsSummary } from './BankDetailsSummary';
 export { default as InvoicePreview, InvoiceTotalsSection } from './InvoicePreview';
-export { default as SuccessState } from './SuccessState';
+export { default as SuccessState, type SuccessContext } from './SuccessState';
 export { default as InvoiceToolbar } from './InvoiceToolbar';
 export { default as EmailInvoiceButton } from './EmailInvoiceButton';
 export { default as DocumentTypeSelector } from './DocumentTypeSelector';

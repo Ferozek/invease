@@ -31,6 +31,7 @@ import {
   InvoicePreview,
   InvoiceTotalsSection,
   SuccessState,
+  type SuccessContext,
   InvoiceToolbar,
   DocumentTypeSelector,
 } from '@/components/invoice';
@@ -60,7 +61,8 @@ const PDFPreviewModal = dynamic(
 
 export default function Home() {
   // UI state
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [successContext, setSuccessContext] = useState<SuccessContext | null>(null);
+  const showSuccess = successContext !== null;
   const [showNewInvoiceConfirm, setShowNewInvoiceConfirm] = useState(false);
   const [showResetAllConfirm, setShowResetAllConfirm] = useState(false);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
@@ -157,6 +159,9 @@ export default function Home() {
 
   // Handle document type toggle (Invoice <-> Credit Note)
   const handleDocumentTypeChange = useCallback((type: DocumentType) => {
+    // Dismiss stale success state if showing
+    if (successContext) setSuccessContext(null);
+
     if (type === 'credit_note') {
       const nextCnNumber = consumeNextCreditNoteNumber();
       setInvoiceDetails({
@@ -176,7 +181,7 @@ export default function Home() {
         creditNoteFields: undefined,
       });
     }
-  }, [consumeNextCreditNoteNumber, consumeNextInvoiceNumber, setInvoiceDetails]);
+  }, [successContext, consumeNextCreditNoteNumber, consumeNextInvoiceNumber, setInvoiceDetails]);
 
   // Create credit note from a saved invoice in history
   const handleCreateCreditNote = useCallback((saved: SavedInvoice) => {
@@ -242,18 +247,41 @@ export default function Home() {
 
   const handlePDFSuccess = useCallback(() => {
     saveInvoice(invoiceData, totals);
-    setShowSuccess(true);
-  }, [saveInvoice, invoiceData, totals]);
+    setSuccessContext({
+      documentType: details.documentType,
+      invoiceNumber: details.invoiceNumber,
+      customerName: customer.name,
+    });
+  }, [saveInvoice, invoiceData, totals, details.documentType, details.invoiceNumber, customer.name]);
 
   const handleCreateAnother = useCallback(() => {
     resetWithNewNumber();
-    setShowSuccess(false);
+    setSuccessContext(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [resetWithNewNumber]);
 
   const handleStayHere = useCallback(() => {
-    setShowSuccess(false);
+    setSuccessContext(null);
   }, []);
+
+  // Create credit note from the just-saved invoice (Xero pattern)
+  const handleCreateCreditNoteFromSuccess = useCallback(() => {
+    if (!successContext) return;
+
+    const historyInvoices = useHistoryStore.getState().invoices;
+    const saved = historyInvoices.find(
+      (inv) => inv.invoiceNumber === successContext.invoiceNumber
+    );
+
+    if (saved) {
+      handleCreateCreditNote(saved);
+    } else {
+      // Fallback: just switch to credit note mode
+      handleDocumentTypeChange('credit_note');
+    }
+
+    setSuccessContext(null);
+  }, [successContext, handleCreateCreditNote, handleDocumentTypeChange]);
 
   const handleNewInvoice = useCallback(() => {
     const hasData = customer.name || customer.address || details.invoiceNumber || lineItems.some((item) => item.description);
@@ -496,9 +524,10 @@ export default function Home() {
                       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                     >
                       <SuccessState
-                        invoiceNumber={details.invoiceNumber}
+                        successContext={successContext!}
                         onCreateAnother={handleCreateAnother}
                         onStayHere={handleStayHere}
+                        onCreateCreditNote={handleCreateCreditNoteFromSuccess}
                       />
                     </motion.div>
                   ) : (

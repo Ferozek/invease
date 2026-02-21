@@ -2,11 +2,19 @@
 
 import { motion } from 'framer-motion';
 import Button from '@/components/ui/Button';
+import type { DocumentType } from '@/types/invoice';
+
+export interface SuccessContext {
+  documentType: DocumentType;
+  invoiceNumber: string;
+  customerName: string;
+}
 
 interface SuccessStateProps {
-  invoiceNumber: string;
+  successContext: SuccessContext;
   onCreateAnother: () => void;
   onStayHere: () => void;
+  onCreateCreditNote?: () => void;
 }
 
 /**
@@ -14,14 +22,19 @@ interface SuccessStateProps {
  *
  * Features:
  * - Animated checkmark with spring physics
- * - Clear next actions
- * - Smooth transitions
+ * - Document-type-aware messaging (Invoice vs Credit Note)
+ * - Contextual next actions (Xero pattern: offer credit note from invoice)
+ * - Snapshot-based: displays what was created, not live form state
  */
 export default function SuccessState({
-  invoiceNumber,
+  successContext,
   onCreateAnother,
   onStayHere,
+  onCreateCreditNote,
 }: SuccessStateProps) {
+  const isCreditNote = successContext.documentType === 'credit_note';
+  const docLabel = isCreditNote ? 'Credit Note' : 'Invoice';
+
   return (
     <div className="text-center py-8">
       {/* Success Icon */}
@@ -51,23 +64,34 @@ export default function SuccessState({
 
       {/* Success Message */}
       <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
-        Invoice Created!
+        {docLabel} Created!
       </h2>
       <p className="text-[var(--text-secondary)] mb-8">
-        Invoice #{invoiceNumber || 'DRAFT'} has been downloaded
+        {docLabel} #{successContext.invoiceNumber || 'DRAFT'} has been downloaded
+        {successContext.customerName && (
+          <> for <span className="font-medium">{successContext.customerName}</span></>
+        )}
       </p>
 
       {/* Actions */}
       <div className="space-y-3">
         <Button variant="primary" fullWidth onClick={onCreateAnother}>
-          Create Another Invoice
+          Create Another {docLabel}
         </Button>
+
+        {/* Contextual CTA: offer credit note creation for invoices (Xero pattern) */}
+        {!isCreditNote && onCreateCreditNote && (
+          <Button variant="ghost" fullWidth onClick={onCreateCreditNote}>
+            Create Credit Note
+          </Button>
+        )}
+
         <button
           type="button"
           onClick={onStayHere}
           className="cursor-pointer text-sm text-[var(--text-muted)] hover:text-[var(--brand-blue)] transition-colors"
         >
-          Stay on this invoice
+          Stay on this {docLabel.toLowerCase()}
         </button>
       </div>
     </div>
