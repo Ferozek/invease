@@ -35,6 +35,8 @@ import {
   InvoiceToolbar,
   DocumentTypeSelector,
 } from '@/components/invoice';
+import { getTodayISO } from '@/lib/dateUtils';
+import { copyLineItemsToStore } from '@/lib/invoiceUtils';
 import type { DocumentType } from '@/types/invoice';
 import InvoiceHistoryPanel from '@/components/invoice/InvoiceHistoryPanel';
 import SettingsPanel from '@/components/settings/SettingsPanel';
@@ -141,7 +143,7 @@ export default function Home() {
     const nextNumber = consumeNextInvoiceNumber();
     setInvoiceDetails({
       invoiceNumber: nextNumber,
-      date: new Date().toISOString().split('T')[0],
+      date: getTodayISO(),
       paymentTerms: '30',
       notes: 'Thank you for your business.',
     });
@@ -215,7 +217,7 @@ export default function Home() {
     setInvoiceDetails({
       documentType: 'credit_note',
       invoiceNumber: cnNumber,
-      date: new Date().toISOString().split('T')[0],
+      date: getTodayISO(),
       paymentTerms: saved.invoice.details.paymentTerms,
       notes: saved.invoice.details.notes || '',
       creditNoteFields: {
@@ -226,31 +228,13 @@ export default function Home() {
     });
 
     // Copy line items from the original invoice
-    saved.invoice.lineItems.forEach((item, index) => {
-      const currentItems = useInvoiceStore.getState().lineItems;
-      if (index === 0 && currentItems[0]) {
-        updateLineItem(currentItems[0].id, {
-          description: item.description,
-          quantity: item.quantity,
-          netAmount: item.netAmount,
-          vatRate: item.vatRate,
-          cisCategory: item.cisCategory,
-        });
-      } else {
-        addLineItem(isCisSubcontractor());
-        const items = useInvoiceStore.getState().lineItems;
-        const lastItem = items[items.length - 1];
-        if (lastItem) {
-          updateLineItem(lastItem.id, {
-            description: item.description,
-            quantity: item.quantity,
-            netAmount: item.netAmount,
-            vatRate: item.vatRate,
-            cisCategory: item.cisCategory,
-          });
-        }
-      }
-    });
+    copyLineItemsToStore(
+      saved.invoice.lineItems,
+      () => useInvoiceStore.getState().lineItems,
+      updateLineItem,
+      addLineItem,
+      isCisSubcontractor(),
+    );
 
     setShowHistoryPanel(false);
     toast.success('Credit note started', {
@@ -329,38 +313,20 @@ export default function Home() {
 
       setInvoiceDetails({
         invoiceNumber: consumeNextInvoiceNumber(),
-        date: new Date().toISOString().split('T')[0],
+        date: getTodayISO(),
         paymentTerms: saved.invoice.details.paymentTerms,
         notes: saved.invoice.details.notes || '',
       });
 
       resetInvoice(isCisSubcontractor());
 
-      saved.invoice.lineItems.forEach((item, index) => {
-        const currentItems = useInvoiceStore.getState().lineItems;
-        if (index === 0 && currentItems[0]) {
-          updateLineItem(currentItems[0].id, {
-            description: item.description,
-            quantity: item.quantity,
-            netAmount: item.netAmount,
-            vatRate: item.vatRate,
-            cisCategory: item.cisCategory,
-          });
-        } else {
-          addLineItem(isCisSubcontractor());
-          const items = useInvoiceStore.getState().lineItems;
-          const lastItem = items[items.length - 1];
-          if (lastItem) {
-            updateLineItem(lastItem.id, {
-              description: item.description,
-              quantity: item.quantity,
-              netAmount: item.netAmount,
-              vatRate: item.vatRate,
-              cisCategory: item.cisCategory,
-            });
-          }
-        }
-      });
+      copyLineItemsToStore(
+        saved.invoice.lineItems,
+        () => useInvoiceStore.getState().lineItems,
+        updateLineItem,
+        addLineItem,
+        isCisSubcontractor(),
+      );
 
       setShowHistoryPanel(false);
       toast.success('Invoice duplicated', { description: `Created from ${saved.invoiceNumber}` });

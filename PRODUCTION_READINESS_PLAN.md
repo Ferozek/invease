@@ -1,6 +1,6 @@
 # Production Readiness Plan
 
-## Current Score: 9.7/10 (Updated: 2026-02-21)
+## Current Score: 9.8/10 (Updated: 2026-02-21)
 
 ### Overview
 
@@ -95,10 +95,10 @@ This document outlines all remaining work to achieve full production readiness.
 - [x] Add confirmation dialog when switching Invoice ↔ Credit Note with data
 - [x] Reuse existing ConfirmDialog component (no new components)
 
-### P2: Remaining Duplication Cleanup [ ]
+### P2: Remaining Duplication Cleanup ✅
 
-- [ ] Replace 4x inline `toISOString().split('T')[0]` with `getTodayISO()`
-- [ ] Extract line item copy logic (3 copies) to `lib/invoiceUtils.ts`
+- [x] Replace 4x inline `toISOString().split('T')[0]` with `getTodayISO()`
+- [x] Extract line item copy logic (3 copies) to `lib/invoiceUtils.ts`
 
 ### P3: UX Polish [ ]
 

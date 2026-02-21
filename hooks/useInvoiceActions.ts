@@ -6,6 +6,8 @@ import { useInvoiceStore } from '@/stores/invoiceStore';
 import { useCompanyStore } from '@/stores/companyStore';
 import { useHistoryStore, type SavedInvoice } from '@/stores/historyStore';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { getTodayISO } from '@/lib/dateUtils';
+import { copyLineItemsToStore } from '@/lib/invoiceUtils';
 import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
 
 interface UseInvoiceActionsProps {
@@ -113,7 +115,7 @@ export function useInvoiceActions({
       // Set new invoice number and today's date
       setInvoiceDetails({
         invoiceNumber: consumeNextInvoiceNumber(),
-        date: new Date().toISOString().split('T')[0],
+        date: getTodayISO(),
         paymentTerms: saved.invoice.details.paymentTerms,
         notes: saved.invoice.details.notes || '',
       });
@@ -122,34 +124,13 @@ export function useInvoiceActions({
       resetInvoice(isCisSubcontractor());
 
       // Copy line items
-      saved.invoice.lineItems.forEach((item, index) => {
-        if (index === 0) {
-          // Update the first line item (already exists after reset)
-          const currentLineItems = useInvoiceStore.getState().lineItems;
-          if (currentLineItems[0]) {
-            updateLineItem(currentLineItems[0].id, {
-              description: item.description,
-              quantity: item.quantity,
-              netAmount: item.netAmount,
-              vatRate: item.vatRate,
-              cisCategory: item.cisCategory,
-            });
-          }
-        } else {
-          addLineItem(isCisSubcontractor());
-          const currentLineItems = useInvoiceStore.getState().lineItems;
-          const lastItem = currentLineItems[currentLineItems.length - 1];
-          if (lastItem) {
-            updateLineItem(lastItem.id, {
-              description: item.description,
-              quantity: item.quantity,
-              netAmount: item.netAmount,
-              vatRate: item.vatRate,
-              cisCategory: item.cisCategory,
-            });
-          }
-        }
-      });
+      copyLineItemsToStore(
+        saved.invoice.lineItems,
+        () => useInvoiceStore.getState().lineItems,
+        updateLineItem,
+        addLineItem,
+        isCisSubcontractor(),
+      );
 
       // Close panel and show toast
       setShowHistoryPanel(false);
