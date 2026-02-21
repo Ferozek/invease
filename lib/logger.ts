@@ -3,7 +3,7 @@
  *
  * Provides a unified logging interface that:
  * - In development: logs to console
- * - In production: can be upgraded to Sentry (when configured)
+ * - In production: sends errors/warnings to Sentry
  *
  * Usage:
  *   import { logger } from '@/lib/logger';
@@ -11,6 +11,8 @@
  *   logger.warn('Deprecated feature used');
  *   logger.info('User completed action');
  */
+
+import * as Sentry from '@sentry/nextjs';
 
 const isDev = process.env.NODE_ENV !== 'production';
 
@@ -30,8 +32,13 @@ export const logger = {
     if (isDev) {
       console.error(`[ERROR] ${message}`, error, context);
     }
-    // TODO: When Sentry is configured:
-    // Sentry.captureException(error, { extra: { message, ...context } });
+    if (error instanceof Error) {
+      Sentry.captureException(error, { extra: { message, ...context } });
+    } else if (error) {
+      Sentry.captureException(new Error(message), { extra: { originalError: error, ...context } });
+    } else {
+      Sentry.captureMessage(message, { level: 'error', extra: context });
+    }
   },
 
   /**
@@ -42,20 +49,17 @@ export const logger = {
     if (isDev) {
       console.warn(`[WARN] ${message}`, context);
     }
-    // TODO: When Sentry is configured:
-    // Sentry.captureMessage(message, { level: 'warning', extra: context });
+    Sentry.captureMessage(message, { level: 'warning', extra: context });
   },
 
   /**
    * Log informational message
-   * Use for significant events (user actions, state changes)
+   * Use for significant events (development only — not sent to Sentry)
    */
   info: (message: string, context?: LogContext) => {
     if (isDev) {
       console.log(`[INFO] ${message}`, context);
     }
-    // In production, info logs are typically not sent to Sentry
-    // Consider adding to analytics instead
   },
 
   /**

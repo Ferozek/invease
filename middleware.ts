@@ -88,7 +88,7 @@ export function middleware(request: NextRequest) {
     "font-src 'self' data:",
     "frame-src 'self' blob:",
     "worker-src 'self' blob:",
-    "connect-src 'self' https://api.company-information.service.gov.uk https://vitals.vercel-insights.com",
+    "connect-src 'self' https://api.company-information.service.gov.uk https://vitals.vercel-insights.com https://*.ingest.de.sentry.io",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
