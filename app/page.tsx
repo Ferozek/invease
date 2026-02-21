@@ -514,6 +514,15 @@ export default function Home() {
             <aside aria-label="Invoice preview" className="lg:col-span-1">
             <div className="sticky top-6">
               <Card variant="accent" className="p-6 overflow-hidden">
+                {/* Toolbar — always visible (Apple: never hide navigation) */}
+                <InvoiceToolbar
+                  invoice={invoiceData}
+                  totals={totals}
+                  onOpenPreview={() => setShowPDFPreview(true)}
+                  onOpenHistory={() => setShowHistoryPanel(true)}
+                  onOpenSettings={() => setShowSettingsPanel(true)}
+                />
+
                 <AnimatePresence mode="wait">
                   {showSuccess ? (
                     <motion.div
@@ -538,14 +547,6 @@ export default function Home() {
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <InvoiceToolbar
-                        invoice={invoiceData}
-                        totals={totals}
-                        onOpenPreview={() => setShowPDFPreview(true)}
-                        onOpenHistory={() => setShowHistoryPanel(true)}
-                        onOpenSettings={() => setShowSettingsPanel(true)}
-                      />
-
                       <div className="invoice-preview text-sm">
                         <InvoicePreview totals={totals} />
                       </div>
