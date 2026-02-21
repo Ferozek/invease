@@ -467,7 +467,7 @@ export default function Home() {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <h2 id="bank-details-heading" className="text-xl font-semibold text-[var(--brand-blue)]">Bank Details</h2>
-                      <Badge variant="info" size="sm">Saved</Badge>
+                      <Badge variant="neutral" size="sm">Optional</Badge>
                     </div>
                     <button
                       type="button"

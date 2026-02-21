@@ -184,18 +184,24 @@ export default function PDFPreviewModal({
     const customerEmail = invoice.customer.email?.trim() || '';
 
     const emailSubject = `${docLabel} ${invoiceNumber} from ${companyName}`;
+
+    const hasBankDetails = !!(
+      invoice.bankDetails.accountNumber?.trim() &&
+      invoice.bankDetails.sortCode?.trim() &&
+      invoice.bankDetails.accountName?.trim() &&
+      invoice.bankDetails.bankName?.trim()
+    );
+
+    const bankSection = hasBankDetails
+      ? `\nBank Details for Payment:\n${invoice.bankDetails.bankName}\nAccount: ${invoice.bankDetails.accountNumber}\nSort Code: ${invoice.bankDetails.sortCode}\nReference: ${invoiceNumber}\n`
+      : '\nPlease contact us directly for payment details.\n';
+
     const emailBody = `Dear ${invoice.customer.name || 'Customer'},
 
 Please find attached ${docLabel} ${invoiceNumber} for £${totals.total.toFixed(2)}.
 
 Payment is due within ${invoice.details.paymentTerms || '30'} days.
-
-Bank Details for Payment:
-${invoice.bankDetails.bankName}
-Account: ${invoice.bankDetails.accountNumber}
-Sort Code: ${invoice.bankDetails.sortCode}
-Reference: ${invoiceNumber}
-
+${bankSection}
 Thank you for your business.
 
 Best regards,

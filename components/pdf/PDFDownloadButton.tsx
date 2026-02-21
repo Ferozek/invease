@@ -62,18 +62,27 @@ function validateInvoice(invoice: InvoiceData): string[] {
     }
   }
 
-  // Bank details
-  if (!invoice.bankDetails.accountNumber?.trim()) {
-    errors.push('Account number is required');
-  }
-  if (!invoice.bankDetails.sortCode?.trim()) {
-    errors.push('Sort code is required');
-  }
-  if (!invoice.bankDetails.accountName?.trim()) {
-    errors.push('Account name is required');
-  }
-  if (!invoice.bankDetails.bankName?.trim()) {
-    errors.push('Bank name is required');
+  // Bank details - fully optional (GDPR: data minimisation, fraud prevention)
+  // If partially filled, validate completeness
+  const hasSomeBankDetails =
+    invoice.bankDetails.accountNumber?.trim() ||
+    invoice.bankDetails.sortCode?.trim() ||
+    invoice.bankDetails.accountName?.trim() ||
+    invoice.bankDetails.bankName?.trim();
+
+  if (hasSomeBankDetails) {
+    if (!invoice.bankDetails.accountNumber?.trim()) {
+      errors.push('Account number incomplete (or clear all bank details)');
+    }
+    if (!invoice.bankDetails.sortCode?.trim()) {
+      errors.push('Sort code incomplete (or clear all bank details)');
+    }
+    if (!invoice.bankDetails.accountName?.trim()) {
+      errors.push('Account name incomplete (or clear all bank details)');
+    }
+    if (!invoice.bankDetails.bankName?.trim()) {
+      errors.push('Bank name incomplete (or clear all bank details)');
+    }
   }
 
   return errors;

@@ -17,7 +17,14 @@ export default function BankDetailsSummary() {
 
   if (!hasContent) {
     return (
-      <p className="text-[var(--text-secondary)] text-sm">No bank details saved yet.</p>
+      <div className="space-y-2">
+        <p className="text-[var(--text-secondary)] text-sm">
+          No bank details added — this is fine.
+        </p>
+        <p className="text-[var(--text-muted)] text-xs leading-relaxed">
+          Your invoice will include a note asking the customer to contact you directly for payment details. This follows GDPR data minimisation principles and protects against invoice interception fraud.
+        </p>
+      </div>
     );
   }
 

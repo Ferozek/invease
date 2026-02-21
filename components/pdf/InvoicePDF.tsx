@@ -332,6 +332,12 @@ const styles = StyleSheet.create({
     color: '#475569',
     lineHeight: 1.5,
   },
+  paymentNote: {
+    fontSize: 9,
+    color: '#64748b',
+    lineHeight: 1.5,
+    fontStyle: 'italic' as const,
+  },
 });
 
 // Format currency
@@ -404,6 +410,12 @@ interface InvoicePDFProps {
 
 export default function InvoicePDF({ invoice, totals }: InvoicePDFProps) {
   const isCreditNote = invoice.details.documentType === 'credit_note';
+  const hasBankDetails = !!(
+    invoice.bankDetails.accountNumber?.trim() &&
+    invoice.bankDetails.sortCode?.trim() &&
+    invoice.bankDetails.accountName?.trim() &&
+    invoice.bankDetails.bankName?.trim()
+  );
   const isCis = invoice.invoicer.cisStatus !== 'not_applicable';
   const cisStatus = invoice.invoicer.cisStatus;
 
@@ -567,34 +579,45 @@ export default function InvoicePDF({ invoice, totals }: InvoicePDFProps) {
           )}
         </View>
 
-        {/* Bank Details */}
-        <View style={styles.bankSection}>
-          <Text style={styles.bankTitle}>Payment Details</Text>
-          <View style={styles.bankGrid}>
-            <View style={styles.bankItem}>
-              <Text style={styles.bankLabel}>Account Name</Text>
-              <Text style={styles.bankValue}>{invoice.bankDetails.accountName}</Text>
-            </View>
-            <View style={styles.bankItem}>
-              <Text style={styles.bankLabel}>Bank</Text>
-              <Text style={styles.bankValue}>{invoice.bankDetails.bankName}</Text>
-            </View>
-            <View style={styles.bankItem}>
-              <Text style={styles.bankLabel}>Account Number</Text>
-              <Text style={styles.bankValue}>{invoice.bankDetails.accountNumber}</Text>
-            </View>
-            <View style={styles.bankItem}>
-              <Text style={styles.bankLabel}>Sort Code</Text>
-              <Text style={styles.bankValue}>{invoice.bankDetails.sortCode}</Text>
-            </View>
-            {invoice.bankDetails.reference && (
-              <View style={[styles.bankItem, { width: '100%' }]}>
-                <Text style={styles.bankLabel}>Reference</Text>
-                <Text style={styles.bankValue}>{invoice.bankDetails.reference}</Text>
+        {/* Payment Details - bank details or security note */}
+        {hasBankDetails ? (
+          <View style={styles.bankSection}>
+            <Text style={styles.bankTitle}>Payment Details</Text>
+            <View style={styles.bankGrid}>
+              <View style={styles.bankItem}>
+                <Text style={styles.bankLabel}>Account Name</Text>
+                <Text style={styles.bankValue}>{invoice.bankDetails.accountName}</Text>
               </View>
-            )}
+              <View style={styles.bankItem}>
+                <Text style={styles.bankLabel}>Bank</Text>
+                <Text style={styles.bankValue}>{invoice.bankDetails.bankName}</Text>
+              </View>
+              <View style={styles.bankItem}>
+                <Text style={styles.bankLabel}>Account Number</Text>
+                <Text style={styles.bankValue}>{invoice.bankDetails.accountNumber}</Text>
+              </View>
+              <View style={styles.bankItem}>
+                <Text style={styles.bankLabel}>Sort Code</Text>
+                <Text style={styles.bankValue}>{invoice.bankDetails.sortCode}</Text>
+              </View>
+              {invoice.bankDetails.reference && (
+                <View style={[styles.bankItem, { width: '100%' }]}>
+                  <Text style={styles.bankLabel}>Reference</Text>
+                  <Text style={styles.bankValue}>{invoice.bankDetails.reference}</Text>
+                </View>
+              )}
+            </View>
           </View>
-        </View>
+        ) : (
+          <View style={styles.bankSection}>
+            <Text style={styles.bankTitle}>Payment Information</Text>
+            <Text style={styles.paymentNote}>
+              {invoice.details.notes?.includes('payment')
+                ? '' // Notes already contain payment info, don't duplicate
+                : 'For payment details, please contact us directly. Bank details are not included on this document for security purposes.'}
+            </Text>
+          </View>
+        )}
 
         {/* Reverse Charge Note */}
         {invoice.lineItems.some(item => item.vatRate === 'reverse_charge') && (
