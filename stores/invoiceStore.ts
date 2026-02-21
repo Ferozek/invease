@@ -60,6 +60,7 @@ const defaultCustomer: CustomerDetails = {
 
 const defaultInvoiceDetails: InvoiceDetails = {
   date: getTodayISO(),
+  supplyDate: '',
   invoiceNumber: '',
   paymentTerms: '30', // Default to 30 days
   notes: '', // Optional notes/terms

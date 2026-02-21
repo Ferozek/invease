@@ -45,7 +45,7 @@ export default function InvoiceDetailsForm() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <div>
           <label htmlFor="invoiceDate" className="form-label form-label-required">Invoice Date</label>
           <input
@@ -57,6 +57,17 @@ export default function InvoiceDetailsForm() {
             onBlur={(e) => handleBlur('date', e.target.value)}
           />
           <FieldError error={touched.date ? errors.date : null} />
+        </div>
+        <div>
+          <label htmlFor="supplyDate" className="form-label">Supply Date</label>
+          <input
+            id="supplyDate"
+            type="date"
+            className="form-input"
+            value={details.supplyDate}
+            onChange={(e) => setInvoiceDetails({ supplyDate: e.target.value })}
+          />
+          <p className="text-xs text-[var(--text-muted)] mt-1">If different from invoice date</p>
         </div>
         <div>
           <label htmlFor="invoiceNumber" className="form-label form-label-required">Invoice Number</label>

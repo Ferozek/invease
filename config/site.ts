@@ -22,9 +22,10 @@ export const siteConfig = {
   // Feature flags for future expansion
   features: {
     multipleInvoices: false, // Future: manage multiple invoices
-    emailInvoice: false,     // Future: email directly
-    invoiceHistory: false,   // Future: localStorage history
+    emailInvoice: true,      // Web Share API (mobile) + mailto: (desktop)
+    invoiceHistory: true,    // localStorage history (implemented)
     logoUpload: true,        // Allow company logo upload
+    quickStart: true,        // Skip → straight to invoice with sample data
   },
 
   // VAT rates available (UK)
@@ -46,6 +47,7 @@ export const siteConfig = {
   // Contact for support (K&R)
   support: {
     email: 'info@kraccountants.com',
+    feedbackEmail: 'admin@kraccountants.com',
     website: 'https://kraccountants.com',
   },
 } as const;

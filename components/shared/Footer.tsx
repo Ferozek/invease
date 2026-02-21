@@ -44,6 +44,13 @@ export default function Footer() {
           >
             Accessibility
           </Link>
+          <a
+            href={`mailto:${siteConfig.support.feedbackEmail}?subject=Invease%20Feedback`}
+            className="text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)]
+              min-h-[44px] flex items-center transition-colors"
+          >
+            Send Feedback
+          </a>
         </nav>
 
         {/* Copyright & Attribution */}

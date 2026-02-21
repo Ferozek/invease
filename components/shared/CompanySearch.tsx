@@ -76,7 +76,16 @@ export default function CompanySearch({ onCompanySelected }: CompanySearchProps)
           </button>
         </div>
         <p className="text-xs text-[var(--text-muted)] mt-1">
-          Company details have been auto-filled from Companies House.
+          Company details auto-filled from Companies House.
+          Contains public sector information licensed under the{' '}
+          <a
+            href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            Open Government Licence v3.0
+          </a>.
         </p>
       </div>
     );
@@ -148,7 +157,15 @@ export default function CompanySearch({ onCompanySelected }: CompanySearchProps)
       )}
 
       <p className="text-xs text-[var(--text-muted)] mt-1">
-        Search for your registered company to auto-fill details.
+        Search for your registered company to auto-fill details. Data from{' '}
+        <a
+          href="https://developer.company-information.service.gov.uk/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline"
+        >
+          Companies House
+        </a>.
       </p>
     </div>
   );

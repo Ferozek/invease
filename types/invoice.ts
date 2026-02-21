@@ -42,6 +42,7 @@ export interface CreditNoteFields {
 
 export interface InvoiceDetails {
   date: string;
+  supplyDate: string; // Optional: date goods/services were supplied (HMRC tax point, if different from invoice date)
   invoiceNumber: string;
   paymentTerms: string; // Number of days, e.g., "30"
   notes: string; // Optional notes/terms for the invoice

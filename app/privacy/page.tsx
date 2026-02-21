@@ -21,7 +21,7 @@ export default function PrivacyPage() {
         <h1>Privacy Policy</h1>
 
         <p className="lead">
-          Last updated: {new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+          Last updated: February 2026
         </p>
 
         <h2>Overview</h2>
@@ -110,12 +110,38 @@ export default function PrivacyPage() {
           </a>.
         </p>
 
-        <h2>Your Rights (GDPR)</h2>
+        <h2>Lawful Basis for Processing</h2>
+        <p>
+          Under UK GDPR, we process your data on the basis of <strong>legitimate interests</strong>.
+          Specifically:
+        </p>
+        <ul>
+          <li>
+            <strong>Invoice generation:</strong> We process company, customer, and line item data
+            to generate the invoices you request. This data is processed entirely in your browser.
+          </li>
+          <li>
+            <strong>Companies House lookups:</strong> When you search for a company, we relay your
+            query to the Companies House public API to auto-fill business details.
+          </li>
+          <li>
+            <strong>Usage analytics:</strong> We collect anonymised page view data via Vercel
+            Analytics to improve the Service. No personal data is collected.
+          </li>
+        </ul>
+        <p>
+          We do not rely on consent as a lawful basis because no personal data is transmitted to
+          or stored on our servers. All invoice data remains in your browser.
+        </p>
+
+        <h2>Your Rights (UK GDPR)</h2>
         <p>Under UK GDPR, you have the right to:</p>
         <ul>
-          <li>Access your data (it&apos;s all in your browser&apos;s localStorage)</li>
-          <li>Delete your data (clear your browser data or use our app&apos;s reset function)</li>
-          <li>Data portability (export invoices as PDF or CSV)</li>
+          <li><strong>Access:</strong> Your data is stored in your browser&apos;s localStorage — you have direct access at all times</li>
+          <li><strong>Erasure:</strong> Clear your browser data or use the &quot;Start Over&quot; function in the app to delete all stored data</li>
+          <li><strong>Portability:</strong> Export invoices as PDF documents</li>
+          <li><strong>Object:</strong> You can stop using the Service at any time</li>
+          <li><strong>Complaint:</strong> See our complaints procedure below</li>
         </ul>
 
         <h2>Cookies</h2>
@@ -134,10 +160,50 @@ export default function PrivacyPage() {
           data from children under 16.
         </p>
 
+        <h2>Complaints Procedure</h2>
+        <p>
+          If you are unhappy with how we handle your data, please follow these steps:
+        </p>
+        <ol>
+          <li>
+            <strong>Contact us first:</strong> Email{' '}
+            <a href={`mailto:${siteConfig.support.email}`}>{siteConfig.support.email}</a> with
+            the subject &quot;Privacy Complaint&quot;. We aim to respond within 14 days.
+          </li>
+          <li>
+            <strong>Escalate if unresolved:</strong> If you are not satisfied with our response,
+            you have the right to lodge a complaint with the{' '}
+            <a
+              href="https://ico.org.uk/make-a-complaint/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Information Commissioner&apos;s Office (ICO)
+            </a>.
+          </li>
+        </ol>
+        <p className="text-sm">
+          <strong>Note:</strong> From June 2026, the ICO requires that you contact us first before
+          escalating a complaint.
+        </p>
+
+        <h2>Data Breach Procedure</h2>
+        <p>
+          Since all data is stored locally in your browser and never transmitted to our servers,
+          the risk of a data breach from our side is minimal. However, if we become aware of any
+          security incident affecting the Service, we will:
+        </p>
+        <ul>
+          <li>Notify affected users via the app and our website within 72 hours</li>
+          <li>Report to the ICO if required under UK GDPR</li>
+          <li>Take immediate steps to contain and remediate the issue</li>
+        </ul>
+
         <h2>Changes to This Policy</h2>
         <p>
-          We may update this policy from time to time. Changes will be posted on this page
-          with an updated date.
+          We may update this policy from time to time. Material changes will be posted on this
+          page with an updated date. We will provide at least 7 days&apos; notice before any
+          significant changes take effect.
         </p>
 
         <h2>Contact Us</h2>

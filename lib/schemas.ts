@@ -50,6 +50,7 @@ export const customerDetailsSchema = z.object({
 
 export const invoiceDetailsSchema = z.object({
   date: z.string().min(1, 'Invoice date is required'),
+  supplyDate: z.string().optional().default(''),
   invoiceNumber: z.string().min(1, 'Invoice number is required').max(50),
   paymentTerms: z.string().min(1, 'Payment terms required'),
   notes: z.string().max(2000).optional().default(''),

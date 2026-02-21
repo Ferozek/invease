@@ -21,7 +21,7 @@ export default function AccessibilityPage() {
         <h1>Accessibility Statement</h1>
 
         <p className="lead">
-          Last updated: {new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+          Last updated: February 2026
         </p>
 
         <h2>Our Commitment</h2>

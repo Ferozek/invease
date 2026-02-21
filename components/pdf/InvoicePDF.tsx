@@ -73,6 +73,9 @@ export default function InvoicePDF({ invoice, totals }: InvoicePDFProps) {
               </Text>
             )}
             <Text style={styles.invoiceDate}>Date: {formatDateUK(invoice.details.date)}</Text>
+            {invoice.details.supplyDate && invoice.details.supplyDate !== invoice.details.date && (
+              <Text style={styles.invoiceDate}>Supply Date: {formatDateUK(invoice.details.supplyDate)}</Text>
+            )}
             <Text style={styles.invoiceDate}>
               Due: {formatDateUK(calculateDueDate(invoice.details.date, invoice.details.paymentTerms))}
             </Text>
