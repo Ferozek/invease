@@ -21,3 +21,6 @@ Sentry.init({
     Sentry.replayIntegration(),
   ],
 });
+
+// Required by @sentry/nextjs for App Router navigation tracking
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
