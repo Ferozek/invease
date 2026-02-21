@@ -1,7 +1,8 @@
 /**
  * Button Component
  * Reusable button with brand-consistent styling
- * Variants: primary (red), secondary (blue), ghost (outline), muted (light blue)
+ * Variants: primary (blue), destructive (red), secondary (blue), ghost (outline), muted (light blue)
+ * Apple HIG: blue = action, red = destructive only
  */
 
 'use client';
@@ -10,7 +11,7 @@ import { ButtonHTMLAttributes, ReactNode, forwardRef } from 'react';
 import { hapticFeedback } from '@/lib/haptics';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'muted';
+  variant?: 'primary' | 'destructive' | 'secondary' | 'ghost' | 'muted';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   fullWidth?: boolean;
@@ -34,8 +35,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   // Haptic feedback on click (Apple HIG)
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (disabled || loading) return;
-    // Primary buttons get medium haptic, others get light
-    if (variant === 'primary') {
+    // Primary/destructive buttons get medium haptic, others get light
+    if (variant === 'primary' || variant === 'destructive') {
       hapticFeedback.medium();
     } else {
       hapticFeedback.light();
@@ -45,9 +46,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   // Base styles
   const baseStyles = 'cursor-pointer inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
 
-  // Variant styles
+  // Variant styles — Apple: blue = action, red = destructive only
   const variantStyles = {
-    primary: 'btn-primary bg-[var(--brand-red)] hover:bg-[#a31b24] text-white focus:ring-[var(--brand-red)]',
+    primary: 'btn-primary bg-[var(--cta-primary-bg)] hover:bg-[var(--cta-primary-hover)] text-white focus:ring-[var(--brand-blue)]',
+    destructive: 'btn-destructive bg-[var(--cta-destructive-bg)] hover:bg-[var(--cta-destructive-hover)] text-white focus:ring-[var(--brand-red)]',
     secondary: 'btn-secondary bg-[var(--brand-blue)] hover:bg-[#08436b] text-white focus:ring-[var(--brand-blue)]',
     ghost: 'btn-ghost border-2 border-[var(--brand-blue)] text-[var(--brand-blue)] hover:bg-[var(--brand-blue)] hover:text-white focus:ring-[var(--brand-blue)]',
     muted: 'btn-muted bg-[var(--brand-blue-50)] text-[var(--brand-blue)] hover:bg-[var(--brand-blue)] hover:text-white focus:ring-[var(--brand-blue)]',

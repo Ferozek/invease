@@ -11,11 +11,13 @@
   --brand-red-50: #fdecee;
   --brand-blue-50: #e9f1f6;
 
-  /* CTA colors */
-  --cta-primary-bg: #c61f2b;
-  --cta-primary-hover: #a31b24;
+  /* CTA colors — Apple: blue = action, red = destructive only */
+  --cta-primary-bg: #0b4f7a;
+  --cta-primary-hover: #08436b;
   --cta-secondary-bg: #0b4f7a;
   --cta-secondary-hover: #08436b;
+  --cta-destructive-bg: #c61f2b;
+  --cta-destructive-hover: #a31b24;
   --cta-ghost-border: #0b4f7a;
   --cta-muted-bg: rgba(11, 79, 122, 0.16);
   --cta-muted-hover-bg: rgba(11, 79, 122, 0.28);
@@ -170,11 +172,22 @@
 .btn-primary {
   background-color: var(--cta-primary-bg);
   color: #fff;
-  box-shadow: 0 2px 4px rgba(198, 31, 43, 0.2);
+  box-shadow: 0 2px 4px rgba(11, 79, 122, 0.2);
 }
 
 .btn-primary:hover:not(:disabled) {
   background-color: var(--cta-primary-hover);
+  box-shadow: 0 8px 16px rgba(11, 79, 122, 0.3);
+}
+
+.btn-destructive {
+  background-color: var(--cta-destructive-bg);
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(198, 31, 43, 0.2);
+}
+
+.btn-destructive:hover:not(:disabled) {
+  background-color: var(--cta-destructive-hover);
   box-shadow: 0 8px 16px rgba(198, 31, 43, 0.3);
 }
 
@@ -235,14 +248,14 @@
   position: relative;
   overflow: hidden;
   border-radius: 1rem;
-  border: 1px solid rgba(198, 31, 43, 0.28);
+  border: 1px solid rgba(11, 79, 122, 0.28);
   background-color: var(--surface-card);
-  background-image: linear-gradient(140deg, rgba(198, 31, 43, 0.1), rgba(11, 79, 122, 0.05), rgba(255, 255, 255, 0.9));
+  background-image: linear-gradient(140deg, rgba(11, 79, 122, 0.08), rgba(11, 79, 122, 0.03), rgba(255, 255, 255, 0.9));
   transition: transform 0.22s ease-out, box-shadow 0.22s ease-out, border-color 0.22s ease-out, background-color 0.3s ease;
 }
 
 .dark .card-accent {
-  background-image: linear-gradient(140deg, rgba(198, 31, 43, 0.15), rgba(11, 79, 122, 0.1), rgba(30, 41, 59, 0.9));
+  background-image: linear-gradient(140deg, rgba(11, 79, 122, 0.15), rgba(11, 79, 122, 0.08), rgba(30, 41, 59, 0.9));
 }
 
 .card-accent::before {
@@ -252,7 +265,7 @@
   left: 0;
   right: 0;
   height: 0.4rem;
-  background: linear-gradient(90deg, var(--cta-primary-bg), rgba(255, 255, 255, 0.8), rgba(11, 79, 122, 0.2));
+  background: linear-gradient(90deg, var(--cta-primary-bg), rgba(11, 79, 122, 0.3), rgba(255, 255, 255, 0.6));
   pointer-events: none;
   border-top-left-radius: inherit;
   border-top-right-radius: inherit;
@@ -262,7 +275,7 @@
 .card-accent:focus-within {
   transform: translateY(-3px);
   box-shadow: 0 18px 32px -18px rgba(15, 23, 42, 0.28);
-  border-color: rgba(198, 31, 43, 0.55);
+  border-color: rgba(11, 79, 122, 0.55);
 }
 
 /* ========== Shadow Utility ========== */
