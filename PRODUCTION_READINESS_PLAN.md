@@ -1,6 +1,6 @@
 # Production Readiness Plan
 
-## Current Score: 9.6/10 (Updated: 2026-02-21)
+## Current Score: 9.7/10 (Updated: 2026-02-21)
 
 ### Overview
 
@@ -90,10 +90,10 @@ This document outlines all remaining work to achieve full production readiness.
 - [x] Import shared formatters from `lib/formatters.ts` and `lib/dateUtils.ts`
 - [x] InvoicePDF.tsx reduced from 675 → ~250 lines
 
-### P1: Document Type Switch Confirmation [ ]
+### P1: Document Type Switch Confirmation ✅
 
-- [ ] Add confirmation dialog when switching Invoice ↔ Credit Note with data
-- [ ] Reuse existing ConfirmDialog component (no new components)
+- [x] Add confirmation dialog when switching Invoice ↔ Credit Note with data
+- [x] Reuse existing ConfirmDialog component (no new components)
 
 ### P2: Remaining Duplication Cleanup [ ]
 

@@ -65,6 +65,7 @@ export default function Home() {
   const showSuccess = successContext !== null;
   const [showNewInvoiceConfirm, setShowNewInvoiceConfirm] = useState(false);
   const [showResetAllConfirm, setShowResetAllConfirm] = useState(false);
+  const [pendingDocType, setPendingDocType] = useState<DocumentType | null>(null);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
@@ -157,8 +158,8 @@ export default function Home() {
     setInvoiceDetails({ invoiceNumber: nextNumber });
   }, [resetInvoice, isCisSubcontractor, consumeNextInvoiceNumber, setInvoiceDetails]);
 
-  // Handle document type toggle (Invoice <-> Credit Note)
-  const handleDocumentTypeChange = useCallback((type: DocumentType) => {
+  // Perform the actual document type switch
+  const performDocumentTypeSwitch = useCallback((type: DocumentType) => {
     // Dismiss stale success state if showing
     if (successContext) setSuccessContext(null);
 
@@ -182,6 +183,19 @@ export default function Home() {
       });
     }
   }, [successContext, consumeNextCreditNoteNumber, consumeNextInvoiceNumber, setInvoiceDetails]);
+
+  // Handle document type toggle (Invoice <-> Credit Note) — with confirmation if data exists
+  const handleDocumentTypeChange = useCallback((type: DocumentType) => {
+    const hasData = customer.name?.trim() ||
+      lineItems.some((item) => item.description?.trim() && item.netAmount > 0);
+
+    if (hasData) {
+      setPendingDocType(type);
+      return;
+    }
+
+    performDocumentTypeSwitch(type);
+  }, [customer.name, lineItems, performDocumentTypeSwitch]);
 
   // Create credit note from a saved invoice in history
   const handleCreateCreditNote = useCallback((saved: SavedInvoice) => {
@@ -277,11 +291,11 @@ export default function Home() {
       handleCreateCreditNote(saved);
     } else {
       // Fallback: just switch to credit note mode
-      handleDocumentTypeChange('credit_note');
+      performDocumentTypeSwitch('credit_note');
     }
 
     setSuccessContext(null);
-  }, [successContext, handleCreateCreditNote, handleDocumentTypeChange]);
+  }, [successContext, handleCreateCreditNote, performDocumentTypeSwitch]);
 
   const handleNewInvoice = useCallback(() => {
     const hasData = customer.name || customer.address || details.invoiceNumber || lineItems.some((item) => item.description);
@@ -611,6 +625,19 @@ export default function Home() {
         confirmText="Clear & Start New"
         cancelText="Keep Current"
         isDestructive
+      />
+
+      <ConfirmDialog
+        isOpen={pendingDocType !== null}
+        onClose={() => setPendingDocType(null)}
+        onConfirm={() => {
+          if (pendingDocType) performDocumentTypeSwitch(pendingDocType);
+          setPendingDocType(null);
+        }}
+        title={pendingDocType === 'credit_note' ? 'Switch to Credit Note?' : 'Switch to Invoice?'}
+        message="Your customer details and line items will be preserved, but the document number will change."
+        confirmText="Switch"
+        cancelText="Stay"
       />
 
       <ConfirmDialog
