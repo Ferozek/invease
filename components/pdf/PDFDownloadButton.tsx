@@ -156,14 +156,10 @@ const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
     const buttonDisabled = disabled || isGenerating || !isValid;
     const buttonText = isGenerating
       ? 'Generating PDF...'
-      : hasNoLineItems
-        ? 'Add line items to download'
-        : !isValid
-          ? 'Complete required fields'
-          : `Download ${docLabel} PDF`;
+      : `Download ${docLabel} PDF`;
 
     return (
-      <div className="space-y-2">
+      <div className="relative group">
         <Button
           ref={ref}
           variant="primary"
@@ -174,11 +170,20 @@ const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
         >
           {buttonText}
         </Button>
-        {/* Validation hint - shows when invalid but not generating */}
+        {/* Tooltip showing missing fields on hover when disabled */}
         {!isValid && !isGenerating && (
-          <p className="text-xs text-center text-[var(--text-muted)]">
-            {validationErrors.length} {validationErrors.length === 1 ? 'field' : 'fields'} missing
-          </p>
+          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2
+            bg-[var(--text-primary)] text-[var(--surface-card)] text-xs rounded-lg
+            opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none
+            whitespace-nowrap z-10 shadow-lg"
+            role="tooltip"
+          >
+            {validationErrors.length <= 3
+              ? validationErrors.join(' · ')
+              : `${validationErrors.length} fields need completing`
+            }
+            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[var(--text-primary)]" />
+          </div>
         )}
       </div>
     );

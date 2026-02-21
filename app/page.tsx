@@ -507,6 +507,7 @@ export default function Home() {
                   onOpenPreview={() => setShowPDFPreview(true)}
                   onOpenHistory={() => setShowHistoryPanel(true)}
                   onOpenSettings={() => setShowSettingsPanel(true)}
+                  onNewInvoice={handleNewInvoice}
                 />
 
                 <AnimatePresence mode="wait">
@@ -538,8 +539,8 @@ export default function Home() {
                       </div>
                       <InvoiceTotalsSection totals={totals} />
 
-                      {/* Actions */}
-                      <div className="mt-6 space-y-3">
+                      {/* Download CTA */}
+                      <div className="mt-6">
                         <PDFErrorBoundary>
                           <PDFDownloadButton
                             ref={pdfButtonRef}
@@ -548,28 +549,14 @@ export default function Home() {
                             onSuccess={handlePDFSuccess}
                           />
                         </PDFErrorBoundary>
-                        <Button variant="ghost" fullWidth onClick={handleNewInvoice}>
-                          {details.documentType === 'credit_note' ? 'New Credit Note' : 'New Invoice'}
-                        </Button>
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </Card>
 
-              {/* Help */}
-              <div className="mt-4 text-center text-sm text-slate-500 space-y-2">
-                <p>
-                  Free tool by{' '}
-                  <a
-                    href={siteConfig.support.website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[var(--brand-blue)] hover:underline"
-                  >
-                    K&R Accountants
-                  </a>
-                </p>
+              {/* Start Over — destructive, kept subtle */}
+              <div className="mt-3 text-center">
                 <button
                   type="button"
                   onClick={() => setShowResetAllConfirm(true)}
