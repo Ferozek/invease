@@ -3,13 +3,15 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { siteConfig } from '@/config/site';
 import { BUSINESS_TYPE_LABELS } from '@/config/constants';
 import PageHeader from '@/components/ui/PageHeader';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
+import { FormAccordionSection } from '@/components/ui/FormAccordion';
+import FormAccordion from '@/components/ui/FormAccordion';
 import { InvoiceIcon } from '@/components/ui/icons';
 import ErrorBoundary, { PDFErrorBoundary } from '@/components/ui/ErrorBoundary';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
@@ -19,6 +21,8 @@ import { useHistoryStore, type SavedInvoice } from '@/stores/historyStore';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useKeyboardShortcuts, APP_SHORTCUTS } from '@/hooks/useKeyboardShortcuts';
 import { useInvoiceData } from '@/hooks/useInvoiceData';
+import { useAccordion } from '@/hooks/useAccordion';
+import { useFormCompletion } from '@/hooks/useFormCompletion';
 import WelcomeSlides from '@/components/onboarding/WelcomeSlides';
 import OnboardingWizard from '@/components/wizard/OnboardingWizard';
 import { SAMPLE_COMPANY, SAMPLE_BANK_DETAILS, SAMPLE_CUSTOMER, SAMPLE_LINE_ITEM } from '@/config/sampleData';
@@ -347,6 +351,12 @@ export default function Home() {
     { ...APP_SHORTCUTS.REDO, action: redo },
   ]);
 
+  // ===== Accordion + Completion State =====
+  const completion = useFormCompletion();
+  const accordion = useAccordion({
+    sectionIds: ['customer', 'invoiceDetails', 'lineItems', 'bankDetails'],
+  });
+
   // ===== Render =====
 
   // Show welcome slides for first-time users
@@ -406,104 +416,84 @@ export default function Home() {
                 />
               )}
 
-              {/* Company Details - scroll fade-in */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.4, ease: 'easeOut' }}
-              >
-                <Card variant="plain" className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <h2 id="company-details-heading" className="text-xl font-semibold text-[var(--brand-blue)]">
-                        Your {businessTypeLabel} Details
-                      </h2>
-                      <Badge variant="info" size="sm">Saved</Badge>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={resetOnboarding}
-                      className="cursor-pointer text-sm text-slate-500 hover:text-[var(--brand-blue)] transition-colors"
-                    >
-                      Edit Details
-                    </button>
+              {/* Company Details — static card (read-only, not in accordion) */}
+              <Card variant="accent" className="p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <h2 id="company-details-heading" className="text-base font-semibold text-[var(--text-primary)]">
+                      Your {businessTypeLabel} Details
+                    </h2>
+                    <Badge variant="info" size="sm">Saved</Badge>
                   </div>
-                  <CompanyDetailsSummary />
-                </Card>
-              </motion.div>
+                  <button
+                    type="button"
+                    onClick={resetOnboarding}
+                    className="cursor-pointer text-sm text-slate-500 hover:text-[var(--brand-blue)] transition-colors"
+                  >
+                    Edit Details
+                  </button>
+                </div>
+                <CompanyDetailsSummary />
+              </Card>
 
-              {/* Customer Details - scroll fade-in */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.4, ease: 'easeOut', delay: 0.1 }}
-              >
-                <Card variant="plain" className="p-6">
-                  <h2 id="customer-details-heading" className="text-xl font-semibold text-[var(--brand-blue)] mb-4">Customer Details</h2>
+              {/* Accordion form — progressive disclosure (Apple HIG) */}
+              <FormAccordion activeSection={accordion.activeSection} onToggle={accordion.toggleSection}>
+                <FormAccordionSection
+                  id="customer"
+                  title="Customer Details"
+                  isOpen={accordion.activeSection === 'customer'}
+                  isComplete={completion.customer.isComplete}
+                  summary={completion.customer.summary}
+                  onToggle={accordion.toggleSection}
+                >
                   <CustomerDetailsForm />
-                </Card>
-              </motion.div>
+                </FormAccordionSection>
 
-              {/* Document Type Selector + Invoice Details - scroll fade-in */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.4, ease: 'easeOut', delay: 0.1 }}
-              >
-                <Card variant="plain" className="p-6">
+                <FormAccordionSection
+                  id="invoiceDetails"
+                  title={details.documentType === 'credit_note' ? 'Credit Note Details' : 'Invoice Details'}
+                  isOpen={accordion.activeSection === 'invoiceDetails'}
+                  isComplete={completion.invoiceDetails.isComplete}
+                  summary={completion.invoiceDetails.summary}
+                  onToggle={accordion.toggleSection}
+                >
                   <DocumentTypeSelector
                     documentType={details.documentType}
                     onTypeChange={handleDocumentTypeChange}
                   />
-                  <h2 id="invoice-details-heading" className={`text-xl font-semibold mb-4 ${
-                    details.documentType === 'credit_note' ? 'text-red-600' : 'text-[var(--brand-blue)]'
-                  }`}>
-                    {details.documentType === 'credit_note' ? 'Credit Note Details' : 'Invoice Details'}
-                  </h2>
                   <InvoiceDetailsForm />
-                </Card>
-              </motion.div>
+                </FormAccordionSection>
 
-              {/* Line Items - scroll fade-in */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.4, ease: 'easeOut', delay: 0.1 }}
-              >
-                <Card variant="plain" className="p-6">
-                  <h2 id="line-items-heading" className="text-xl font-semibold text-[var(--brand-blue)] mb-4">Line Items</h2>
+                <FormAccordionSection
+                  id="lineItems"
+                  title="Line Items"
+                  isOpen={accordion.activeSection === 'lineItems'}
+                  isComplete={completion.lineItems.isComplete}
+                  summary={completion.lineItems.summary}
+                  onToggle={accordion.toggleSection}
+                >
                   <LineItemsTable />
-                </Card>
-              </motion.div>
+                </FormAccordionSection>
 
-              {/* Bank Details - scroll fade-in */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.4, ease: 'easeOut', delay: 0.1 }}
-              >
-                <Card variant="plain" className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <h2 id="bank-details-heading" className="text-xl font-semibold text-[var(--brand-blue)]">Bank Details</h2>
-                      <Badge variant="neutral" size="sm">Optional</Badge>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={resetOnboarding}
-                      className="cursor-pointer text-sm text-slate-500 hover:text-[var(--brand-blue)] transition-colors"
-                    >
-                      Edit Details
-                    </button>
-                  </div>
+                <FormAccordionSection
+                  id="bankDetails"
+                  title="Bank Details"
+                  isOpen={accordion.activeSection === 'bankDetails'}
+                  isComplete={completion.bankDetails.isComplete}
+                  summary={completion.bankDetails.summary}
+                  variant="optional"
+                  onToggle={accordion.toggleSection}
+                >
                   <BankDetailsSummary />
-                </Card>
-              </motion.div>
+                  <button
+                    type="button"
+                    onClick={resetOnboarding}
+                    className="mt-3 cursor-pointer text-sm text-slate-500 hover:text-[var(--brand-blue)] transition-colors"
+                  >
+                    Edit Bank Details
+                  </button>
+                </FormAccordionSection>
+              </FormAccordion>
             </section>
 
             {/* Preview Column - complementary content */}
