@@ -1,4 +1,17 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+
+/**
+ * Helper: switch document type and handle confirmation dialog.
+ * Quick Start populates sample data, so the confirm dialog always appears.
+ */
+async function switchDocumentType(page: Page, target: 'Credit Note' | 'Invoice') {
+  await page.getByRole('radio', { name: target }).click();
+  // Handle the confirmation dialog that appears when data exists
+  const switchButton = page.getByRole('button', { name: 'Switch' });
+  if (await switchButton.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await switchButton.click();
+  }
+}
 
 /**
  * Credit Note E2E Tests
@@ -35,8 +48,8 @@ test.describe('Credit Note Feature', () => {
     const creditNoteButton = page.getByRole('radio', { name: 'Credit Note' });
     await expect(creditNoteButton).toBeVisible();
 
-    // Toggle to Credit Note
-    await creditNoteButton.click();
+    // Toggle to Credit Note (confirm dialog appears because Quick Start has sample data)
+    await switchDocumentType(page, 'Credit Note');
 
     // Section heading should change (use heading role for specificity)
     await expect(page.getByRole('heading', { name: 'Credit Note Details' })).toBeVisible();
@@ -52,11 +65,11 @@ test.describe('Credit Note Feature', () => {
 
   test('should switch back to invoice mode', async ({ page }) => {
     // Toggle to Credit Note first
-    await page.getByRole('radio', { name: 'Credit Note' }).click();
+    await switchDocumentType(page, 'Credit Note');
     await expect(page.getByRole('heading', { name: 'Credit Note Details' })).toBeVisible();
 
     // Toggle back to Invoice
-    await page.getByRole('radio', { name: 'Invoice' }).click();
+    await switchDocumentType(page, 'Invoice');
 
     // Should show Invoice Details heading again
     await expect(page.getByRole('heading', { name: 'Invoice Details' })).toBeVisible();
@@ -72,7 +85,7 @@ test.describe('Credit Note Feature', () => {
 
   test('should show credit note fields when in CN mode', async ({ page }) => {
     // Toggle to Credit Note
-    await page.getByRole('radio', { name: 'Credit Note' }).click();
+    await switchDocumentType(page, 'Credit Note');
 
     // Original invoice number field
     const origInvoiceInput = page.getByLabel('Original Invoice Number');
@@ -91,7 +104,7 @@ test.describe('Credit Note Feature', () => {
 
   test('should show credit note styling in preview', async ({ page }) => {
     // Toggle to Credit Note
-    await page.getByRole('radio', { name: 'Credit Note' }).click();
+    await switchDocumentType(page, 'Credit Note');
 
     // Preview toolbar heading should say Credit Note Preview
     const previewSection = page.getByLabel('Invoice preview');
@@ -108,7 +121,7 @@ test.describe('Credit Note Feature', () => {
     test.slow(); // PDF generation
 
     // Toggle to Credit Note
-    await page.getByRole('radio', { name: 'Credit Note' }).click();
+    await switchDocumentType(page, 'Credit Note');
 
     // Fill required CN field
     await page.getByLabel('Original Invoice Number').fill('INV-0001');
@@ -123,7 +136,7 @@ test.describe('Credit Note Feature', () => {
 
   test('should update New button text in credit note mode', async ({ page }) => {
     // Toggle to Credit Note
-    await page.getByRole('radio', { name: 'Credit Note' }).click();
+    await switchDocumentType(page, 'Credit Note');
 
     // New button should say "New Credit Note"
     await expect(page.getByRole('button', { name: 'New Credit Note' })).toBeVisible();
