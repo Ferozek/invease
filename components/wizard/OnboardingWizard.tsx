@@ -107,8 +107,9 @@ export default function OnboardingWizard() {
     }
   };
 
-  // Can skip step 3 (Tax & Compliance)
-  const canSkip = step === 3;
+  // Can skip step 3 (Tax & Compliance) and step 4 (Bank Details)
+  // Bank details are validated before PDF download, so safe to defer
+  const canSkip = step === 3 || step === 4;
 
   return (
     <div className="min-h-[calc(100vh-200px)] flex flex-col">

@@ -94,7 +94,7 @@ export default function BankDetailsStep() {
           Bank Details
         </h2>
         <p className="text-[var(--text-secondary)] mt-1">
-          Where customers should send payments
+          Optional — skip if you want to add these later
         </p>
       </div>
 
