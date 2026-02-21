@@ -11,6 +11,7 @@ export { default as ConfirmDialog } from './ConfirmDialog';
 export { default as ThemeToggle } from './ThemeToggle';
 export { default as FocusTrap } from './FocusTrap';
 export { default as CollapsibleSection } from './CollapsibleSection';
+export { default as FormAccordion, FormAccordionSection } from './FormAccordion';
 
 // Form Components
 export { default as FormField, FieldError } from './FormField';
