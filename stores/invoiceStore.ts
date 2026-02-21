@@ -12,6 +12,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { temporal, type TemporalState } from 'zundo';
 import type { CustomerDetails, InvoiceDetails, LineItem, VatRate, InvoiceTotals, CisStatus, CisCategory } from '@/types/invoice';
 import { getTodayISO } from '@/lib/dateUtils';
+import { getCisDeductionRate } from '@/lib/cisUtils';
 
 interface InvoiceState {
   // Customer details
@@ -64,16 +65,6 @@ const defaultInvoiceDetails: InvoiceDetails = {
   notes: '', // Optional notes/terms
   documentType: 'invoice',
   creditNoteFields: undefined,
-};
-
-// CIS deduction rates: 0% (gross), 20% (verified/standard), 30% (unverified)
-const getCisDeductionRate = (status: CisStatus): number => {
-  switch (status) {
-    case 'gross_payment': return 0;
-    case 'standard': return 0.20;
-    case 'unverified': return 0.30;
-    default: return 0;
-  }
 };
 
 const calculateTotals = (lineItems: LineItem[], cisStatus: CisStatus = 'not_applicable'): InvoiceTotals => {

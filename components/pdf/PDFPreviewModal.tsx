@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import InvoicePDF from './InvoicePDF';
 import logger from '@/lib/logger';
 import { getValidLineItems } from '@/lib/invoiceUtils';
+import { hasBankDetails } from '@/lib/bankDetailsUtils';
 import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
 
 interface PDFPreviewModalProps {
@@ -185,14 +186,9 @@ export default function PDFPreviewModal({
 
     const emailSubject = `${docLabel} ${invoiceNumber} from ${companyName}`;
 
-    const hasBankDetails = !!(
-      invoice.bankDetails.accountNumber?.trim() &&
-      invoice.bankDetails.sortCode?.trim() &&
-      invoice.bankDetails.accountName?.trim() &&
-      invoice.bankDetails.bankName?.trim()
-    );
+    const bankDetailsPresent = hasBankDetails(invoice.bankDetails);
 
-    const bankSection = hasBankDetails
+    const bankSection = bankDetailsPresent
       ? `\nBank Details for Payment:\n${invoice.bankDetails.bankName}\nAccount: ${invoice.bankDetails.accountNumber}\nSort Code: ${invoice.bankDetails.sortCode}\nReference: ${invoiceNumber}\n`
       : '\nPlease contact us directly for payment details.\n';
 

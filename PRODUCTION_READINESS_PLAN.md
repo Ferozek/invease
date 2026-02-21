@@ -1,6 +1,6 @@
 # Production Readiness Plan
 
-## Current Score: 9.5/10 (Updated: 2026-02-18)
+## Current Score: 9.6/10 (Updated: 2026-02-21)
 
 ### Overview
 
@@ -74,6 +74,36 @@ This document outlines all remaining work to achieve full production readiness.
 - [ ] Add structured data (JSON-LD)
 - [ ] Generate sitemap.xml
 - [ ] Add robots.txt
+
+---
+
+## Code Quality & Architecture Refactoring
+
+**Target: 10/10 (from 9.5/10)**
+
+### P0: InvoicePDF.tsx Monolith Split ✅
+
+- [x] Extract PDF styles to `components/pdf/pdfStyles.ts` (~328 lines)
+- [x] Create `lib/cisUtils.ts` — consolidated CIS logic (3 sources → 1)
+- [x] Create `lib/bankDetailsUtils.ts` — consolidated bank checks (3 sources → 1)
+- [x] Delete 8 duplicate helper functions from InvoicePDF.tsx
+- [x] Import shared formatters from `lib/formatters.ts` and `lib/dateUtils.ts`
+- [x] InvoicePDF.tsx reduced from 675 → ~250 lines
+
+### P1: Document Type Switch Confirmation [ ]
+
+- [ ] Add confirmation dialog when switching Invoice ↔ Credit Note with data
+- [ ] Reuse existing ConfirmDialog component (no new components)
+
+### P2: Remaining Duplication Cleanup [ ]
+
+- [ ] Replace 4x inline `toISOString().split('T')[0]` with `getTodayISO()`
+- [ ] Extract line item copy logic (3 copies) to `lib/invoiceUtils.ts`
+
+### P3: UX Polish [ ]
+
+- [ ] Add inline validation to credit note original invoice number field
+- [ ] Add A4 skeleton loading to PDF preview modal
 
 ---
 

@@ -11,6 +11,7 @@ import {
   getPaymentTermsText,
   getVatRateLabel,
 } from '@/lib/formatters';
+import { getCisStatusLabel } from '@/lib/cisUtils';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import type { InvoiceTotals } from '@/types/invoice';
 
@@ -188,16 +189,6 @@ export default function InvoicePreview({ totals }: InvoicePreviewProps) {
 interface InvoiceTotalsSectionProps {
   totals: InvoiceTotals;
 }
-
-// Helper to get CIS status label
-const getCisStatusLabel = (status: string): string => {
-  switch (status) {
-    case 'gross_payment': return 'Gross Payment (0%)';
-    case 'standard': return 'Verified (20%)';
-    case 'unverified': return 'Unverified (30%)';
-    default: return '';
-  }
-};
 
 export function InvoiceTotalsSection({ totals }: InvoiceTotalsSectionProps) {
   const { cisStatus } = useCompanyStore();

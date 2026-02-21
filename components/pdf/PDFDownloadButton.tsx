@@ -5,6 +5,7 @@ import { pdf } from '@react-pdf/renderer';
 import Button from '@/components/ui/Button';
 import { showInvoiceSuccess, handlePDFError, handleValidationError } from '@/lib/errorHandler';
 import { getValidLineItems } from '@/lib/invoiceUtils';
+import { hasPartialBankDetails } from '@/lib/bankDetailsUtils';
 import InvoicePDF from './InvoicePDF';
 import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
 
@@ -64,13 +65,7 @@ function validateInvoice(invoice: InvoiceData): string[] {
 
   // Bank details - fully optional (GDPR: data minimisation, fraud prevention)
   // If partially filled, validate completeness
-  const hasSomeBankDetails =
-    invoice.bankDetails.accountNumber?.trim() ||
-    invoice.bankDetails.sortCode?.trim() ||
-    invoice.bankDetails.accountName?.trim() ||
-    invoice.bankDetails.bankName?.trim();
-
-  if (hasSomeBankDetails) {
+  if (hasPartialBankDetails(invoice.bankDetails)) {
     if (!invoice.bankDetails.accountNumber?.trim()) {
       errors.push('Account number incomplete (or clear all bank details)');
     }

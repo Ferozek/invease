@@ -221,7 +221,7 @@ if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
 | Fix mobile Safari overflow      | ✅ Done | -        |
 | Fix Companies House API         | ✅ Done | -        |
 | Add Web Share API for mobile    | ✅ Done | -        |
-| Implement Quick Start mode      | 🔲 TODO | HIGH     |
+| Implement Quick Start mode      | ✅ Done | -        |
 | Add autoprefixer for CSS compat | 🔲 TODO | MEDIUM   |
 | Cross-browser testing           | 🔲 TODO | MEDIUM   |
 | Lighthouse audit (90+ scores)   | 🔲 TODO | MEDIUM   |
@@ -323,6 +323,15 @@ invease/
     └── sw.js               # Service worker
 ```
 
+### Architecture Improvements (P0–P3 Refactoring)
+
+| Stage | Description                                   | Status  | Score    |
+| ----- | --------------------------------------------- | ------- | -------- |
+| P0    | InvoicePDF.tsx monolith split (675→250 lines) | ✅ Done | 9.5→9.6  |
+| P1    | Document type switch confirmation             | 🔲 TODO | 9.6→9.7  |
+| P2    | Remaining duplication cleanup                 | 🔲 TODO | 9.7→9.8  |
+| P3    | UX polish (validation + loading)              | 🔲 TODO | 9.8→10.0 |
+
 ---
 
 ## Immediate Next Steps
@@ -351,14 +360,15 @@ invease/
 
 ## Decision Log
 
-| Date       | Decision                        | Rationale                                    | Made By           |
-| ---------- | ------------------------------- | -------------------------------------------- | ----------------- |
-| 2026-02-17 | Created strategy doc            | Need clarity before more dev                 | Team              |
-| 2026-02-17 | Use Web Share API for mobile    | Free, native, no backend                     | Research          |
-| 2026-02-17 | Prioritize Quick Start mode     | Fix main UX pain point                       | Research          |
-| 2026-02-17 | Expense tracking to backlog     | Not in initial scope                         | Stakeholder       |
-| 2026-02-17 | Implemented Web Share API       | Share button in PDF preview modal            | Dev               |
-| 2026-02-17 | Bank details opt-in persistence | Checkbox to remember locally, no auth needed | Stakeholder + Dev |
+| Date       | Decision                          | Rationale                                                                 | Made By           |
+| ---------- | --------------------------------- | ------------------------------------------------------------------------- | ----------------- |
+| 2026-02-17 | Created strategy doc              | Need clarity before more dev                                              | Team              |
+| 2026-02-17 | Use Web Share API for mobile      | Free, native, no backend                                                  | Research          |
+| 2026-02-17 | Prioritize Quick Start mode       | Fix main UX pain point                                                    | Research          |
+| 2026-02-17 | Expense tracking to backlog       | Not in initial scope                                                      | Stakeholder       |
+| 2026-02-17 | Implemented Web Share API         | Share button in PDF preview modal                                         | Dev               |
+| 2026-02-17 | Bank details opt-in persistence   | Checkbox to remember locally, no auth needed                              | Stakeholder + Dev |
+| 2026-02-21 | P0: Split InvoicePDF.tsx monolith | Reduce 675-line file, eliminate 3-way CIS duplication, extract bank utils | Dev               |
 
 ---
 
