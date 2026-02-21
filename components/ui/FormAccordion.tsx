@@ -70,15 +70,21 @@ export function FormAccordionSection({
 
   const isOptional = variant === 'optional';
 
+  // Visual hierarchy: completed sections get green left accent
+  const completedBorder = isComplete && !isOpen
+    ? 'border-l-[3px] border-l-green-400 dark:border-l-green-600'
+    : '';
+
   return (
     <div
       className={`
-        border rounded-xl overflow-hidden
+        border rounded-xl overflow-hidden bg-[var(--surface-card)]
         ${isOpen
-          ? 'border-[var(--brand-blue)]/30 shadow-sm'
+          ? 'border-[var(--brand-blue)]/30 shadow-md ring-1 ring-[var(--brand-blue)]/10'
           : 'border-[var(--surface-border)]'
         }
-        ${isOptional ? 'opacity-90' : ''}
+        ${isOptional && !isOpen ? 'opacity-80' : ''}
+        ${completedBorder}
         ${className}
       `}
     >
