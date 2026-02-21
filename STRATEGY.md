@@ -330,7 +330,7 @@ invease/
 | P0    | InvoicePDF.tsx monolith split (675→250 lines) | ✅ Done | 9.5→9.6  |
 | P1    | Document type switch confirmation             | ✅ Done | 9.6→9.7  |
 | P2    | Remaining duplication cleanup                 | ✅ Done | 9.7→9.8  |
-| P3    | UX polish (validation + loading)              | 🔲 TODO | 9.8→10.0 |
+| P3    | UX polish (validation + loading)              | ✅ Done | 9.8→10.0 |
 
 ---
 
@@ -360,17 +360,18 @@ invease/
 
 ## Decision Log
 
-| Date       | Decision                          | Rationale                                                                 | Made By           |
-| ---------- | --------------------------------- | ------------------------------------------------------------------------- | ----------------- |
-| 2026-02-17 | Created strategy doc              | Need clarity before more dev                                              | Team              |
-| 2026-02-17 | Use Web Share API for mobile      | Free, native, no backend                                                  | Research          |
-| 2026-02-17 | Prioritize Quick Start mode       | Fix main UX pain point                                                    | Research          |
-| 2026-02-17 | Expense tracking to backlog       | Not in initial scope                                                      | Stakeholder       |
-| 2026-02-17 | Implemented Web Share API         | Share button in PDF preview modal                                         | Dev               |
-| 2026-02-17 | Bank details opt-in persistence   | Checkbox to remember locally, no auth needed                              | Stakeholder + Dev |
-| 2026-02-21 | P0: Split InvoicePDF.tsx monolith | Reduce 675-line file, eliminate 3-way CIS duplication, extract bank utils | Dev               |
-| 2026-02-21 | P1: Doc type switch confirmation  | Prevent accidental data loss on Invoice↔Credit Note toggle                | Dev               |
-| 2026-02-21 | P2: Duplication cleanup           | Replace inline dates with getTodayISO(), extract copyLineItemsToStore     | Dev               |
+| Date       | Decision                             | Rationale                                                                    | Made By           |
+| ---------- | ------------------------------------ | ---------------------------------------------------------------------------- | ----------------- |
+| 2026-02-17 | Created strategy doc                 | Need clarity before more dev                                                 | Team              |
+| 2026-02-17 | Use Web Share API for mobile         | Free, native, no backend                                                     | Research          |
+| 2026-02-17 | Prioritize Quick Start mode          | Fix main UX pain point                                                       | Research          |
+| 2026-02-17 | Expense tracking to backlog          | Not in initial scope                                                         | Stakeholder       |
+| 2026-02-17 | Implemented Web Share API            | Share button in PDF preview modal                                            | Dev               |
+| 2026-02-17 | Bank details opt-in persistence      | Checkbox to remember locally, no auth needed                                 | Stakeholder + Dev |
+| 2026-02-21 | P0: Split InvoicePDF.tsx monolith    | Reduce 675-line file, eliminate 3-way CIS duplication, extract bank utils    | Dev               |
+| 2026-02-21 | P1: Doc type switch confirmation     | Prevent accidental data loss on Invoice↔Credit Note toggle                   | Dev               |
+| 2026-02-21 | P2: Duplication cleanup              | Replace inline dates with getTodayISO(), extract copyLineItemsToStore        | Dev               |
+| 2026-02-21 | P3: UX polish (validation + loading) | Inline validation on credit note fields, A4 skeleton loading for PDF preview | Dev               |
 
 ---
 
