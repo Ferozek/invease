@@ -1,6 +1,22 @@
 'use client';
 
-import { useState, useId } from 'react';
+import { useState, useId, useSyncExternalStore } from 'react';
+
+const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+
+function subscribePrefersReducedMotion(callback: () => void) {
+  const mql = window.matchMedia(REDUCED_MOTION_QUERY);
+  mql.addEventListener('change', callback);
+  return () => mql.removeEventListener('change', callback);
+}
+
+function getReducedMotionSnapshot() {
+  return window.matchMedia(REDUCED_MOTION_QUERY).matches;
+}
+
+function getReducedMotionServerSnapshot() {
+  return false;
+}
 
 interface CollapsibleSectionProps {
   title: string;
@@ -23,6 +39,11 @@ export default function CollapsibleSection({
   className = '',
 }: CollapsibleSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const prefersReducedMotion = useSyncExternalStore(
+    subscribePrefersReducedMotion,
+    getReducedMotionSnapshot,
+    getReducedMotionServerSnapshot,
+  );
   const contentId = useId();
 
   return (
@@ -46,9 +67,9 @@ export default function CollapsibleSection({
           viewBox="0 0 24 24"
           strokeWidth={2}
           stroke="currentColor"
-          className={`w-5 h-5 text-[var(--text-muted)] transition-transform duration-200 ${
-            isOpen ? 'rotate-180' : ''
-          }`}
+          className={`w-5 h-5 text-[var(--text-muted)] ${
+            prefersReducedMotion ? '' : 'transition-transform duration-200'
+          } ${isOpen ? 'rotate-180' : ''}`}
           aria-hidden="true"
         >
           <path
@@ -59,12 +80,14 @@ export default function CollapsibleSection({
         </svg>
       </button>
 
-      {/* Animated content area */}
+      {/* Animated content area - respects prefers-reduced-motion */}
       <div
         id={contentId}
         role="region"
         aria-labelledby={`${contentId}-label`}
-        className={`transition-all duration-200 ease-in-out ${
+        className={`${
+          prefersReducedMotion ? '' : 'transition-all duration-200 ease-in-out'
+        } ${
           isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
         }`}
       >

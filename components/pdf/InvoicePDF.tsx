@@ -49,6 +49,7 @@ export default function InvoicePDF({ invoice, totals }: InvoicePDFProps) {
         <View style={isCreditNote ? [styles.header, styles.creditNoteHeader] : styles.header}>
           <View style={styles.companySection}>
             {invoice.invoicer.logo && (
+              // eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image doesn't support alt
               <Image src={invoice.invoicer.logo} style={styles.logo} />
             )}
             <Text style={styles.companyName}>{invoice.invoicer.companyName}</Text>
@@ -188,10 +189,12 @@ export default function InvoicePDF({ invoice, totals }: InvoicePDFProps) {
           )}
         </View>
 
-        {/* Payment Details - bank details or security note */}
+        {/* Payment Details - prominent section for bank transfers */}
         {bankDetailsPresent ? (
           <View style={styles.bankSection}>
-            <Text style={styles.bankTitle}>Payment Details</Text>
+            <Text style={styles.bankTitle}>
+              {isCreditNote ? 'Refund Details' : 'Payment Details — Bank Transfer'}
+            </Text>
             <View style={styles.bankGrid}>
               <View style={styles.bankItem}>
                 <Text style={styles.bankLabel}>Account Name</Text>
@@ -202,23 +205,33 @@ export default function InvoicePDF({ invoice, totals }: InvoicePDFProps) {
                 <Text style={styles.bankValue}>{invoice.bankDetails.bankName}</Text>
               </View>
               <View style={styles.bankItem}>
-                <Text style={styles.bankLabel}>Account Number</Text>
-                <Text style={styles.bankValue}>{invoice.bankDetails.accountNumber}</Text>
-              </View>
-              <View style={styles.bankItem}>
                 <Text style={styles.bankLabel}>Sort Code</Text>
                 <Text style={styles.bankValue}>{invoice.bankDetails.sortCode}</Text>
               </View>
-              {invoice.bankDetails.reference && (
-                <View style={[styles.bankItem, { width: '100%' }]}>
-                  <Text style={styles.bankLabel}>Reference</Text>
-                  <Text style={styles.bankValue}>{invoice.bankDetails.reference}</Text>
-                </View>
-              )}
+              <View style={styles.bankItem}>
+                <Text style={styles.bankLabel}>Account Number</Text>
+                <Text style={styles.bankValue}>{invoice.bankDetails.accountNumber}</Text>
+              </View>
             </View>
+            {/* Payment reference — auto-generated from invoice number */}
+            <View style={styles.bankReferenceRow}>
+              <Text style={styles.bankReferenceLabel}>Payment Reference</Text>
+              <Text style={styles.bankReferenceValue}>
+                {invoice.bankDetails.reference || invoice.details.invoiceNumber}
+              </Text>
+            </View>
+            {/* Amount due — repeated here so payer doesn't need to scroll back */}
+            {!isCreditNote && (
+              <View style={styles.bankAmountDue}>
+                <Text style={styles.bankAmountLabel}>Amount Due</Text>
+                <Text style={styles.bankAmountValue}>
+                  {formatCurrency(isCis && cisDeduction > 0 ? netPayable : totals.total)}
+                </Text>
+              </View>
+            )}
           </View>
         ) : (
-          <View style={styles.bankSection}>
+          <View style={[styles.bankSection, { borderColor: '#e2e8f0', backgroundColor: '#f8fafc' }]}>
             <Text style={styles.bankTitle}>Payment Information</Text>
             <Text style={styles.paymentNote}>
               {invoice.details.notes?.includes('payment')

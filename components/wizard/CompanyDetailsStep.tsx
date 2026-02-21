@@ -87,6 +87,7 @@ export default function CompanyDetailsStep({
           <label className="form-label form-label-required">{getNameLabel()}</label>
           <input
             type="text"
+            autoComplete="organization"
             className="form-input"
             placeholder={`Your ${getNameLabel().toLowerCase()}`}
             value={companyName}
@@ -113,6 +114,7 @@ export default function CompanyDetailsStep({
           <label className="form-label form-label-required">Post Code</label>
           <input
             type="text"
+            autoComplete="postal-code"
             className="form-input"
             placeholder="e.g., SW1A 1AA"
             value={postCode}
@@ -124,6 +126,7 @@ export default function CompanyDetailsStep({
         <div className={businessType === 'limited_company' ? '' : 'md:col-span-2'}>
           <label className="form-label form-label-required">Address</label>
           <textarea
+            autoComplete="street-address"
             className="form-input"
             rows={3}
             placeholder="Your business address"

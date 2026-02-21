@@ -26,6 +26,7 @@ export const siteConfig = {
     invoiceHistory: true,    // localStorage history (implemented)
     logoUpload: true,        // Allow company logo upload
     quickStart: true,        // Skip → straight to invoice with sample data
+    dashboard: true,         // Dashboard summary card on main page
   },
 
   // VAT rates available (UK)

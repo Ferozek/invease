@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 interface EmptyStateProps {
   /** Icon to display */
@@ -33,6 +33,8 @@ export default function EmptyState({
   action,
   size = 'md',
 }: EmptyStateProps) {
+  const prefersReducedMotion = useReducedMotion();
+
   const sizeClasses = {
     sm: 'py-6 px-4',
     md: 'py-10 px-6',
@@ -56,13 +58,17 @@ export default function EmptyState({
       {icon && (
         <motion.div
           className={`${iconSizeClasses[size]} text-[var(--text-muted)] mb-4`}
-          animate={{ y: [0, -4, 0] }}
-          transition={{
-            repeat: Infinity,
-            duration: 3,
-            ease: 'easeInOut',
-          }}
-          style={{ willChange: 'transform' }}
+          animate={prefersReducedMotion ? {} : { y: [0, -4, 0] }}
+          transition={
+            prefersReducedMotion
+              ? {}
+              : {
+                  repeat: Infinity,
+                  duration: 3,
+                  ease: 'easeInOut',
+                }
+          }
+          style={prefersReducedMotion ? {} : { willChange: 'transform' }}
         >
           {icon}
         </motion.div>

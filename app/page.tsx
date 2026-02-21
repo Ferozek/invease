@@ -38,7 +38,8 @@ import {
 import { getTodayISO } from '@/lib/dateUtils';
 import { copyLineItemsToStore } from '@/lib/invoiceUtils';
 import type { DocumentType } from '@/types/invoice';
-import InvoiceHistoryPanel from '@/components/invoice/InvoiceHistoryPanel';
+import InvoiceHistoryPanel, { type StatusFilter } from '@/components/invoice/InvoiceHistoryPanel';
+import DashboardSummary from '@/components/dashboard/DashboardSummary';
 import SettingsPanel from '@/components/settings/SettingsPanel';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import Footer from '@/components/shared/Footer';
@@ -69,6 +70,7 @@ export default function Home() {
   const [showResetAllConfirm, setShowResetAllConfirm] = useState(false);
   const [pendingDocType, setPendingDocType] = useState<DocumentType | null>(null);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
+  const [historyStatusFilter, setHistoryStatusFilter] = useState<StatusFilter | undefined>(undefined);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
 
@@ -390,6 +392,20 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Form Column - primary content */}
             <section aria-label="Invoice form" className="lg:col-span-2 space-y-6">
+              {/* Dashboard Summary - above the form (Apple Wallet style) */}
+              {siteConfig.features.dashboard && (
+                <DashboardSummary
+                  onViewAll={() => {
+                    setHistoryStatusFilter(undefined);
+                    setShowHistoryPanel(true);
+                  }}
+                  onViewOverdue={() => {
+                    setHistoryStatusFilter('overdue');
+                    setShowHistoryPanel(true);
+                  }}
+                />
+              )}
+
               {/* Company Details - scroll fade-in */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -619,9 +635,13 @@ export default function Home() {
 
       <InvoiceHistoryPanel
         isOpen={showHistoryPanel}
-        onClose={() => setShowHistoryPanel(false)}
+        onClose={() => {
+          setShowHistoryPanel(false);
+          setHistoryStatusFilter(undefined);
+        }}
         onDuplicate={handleDuplicateInvoice}
         onCreateCreditNote={handleCreateCreditNote}
+        initialStatusFilter={historyStatusFilter}
       />
 
       <SettingsPanel

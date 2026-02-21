@@ -3,42 +3,57 @@
 import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHistoryStore, type SavedInvoice } from '@/stores/historyStore';
-import { formatCurrency } from '@/lib/formatters';
-import Button from '@/components/ui/Button';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import type { DocumentType } from '@/types/invoice';
+import InvoiceHistoryItem, { PEEK_HINT_KEY } from './InvoiceHistoryItem';
+import CustomerMergePanel from './CustomerMergePanel';
 
 type FilterTab = 'all' | 'invoice' | 'credit_note';
+export type StatusFilter = 'all' | 'unpaid' | 'overdue' | 'paid';
 
 interface InvoiceHistoryPanelProps {
   isOpen: boolean;
   onClose: () => void;
   onDuplicate: (invoice: SavedInvoice) => void;
   onCreateCreditNote?: (invoice: SavedInvoice) => void;
+  initialStatusFilter?: StatusFilter;
 }
 
 /**
- * Invoice History Panel
- * Slide-out panel showing saved invoices with search
+ * Invoice History Panel — slide-out panel showing saved invoices with search
  *
- * Apple-style design:
- * - Slide from right
- * - Search with instant filtering
- * - Grouped by date
+ * Orchestrates: search, filtering, grouping, delete confirmation
+ * Delegates: item rendering → InvoiceHistoryItem, payment UI → PaymentStatusRow
  */
 export default function InvoiceHistoryPanel({
   isOpen,
   onClose,
   onDuplicate,
   onCreateCreditNote,
+  initialStatusFilter,
 }: InvoiceHistoryPanelProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTab, setFilterTab] = useState<FilterTab>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(initialStatusFilter || 'all');
   const [invoiceToDelete, setInvoiceToDelete] = useState<SavedInvoice | null>(null);
+  const [showMergePanel, setShowMergePanel] = useState(false);
   const invoices = useHistoryStore((state) => state.invoices);
   const deleteInvoice = useHistoryStore((state) => state.deleteInvoice);
+  const markAsPaid = useHistoryStore((state) => state.markAsPaid);
+  const markAsUnpaid = useHistoryStore((state) => state.markAsUnpaid);
 
-  // Handle delete with confirmation
+  // Derive state from props — official React pattern for adjusting state when props change
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen && initialStatusFilter) {
+      setStatusFilter(initialStatusFilter);
+    }
+    if (!isOpen) {
+      setSearchQuery('');
+      setStatusFilter(initialStatusFilter || 'all');
+    }
+  }
+
   const handleDeleteRequest = useCallback((invoice: SavedInvoice) => {
     setInvoiceToDelete(invoice);
   }, []);
@@ -50,18 +65,58 @@ export default function InvoiceHistoryPanel({
     }
   }, [invoiceToDelete, deleteInvoice]);
 
-  // Filter invoices by search query and tab
+  // Count badges for document type tabs
+  const docTypeCounts = useMemo(() => {
+    let invoiceCount = 0;
+    let creditNoteCount = 0;
+    for (const inv of invoices) {
+      if (inv.documentType === 'credit_note') creditNoteCount++;
+      else invoiceCount++;
+    }
+    return { all: invoices.length, invoice: invoiceCount, credit_note: creditNoteCount };
+  }, [invoices]);
+
+  // Count badges for status tabs
+  const statusCounts = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    let docFiltered = invoices;
+    if (filterTab === 'invoice') {
+      docFiltered = invoices.filter((inv) => (inv.documentType || 'invoice') === 'invoice');
+    } else if (filterTab === 'credit_note') {
+      docFiltered = invoices.filter((inv) => inv.documentType === 'credit_note');
+    }
+
+    let unpaid = 0, overdue = 0, paid = 0;
+    for (const inv of docFiltered) {
+      if (inv.documentType === 'credit_note') continue;
+      if (inv.status === 'paid') paid++;
+      else if (inv.dueDate && inv.dueDate < today) { overdue++; unpaid++; }
+      else unpaid++;
+    }
+    return { all: docFiltered.length, unpaid, overdue, paid };
+  }, [invoices, filterTab]);
+
+  // Filter invoices
   const filteredInvoices = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
     let results = invoices;
 
-    // Filter by document type tab
     if (filterTab === 'invoice') {
       results = results.filter((inv) => (inv.documentType || 'invoice') === 'invoice');
     } else if (filterTab === 'credit_note') {
       results = results.filter((inv) => inv.documentType === 'credit_note');
     }
 
-    // Filter by search query
+    if (statusFilter !== 'all') {
+      results = results.filter((inv) => {
+        if (inv.documentType === 'credit_note') return false;
+        if (statusFilter === 'paid') return inv.status === 'paid';
+        if (statusFilter === 'overdue') return (inv.status || 'unpaid') === 'unpaid' && inv.dueDate && inv.dueDate < today;
+        if (statusFilter === 'unpaid') return (inv.status || 'unpaid') === 'unpaid';
+        return true;
+      });
+    }
+
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       results = results.filter(
@@ -72,7 +127,19 @@ export default function InvoiceHistoryPanel({
     }
 
     return results;
-  }, [invoices, searchQuery, filterTab]);
+  }, [invoices, searchQuery, filterTab, statusFilter]);
+
+  // Peek hint for first unpaid invoice
+  const peekHintId = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      if (localStorage.getItem(PEEK_HINT_KEY) === 'true') return null;
+    } catch { return null; }
+    const firstUnpaid = filteredInvoices.find(
+      (inv) => (inv.documentType || 'invoice') !== 'credit_note' && (inv.status || 'unpaid') === 'unpaid'
+    );
+    return firstUnpaid?.id ?? null;
+  }, [filteredInvoices]);
 
   // Group by month
   const groupedInvoices = useMemo(() => {
@@ -106,47 +173,45 @@ export default function InvoiceHistoryPanel({
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="fixed top-0 right-0 h-full w-full max-w-md
-              bg-[var(--surface-card)] shadow-2xl z-50
-              flex flex-col"
+              bg-[var(--surface-card)] shadow-2xl z-50 flex flex-col"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-[var(--surface-border)]">
-              <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-                History
-              </h2>
-              <button
-                type="button"
-                onClick={onClose}
-                className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
-                aria-label="Close"
-              >
-                <svg
-                  className="w-5 h-5 text-[var(--text-muted)]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
+              <h2 className="text-lg font-semibold text-[var(--text-primary)]">History</h2>
+              <div className="flex items-center gap-1">
+                {/* Customers / Merge button */}
+                {invoices.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowMergePanel(true)}
+                    className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
+                    aria-label="Manage customers"
+                    title="Customers"
+                  >
+                    <svg className="w-5 h-5 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-1.997M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                    </svg>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
+                  aria-label="Close"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+                  <svg className="w-5 h-5 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
-            {/* Search + Filter */}
+            {/* Search + Filters */}
             <div className="p-4 border-b border-[var(--surface-border)] space-y-3">
+              {/* Search */}
               <div className="relative">
-                <svg
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                  />
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
                 <input
                   type="text"
@@ -161,19 +226,22 @@ export default function InvoiceHistoryPanel({
                 />
               </div>
 
-              {/* Filter tabs */}
-              <div className="flex rounded-lg bg-[var(--surface-elevated)] p-0.5" role="tablist">
+              {/* Document type filter tabs */}
+              <div className="flex rounded-lg bg-[var(--surface-elevated)] p-0.5" role="tablist" aria-label="Document type">
                 {([
                   { id: 'all' as FilterTab, label: 'All' },
                   { id: 'invoice' as FilterTab, label: 'Invoices' },
                   { id: 'credit_note' as FilterTab, label: 'Credit Notes' },
-                ]).map((tab) => (
+                ] as const).map((tab) => (
                   <button
                     key={tab.id}
                     type="button"
                     role="tab"
                     aria-selected={filterTab === tab.id}
-                    onClick={() => setFilterTab(tab.id)}
+                    onClick={() => {
+                      setFilterTab(tab.id);
+                      if (tab.id === 'credit_note') setStatusFilter('all');
+                    }}
                     className={`cursor-pointer flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
                       filterTab === tab.id
                         ? 'bg-[var(--surface-card)] text-[var(--text-primary)] shadow-sm'
@@ -181,37 +249,65 @@ export default function InvoiceHistoryPanel({
                     }`}
                   >
                     {tab.label}
+                    {docTypeCounts[tab.id] > 0 && (
+                      <span className={`ml-1 ${filterTab === tab.id ? 'text-[var(--text-muted)]' : ''}`}>
+                        ({docTypeCounts[tab.id]})
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>
+
+              {/* Status filter tabs — hidden for credit notes */}
+              {filterTab !== 'credit_note' && (
+                <div className="flex rounded-lg bg-[var(--surface-elevated)] p-0.5" role="tablist" aria-label="Payment status">
+                  {([
+                    { id: 'all' as StatusFilter, label: 'All' },
+                    { id: 'unpaid' as StatusFilter, label: 'Unpaid' },
+                    { id: 'overdue' as StatusFilter, label: 'Overdue' },
+                    { id: 'paid' as StatusFilter, label: 'Paid' },
+                  ] as const).map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={statusFilter === tab.id}
+                      onClick={() => setStatusFilter(tab.id)}
+                      className={`cursor-pointer flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all ${
+                        statusFilter === tab.id
+                          ? tab.id === 'overdue'
+                            ? 'bg-[var(--surface-card)] text-[#FF3B30] dark:text-[#FF453A] shadow-sm'
+                            : 'bg-[var(--surface-card)] text-[var(--text-primary)] shadow-sm'
+                          : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
+                      }`}
+                    >
+                      {tab.label}
+                      {tab.id !== 'all' && statusCounts[tab.id] > 0 && (
+                        <span className={`ml-1 ${
+                          statusFilter === tab.id
+                            ? tab.id === 'overdue' ? 'text-[#FF3B30]/70 dark:text-[#FF453A]/70' : 'text-[var(--text-muted)]'
+                            : ''
+                        }`}>
+                          ({statusCounts[tab.id]})
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Invoice List */}
             <div className="flex-1 overflow-y-auto">
               {Object.keys(groupedInvoices).length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                  {/* Floating animation for empty state icon */}
                   <motion.div
                     animate={{ y: [0, -6, 0] }}
-                    transition={{
-                      repeat: Infinity,
-                      duration: 2.5,
-                      ease: 'easeInOut',
-                    }}
+                    transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
                     className="w-16 h-16 rounded-full bg-[var(--surface-elevated)] flex items-center justify-center mb-4"
                   >
-                    <svg
-                      className="w-8 h-8 text-[var(--text-muted)]"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-                      />
+                    <svg className="w-8 h-8 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                     </svg>
                   </motion.div>
                   <p className="text-[var(--text-secondary)] font-medium">No invoices yet</p>
@@ -220,45 +316,36 @@ export default function InvoiceHistoryPanel({
                   </p>
                 </div>
               ) : (
-                Object.entries(groupedInvoices).map(([month, invoices]) => (
+                Object.entries(groupedInvoices).map(([month, monthInvoices]) => (
                   <div key={month}>
-                    {/* Month header */}
                     <div className="px-4 py-2 bg-[var(--surface-elevated)] sticky top-0">
                       <p className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide">
                         {month}
                       </p>
                     </div>
-
-                    {/* Invoices in month - staggered animation */}
                     <motion.div
                       initial="hidden"
                       animate="visible"
-                      variants={{
-                        visible: {
-                          transition: {
-                            staggerChildren: 0.05,
-                          },
-                        },
-                      }}
+                      variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
                     >
-                      {invoices.map((inv, index) => (
+                      {monthInvoices.map((inv) => (
                         <motion.div
                           key={inv.id}
-                          variants={{
-                            hidden: { opacity: 0, x: 20 },
-                            visible: { opacity: 1, x: 0 },
-                          }}
+                          variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }}
                           transition={{ duration: 0.2 }}
                         >
                           <InvoiceHistoryItem
                             invoice={inv}
                             onDuplicate={() => onDuplicate(inv)}
                             onDelete={() => handleDeleteRequest(inv)}
+                            onMarkAsPaid={() => markAsPaid(inv.id)}
+                            onMarkAsUnpaid={() => markAsUnpaid(inv.id)}
                             onCreateCreditNote={
                               onCreateCreditNote && (inv.documentType || 'invoice') === 'invoice'
                                 ? () => onCreateCreditNote(inv)
                                 : undefined
                             }
+                            showPeekHint={inv.id === peekHintId}
                           />
                         </motion.div>
                       ))}
@@ -280,174 +367,14 @@ export default function InvoiceHistoryPanel({
             cancelText="Keep"
             isDestructive
           />
+
+          {/* Customer Merge Panel */}
+          <CustomerMergePanel
+            isOpen={showMergePanel}
+            onClose={() => setShowMergePanel(false)}
+          />
         </>
       )}
     </AnimatePresence>
-  );
-}
-
-// ===== Invoice Item Component =====
-
-interface InvoiceHistoryItemProps {
-  invoice: SavedInvoice;
-  onDuplicate: () => void;
-  onDelete: () => void;
-  onCreateCreditNote?: () => void;
-}
-
-// Swipe threshold to reveal delete button
-const SWIPE_THRESHOLD = -80;
-const DELETE_BUTTON_WIDTH = 80;
-
-function InvoiceHistoryItem({ invoice, onDuplicate, onDelete, onCreateCreditNote }: InvoiceHistoryItemProps) {
-  const isCreditNote = (invoice.documentType || 'invoice') === 'credit_note';
-  const [showActions, setShowActions] = useState(false);
-  const [swipeOffset, setSwipeOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-
-  const formattedDate = new Date(invoice.savedAt).toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-  });
-
-  // Reset swipe when clicking elsewhere
-  const handleResetSwipe = useCallback(() => {
-    setSwipeOffset(0);
-  }, []);
-
-  return (
-    <div className="relative overflow-hidden">
-      {/* Delete action revealed on swipe - Apple iOS style */}
-      <div
-        className="absolute right-0 top-0 h-full flex items-stretch"
-        style={{ width: DELETE_BUTTON_WIDTH }}
-      >
-        <button
-          type="button"
-          onClick={() => {
-            handleResetSwipe();
-            onDelete();
-          }}
-          className="cursor-pointer flex-1 flex items-center justify-center bg-red-500 text-white transition-colors hover:bg-red-600"
-          aria-label="Delete invoice"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-          </svg>
-        </button>
-      </div>
-
-      {/* Swipeable content */}
-      <motion.div
-        drag="x"
-        dragConstraints={{ left: -DELETE_BUTTON_WIDTH, right: 0 }}
-        dragElastic={0.1}
-        dragMomentum={false}
-        onDragStart={() => setIsDragging(true)}
-        onDrag={(_, info) => {
-          setSwipeOffset(Math.min(0, info.offset.x));
-        }}
-        onDragEnd={(_, info) => {
-          setIsDragging(false);
-          // Snap to revealed or hidden state
-          if (info.offset.x < SWIPE_THRESHOLD) {
-            setSwipeOffset(-DELETE_BUTTON_WIDTH);
-          } else {
-            setSwipeOffset(0);
-          }
-        }}
-        animate={{ x: swipeOffset }}
-        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-        className="px-4 py-3 border-b border-[var(--surface-border)] hover:bg-[var(--surface-elevated)]
-          transition-colors relative bg-[var(--surface-card)] touch-pan-y"
-        onMouseEnter={() => !isDragging && setShowActions(true)}
-        onMouseLeave={() => setShowActions(false)}
-        onClick={() => swipeOffset !== 0 && handleResetSwipe()}
-      >
-        <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="font-medium text-[var(--text-primary)] truncate">
-                {invoice.customerName}
-              </p>
-              {isCreditNote && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 font-semibold">
-                  CN
-                </span>
-              )}
-              <span className="text-xs px-1.5 py-0.5 rounded bg-[var(--surface-elevated)] text-[var(--text-muted)]">
-                #{invoice.invoiceNumber}
-              </span>
-            </div>
-            <p className="text-sm text-[var(--text-muted)] mt-0.5">
-              {formattedDate} · {formatCurrency(invoice.total)}
-            </p>
-          </div>
-
-          {/* Desktop actions - 44px touch targets per Apple HIG */}
-          <div className={`hidden sm:flex items-center transition-opacity ${showActions ? 'opacity-100' : 'opacity-0'}`}>
-            {onCreateCreditNote && (
-              <button
-                type="button"
-                onClick={onCreateCreditNote}
-                className="cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-colors"
-                aria-label="Create credit note"
-                title="Create Credit Note"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={onDuplicate}
-              className="cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-[var(--brand-blue-50)] text-[var(--brand-blue)] transition-colors"
-              aria-label="Duplicate invoice"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={onDelete}
-              className="cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-colors"
-              aria-label="Delete invoice"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Mobile: action buttons always visible, swipe for delete */}
-          <div className="sm:hidden flex items-center">
-            {onCreateCreditNote && (
-              <button
-                type="button"
-                onClick={onCreateCreditNote}
-                className="cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-red-500"
-                aria-label="Create credit note"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={onDuplicate}
-              className="cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-[var(--brand-blue)]"
-              aria-label="Duplicate invoice"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    </div>
   );
 }

@@ -47,7 +47,7 @@ export default function InfoIcon({
     <Tooltip content={tooltipContent}>
       <button
         type="button"
-        className="inline-flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--brand-blue)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/20 rounded-full p-0.5"
+        className="inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-[var(--text-muted)] hover:text-[var(--brand-blue)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]/20 rounded-full"
         aria-label="More information"
       >
         <svg
