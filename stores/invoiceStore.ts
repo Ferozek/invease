@@ -35,6 +35,8 @@ interface InvoiceState {
   addLineItem: (isCis?: boolean) => void;
   removeLineItem: (id: string) => void;
   updateLineItem: (id: string, updates: Partial<Omit<LineItem, 'id'>>) => void;
+  reorderLineItems: (newOrder: LineItem[]) => void;
+  moveLineItem: (fromIndex: number, direction: 'up' | 'down') => void;
 
   // Actions - Reset
   resetInvoice: (isCis?: boolean) => void;
@@ -172,6 +174,16 @@ export const useInvoiceStore = create<InvoiceState>()(
             item.id === id ? { ...item, ...updates } : item
           ),
         })),
+
+        reorderLineItems: (newOrder) => set({ lineItems: newOrder }),
+
+        moveLineItem: (fromIndex, direction) => set((state) => {
+          const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
+          if (toIndex < 0 || toIndex >= state.lineItems.length) return state;
+          const items = [...state.lineItems];
+          [items[fromIndex], items[toIndex]] = [items[toIndex], items[fromIndex]];
+          return { lineItems: items };
+        }),
 
         resetInvoice: (isCis = false) => {
           const settings = useSettingsStore.getState();

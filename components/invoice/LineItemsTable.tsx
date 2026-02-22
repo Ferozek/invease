@@ -13,18 +13,26 @@ import type { LineItem, VatRate, CisCategory, DiscountType } from '@/types/invoi
 
 interface LineItemRowProps {
   item: LineItem;
+  index: number;
   isCis: boolean;
   canDelete: boolean;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
   onUpdate: (id: string, updates: Partial<LineItem>) => void;
   onRemove: (id: string) => void;
+  onMove: (index: number, direction: 'up' | 'down') => void;
 }
 
 const LineItemRow = memo(function LineItemRow({
   item,
+  index,
   isCis,
   canDelete,
+  canMoveUp,
+  canMoveDown,
   onUpdate,
   onRemove,
+  onMove,
 }: LineItemRowProps) {
   const hasDiscount = !!item.discountType && !!item.discountValue && item.discountValue > 0;
   const discountAmount = calculateLineDiscount(item.quantity, item.netAmount, item.discountType, item.discountValue);
@@ -120,28 +128,51 @@ const LineItemRow = memo(function LineItemRow({
           {formatCurrency(lineTotal)}
         </td>
         <td className="py-2 px-2">
-          <button
-            type="button"
-            className="cursor-pointer text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg disabled:opacity-30 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-            onClick={() => onRemove(item.id)}
-            disabled={!canDelete}
-            aria-label="Remove line item"
-            title="Remove line item"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-              aria-hidden="true"
+          <div className="flex items-center gap-0.5">
+            {/* Move up/down buttons — Apple-standard reorder pattern */}
+            <div className="flex flex-col">
+              <button
+                type="button"
+                className="cursor-pointer text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded transition-colors disabled:opacity-20 disabled:cursor-default"
+                onClick={() => onMove(index, 'up')}
+                disabled={!canMoveUp}
+                aria-label="Move item up"
+                title="Move up"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="cursor-pointer text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded transition-colors disabled:opacity-20 disabled:cursor-default"
+                onClick={() => onMove(index, 'down')}
+                disabled={!canMoveDown}
+                aria-label="Move item down"
+                title="Move down"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                </svg>
+              </button>
+            </div>
+            <button
+              type="button"
+              className="cursor-pointer text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg disabled:opacity-30 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+              onClick={() => onRemove(item.id)}
+              disabled={!canDelete}
+              aria-label="Remove line item"
+              title="Remove line item"
             >
-              <path
-                fillRule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
+              <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path
+                  fillRule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
         </td>
       </tr>
       {/* Discount row — progressive disclosure */}
@@ -221,11 +252,12 @@ const LineItemRow = memo(function LineItemRow({
 // ===== Main Table Component =====
 
 export default function LineItemsTable() {
-  const { lineItems, addLineItem, removeLineItem, updateLineItem } = useInvoiceStore();
+  const { lineItems, addLineItem, removeLineItem, updateLineItem, moveLineItem } = useInvoiceStore();
   const { isCisSubcontractor } = useCompanyStore();
 
   const isCis = isCisSubcontractor();
   const canDelete = lineItems.length > 1;
+  const canReorder = lineItems.length > 1;
 
   // Memoized callbacks to prevent row re-renders
   const handleUpdate = useCallback(
@@ -240,6 +272,13 @@ export default function LineItemsTable() {
       removeLineItem(id);
     },
     [removeLineItem]
+  );
+
+  const handleMove = useCallback(
+    (index: number, direction: 'up' | 'down') => {
+      moveLineItem(index, direction);
+    },
+    [moveLineItem]
   );
 
   const handleAddItem = useCallback(() => {
@@ -296,14 +335,18 @@ export default function LineItemsTable() {
             </tr>
           </thead>
           <tbody>
-            {lineItems.map((item) => (
+            {lineItems.map((item, index) => (
               <LineItemRow
                 key={item.id}
                 item={item}
+                index={index}
                 isCis={isCis}
                 canDelete={canDelete}
+                canMoveUp={canReorder && index > 0}
+                canMoveDown={canReorder && index < lineItems.length - 1}
                 onUpdate={handleUpdate}
                 onRemove={handleRemove}
+                onMove={handleMove}
               />
             ))}
           </tbody>
