@@ -2,6 +2,8 @@
 
 import { useCallback } from 'react';
 import { downloadDataExport } from '@/lib/export/dataExport';
+import { resetAllHints } from '@/components/ui/FirstRunHint';
+import { PEEK_HINT_KEY } from '@/components/invoice/InvoiceHistoryItem';
 import { toast } from 'sonner';
 
 /**
@@ -39,6 +41,21 @@ export default function DataManagement() {
           transition-all duration-150"
       >
         Export All Data (JSON)
+      </button>
+
+      <button
+        type="button"
+        onClick={() => {
+          resetAllHints();
+          try { localStorage.removeItem(PEEK_HINT_KEY); } catch { /* noop */ }
+          toast.success('Hints reset', { description: 'Tutorial hints will show again.' });
+        }}
+        className="cursor-pointer w-full min-h-[44px] rounded-xl border border-[var(--surface-border)]
+          text-[var(--text-secondary)] text-sm font-medium
+          hover:bg-[var(--surface-elevated)] active:scale-[0.98]
+          transition-all duration-150"
+      >
+        Reset Tutorial Hints
       </button>
     </div>
   );
