@@ -98,6 +98,8 @@ export default function InvoiceHistoryPanel({
     if (invoiceToDelete) {
       deleteInvoice(invoiceToDelete.id);
       setInvoiceToDelete(null);
+      // Return focus to search input after deletion (accessibility)
+      setTimeout(() => searchInputRef.current?.focus(), 100);
     }
   }, [invoiceToDelete, deleteInvoice]);
 
