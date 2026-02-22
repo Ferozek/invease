@@ -7,10 +7,10 @@ export const runtime = 'nodejs'; // needed for Buffer (Basic auth)
 
 import { NextResponse } from 'next/server';
 import { searchCompanies, getCompanyByNumber } from '@/lib/companiesHouse';
+import { companyNumberPattern } from '@/lib/validationPatterns';
 
 // Input validation limits
 const MAX_QUERY_LENGTH = 100;
-const MAX_NUMBER_LENGTH = 20;
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -19,9 +19,9 @@ export async function GET(req: Request) {
 
   // Lookup by company number
   if (number) {
-    // Validate company number length
-    if (number.length > MAX_NUMBER_LENGTH) {
-      return NextResponse.json({ items: [], error: 'Company number too long' });
+    // Validate company number format (8 digits or 2 letters + 6 digits)
+    if (!companyNumberPattern.test(number)) {
+      return NextResponse.json({ items: [], error: 'Invalid company number format' });
     }
     const item = await getCompanyByNumber(number);
     return NextResponse.json({ items: item ? [item] : [] });
