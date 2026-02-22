@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useHistoryStore, type SavedInvoice } from '@/stores/historyStore';
@@ -34,6 +34,7 @@ export default function InvoiceHistoryPanel({
   onCreateCreditNote,
   initialStatusFilter,
 }: InvoiceHistoryPanelProps) {
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTab, setFilterTab] = useState<FilterTab>('all');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(initialStatusFilter || 'all');
@@ -65,6 +66,13 @@ export default function InvoiceHistoryPanel({
       setSelectedIds(new Set());
     }
   }
+
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => searchInputRef.current?.focus(), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   const toggleSelectionMode = useCallback(() => {
     setSelectionMode((prev) => {
@@ -302,6 +310,7 @@ export default function InvoiceHistoryPanel({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
                 <input
+                  ref={searchInputRef}
                   type="text"
                   placeholder="Search..."
                   value={searchQuery}

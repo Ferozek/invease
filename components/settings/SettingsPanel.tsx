@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import TemplateSelector from './TemplateSelector';
 import ColorPicker from './ColorPicker';
@@ -23,10 +24,19 @@ interface SettingsPanelProps {
  * - Invoice numbering
  */
 export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const prefersReducedMotion = useReducedMotion();
   const slideTransition = prefersReducedMotion
     ? { duration: 0 }
     : { type: 'spring' as const, damping: 25, stiffness: 300 };
+
+  useEffect(() => {
+    if (isOpen) {
+      // Focus close button after animation settles
+      const timer = setTimeout(() => closeButtonRef.current?.focus(), 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   return (
     <AnimatePresence>
@@ -57,6 +67,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                 Settings
               </h2>
               <button
+                ref={closeButtonRef}
                 type="button"
                 onClick={onClose}
                 className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
