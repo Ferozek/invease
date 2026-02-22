@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
 import InvoicePDF from './InvoicePDF';
+import type { WatermarkType } from './InvoicePDF';
 import { useSettingsStore } from '@/stores/settingsStore';
 import logger from '@/lib/logger';
 import { getValidLineItems } from '@/lib/invoiceUtils';
@@ -18,6 +19,7 @@ interface PDFPreviewModalProps {
   invoice: InvoiceData;
   totals: InvoiceTotals;
   onDownload?: () => void;
+  watermark?: WatermarkType;
 }
 
 /**
@@ -51,6 +53,7 @@ export default function PDFPreviewModal({
   invoice,
   totals,
   onDownload,
+  watermark,
 }: PDFPreviewModalProps) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
@@ -90,7 +93,7 @@ export default function PDFPreviewModal({
 
         // Generate PDF blob
         const blob = await pdf(
-          <InvoicePDF invoice={cleanedInvoice} totals={totals} brandColor={brandColor ?? undefined} />
+          <InvoicePDF invoice={cleanedInvoice} totals={totals} brandColor={brandColor ?? undefined} watermark={watermark} />
         ).toBlob();
 
         // Store blob for sharing
@@ -115,7 +118,7 @@ export default function PDFPreviewModal({
         URL.revokeObjectURL(pdfUrl);
       }
     };
-  }, [isOpen, invoice, totals, brandColor]);
+  }, [isOpen, invoice, totals, brandColor, watermark]);
 
   // Handle escape key
   useEffect(() => {

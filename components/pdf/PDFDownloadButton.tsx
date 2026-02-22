@@ -8,6 +8,7 @@ import { showInvoiceSuccess, handlePDFError, handleValidationError } from '@/lib
 import { getValidLineItems } from '@/lib/invoiceUtils';
 import { hasPartialBankDetails } from '@/lib/bankDetailsUtils';
 import InvoicePDF from './InvoicePDF';
+import type { WatermarkType } from './InvoicePDF';
 import { useSettingsStore } from '@/stores/settingsStore';
 import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
 
@@ -16,6 +17,7 @@ interface PDFDownloadButtonProps {
   totals: InvoiceTotals;
   disabled?: boolean;
   onSuccess?: () => void;
+  watermark?: WatermarkType;
 }
 
 // Validation function
@@ -86,7 +88,7 @@ function validateInvoice(invoice: InvoiceData): string[] {
 }
 
 const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
-  function PDFDownloadButton({ invoice, totals, disabled = false, onSuccess }, ref) {
+  function PDFDownloadButton({ invoice, totals, disabled = false, onSuccess, watermark }, ref) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
     const brandColor = useSettingsStore((s) => s.customPrimaryColor);
@@ -124,7 +126,7 @@ const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
 
         // Generate PDF blob
         const blob = await pdf(
-          <InvoicePDF invoice={cleanedInvoice} totals={totals} brandColor={brandColor ?? undefined} />
+          <InvoicePDF invoice={cleanedInvoice} totals={totals} brandColor={brandColor ?? undefined} watermark={watermark} />
         ).toBlob();
 
         // Create download link
