@@ -406,6 +406,73 @@ describe('historyStore', () => {
     });
   });
 
+  // ----- Bulk Actions -----
+
+  describe('bulkMarkAsPaid', () => {
+    it('marks multiple invoices as paid in one call', () => {
+      const store = useHistoryStore.getState();
+      const id1 = store.saveInvoice(makeInvoiceData({ invoiceNumber: 'INV-1' }), makeTotals(100));
+      const id2 = store.saveInvoice(makeInvoiceData({ invoiceNumber: 'INV-2' }), makeTotals(200));
+      store.saveInvoice(makeInvoiceData({ invoiceNumber: 'INV-3' }), makeTotals(300));
+
+      useHistoryStore.getState().bulkMarkAsPaid([id1, id2]);
+
+      const invoices = useHistoryStore.getState().invoices;
+      const paid = invoices.filter((i) => i.status === 'paid');
+      const unpaid = invoices.filter((i) => i.status === 'unpaid');
+      expect(paid).toHaveLength(2);
+      expect(unpaid).toHaveLength(1);
+      expect(unpaid[0].invoiceNumber).toBe('INV-3');
+    });
+
+    it('sets paidDate and amountPaid on each', () => {
+      const store = useHistoryStore.getState();
+      const id1 = store.saveInvoice(makeInvoiceData({ invoiceNumber: 'INV-1' }), makeTotals(100));
+      const id2 = store.saveInvoice(makeInvoiceData({ invoiceNumber: 'INV-2' }), makeTotals(200));
+
+      useHistoryStore.getState().bulkMarkAsPaid([id1, id2]);
+
+      const invoices = useHistoryStore.getState().invoices;
+      for (const inv of invoices) {
+        expect(inv.paidDate).toBeTruthy();
+        expect(inv.amountPaid).toBe(inv.total);
+      }
+    });
+
+    it('handles empty array without error', () => {
+      useHistoryStore.getState().saveInvoice(makeInvoiceData(), makeTotals(100));
+      useHistoryStore.getState().bulkMarkAsPaid([]);
+      expect(useHistoryStore.getState().invoices[0].status).toBe('unpaid');
+    });
+  });
+
+  describe('bulkDelete', () => {
+    it('deletes multiple invoices in one call', () => {
+      const store = useHistoryStore.getState();
+      const id1 = store.saveInvoice(makeInvoiceData({ invoiceNumber: 'INV-1' }), makeTotals(100));
+      const id2 = store.saveInvoice(makeInvoiceData({ invoiceNumber: 'INV-2' }), makeTotals(200));
+      store.saveInvoice(makeInvoiceData({ invoiceNumber: 'INV-3' }), makeTotals(300));
+
+      useHistoryStore.getState().bulkDelete([id1, id2]);
+
+      const invoices = useHistoryStore.getState().invoices;
+      expect(invoices).toHaveLength(1);
+      expect(invoices[0].invoiceNumber).toBe('INV-3');
+    });
+
+    it('handles empty array without error', () => {
+      useHistoryStore.getState().saveInvoice(makeInvoiceData(), makeTotals(100));
+      useHistoryStore.getState().bulkDelete([]);
+      expect(useHistoryStore.getState().invoices).toHaveLength(1);
+    });
+
+    it('handles non-existent ids gracefully', () => {
+      useHistoryStore.getState().saveInvoice(makeInvoiceData(), makeTotals(100));
+      useHistoryStore.getState().bulkDelete(['non_existent_id']);
+      expect(useHistoryStore.getState().invoices).toHaveLength(1);
+    });
+  });
+
   // ----- Clear History -----
 
   describe('clearHistory', () => {
