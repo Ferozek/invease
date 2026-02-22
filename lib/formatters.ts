@@ -3,7 +3,7 @@
  * Centralized formatting utilities used across components
  */
 
-import type { VatRate } from '@/types/invoice';
+import type { VatRate, DiscountType } from '@/types/invoice';
 
 /**
  * Format amount as GBP currency
@@ -16,9 +16,45 @@ export function formatCurrency(amount: number): string {
 }
 
 /**
- * Calculate line item total including VAT
+ * Calculate line item net extended price (qty × unit price, minus any discount, no VAT)
+ * This is the standard UK invoice line total — VAT is shown once at the bottom.
  */
-export function calculateLineTotal(
+export function calculateLineNet(
+  quantity: number,
+  netAmount: number,
+  discountType?: DiscountType,
+  discountValue?: number,
+): number {
+  const gross = quantity * netAmount;
+  if (!discountType || !discountValue) return gross;
+  const discount = discountType === 'percentage'
+    ? gross * (discountValue / 100)
+    : discountValue;
+  return Math.max(0, gross - discount);
+}
+
+/**
+ * Calculate the discount amount for a line item
+ */
+export function calculateLineDiscount(
+  quantity: number,
+  netAmount: number,
+  discountType?: DiscountType,
+  discountValue?: number,
+): number {
+  if (!discountType || !discountValue) return 0;
+  const gross = quantity * netAmount;
+  const discount = discountType === 'percentage'
+    ? gross * (discountValue / 100)
+    : discountValue;
+  return Math.min(gross, Math.max(0, discount));
+}
+
+/**
+ * Calculate line item gross total including VAT
+ * Used for internal calculations where VAT-inclusive figure is needed.
+ */
+export function calculateLineGross(
   quantity: number,
   netAmount: number,
   vatRate: VatRate

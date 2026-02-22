@@ -7,7 +7,7 @@ import {
   View,
   Image,
 } from '@react-pdf/renderer';
-import { formatCurrency, calculateLineTotal, getVatRateDisplay, getPaymentTermsText } from '@/lib/formatters';
+import { formatCurrency, calculateLineNet, calculateLineDiscount, getVatRateDisplay, getPaymentTermsText } from '@/lib/formatters';
 import { formatDateUK, calculateDueDate } from '@/lib/dateUtils';
 import { getCisDeductionRate, getCisStatusLabel } from '@/lib/cisUtils';
 import { hasBankDetails as checkBankDetails } from '@/lib/bankDetailsUtils';
@@ -29,17 +29,21 @@ export default function InvoicePDF({ invoice, totals, brandColor }: InvoicePDFPr
   const isCis = invoice.invoicer.cisStatus !== 'not_applicable';
   const cisStatus = invoice.invoicer.cisStatus;
 
-  // Calculate CIS breakdown if applicable
+  const hasAnyDiscount = invoice.lineItems.some(
+    item => item.discountType && item.discountValue && item.discountValue > 0
+  );
+
+  // Calculate CIS breakdown if applicable (uses post-discount net)
   const labourTotal = isCis
     ? invoice.lineItems
         .filter(item => item.cisCategory === 'labour')
-        .reduce((sum, item) => sum + item.netAmount * item.quantity, 0)
+        .reduce((sum, item) => sum + calculateLineNet(item.quantity, item.netAmount, item.discountType, item.discountValue), 0)
     : 0;
 
   const materialsTotal = isCis
     ? invoice.lineItems
         .filter(item => item.cisCategory === 'materials')
-        .reduce((sum, item) => sum + item.netAmount * item.quantity, 0)
+        .reduce((sum, item) => sum + calculateLineNet(item.quantity, item.netAmount, item.discountType, item.discountValue), 0)
     : 0;
 
   const cisDeductionRate = getCisDeductionRate(cisStatus);
@@ -113,23 +117,41 @@ export default function InvoicePDF({ invoice, totals, brandColor }: InvoicePDFPr
           </View>
 
           {/* Rows */}
-          {invoice.lineItems.map((item, index) => (
-            <View
-              key={item.id}
-              style={[
-                styles.tableRow,
-                index % 2 === 1 ? styles.tableRowAlt : {},
-              ]}
-            >
-              <Text style={styles.colDescription}>{item.description}</Text>
-              <Text style={styles.colQty}>{item.quantity}</Text>
-              <Text style={styles.colNet}>{formatCurrency(item.netAmount)}</Text>
-              <Text style={styles.colVat}>{getVatRateDisplay(item.vatRate)}</Text>
-              <Text style={styles.colTotal}>
-                {formatCurrency(calculateLineTotal(item.quantity, item.netAmount, item.vatRate))}
-              </Text>
-            </View>
-          ))}
+          {invoice.lineItems.map((item, index) => {
+            const itemDiscount = calculateLineDiscount(item.quantity, item.netAmount, item.discountType, item.discountValue);
+            const itemHasDiscount = itemDiscount > 0;
+            return (
+              <View key={item.id}>
+                <View
+                  style={[
+                    styles.tableRow,
+                    index % 2 === 1 ? styles.tableRowAlt : {},
+                  ]}
+                >
+                  <Text style={styles.colDescription}>{item.description}</Text>
+                  <Text style={styles.colQty}>{item.quantity}</Text>
+                  <Text style={styles.colNet}>{formatCurrency(item.netAmount)}</Text>
+                  <Text style={styles.colVat}>{getVatRateDisplay(item.vatRate)}</Text>
+                  <Text style={styles.colTotal}>
+                    {formatCurrency(calculateLineNet(item.quantity, item.netAmount, item.discountType, item.discountValue))}
+                  </Text>
+                </View>
+                {itemHasDiscount && (
+                  <View style={[styles.tableRow, { paddingVertical: 2 }]}>
+                    <Text style={[styles.colDescription, { fontSize: 8, fontStyle: 'italic', color: '#ef4444' }]}>
+                      {'  '}Discount ({item.discountType === 'percentage' ? `${item.discountValue}%` : formatCurrency(item.discountValue!)})
+                    </Text>
+                    <Text style={styles.colQty}>{''}</Text>
+                    <Text style={styles.colNet}>{''}</Text>
+                    <Text style={styles.colVat}>{''}</Text>
+                    <Text style={[styles.colTotal, { fontSize: 8, color: '#ef4444' }]}>
+                      -{formatCurrency(itemDiscount)}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            );
+          })}
         </View>
 
         {/* CIS Breakdown - shown for CIS subcontractors */}
@@ -167,6 +189,16 @@ export default function InvoicePDF({ invoice, totals, brandColor }: InvoicePDFPr
 
         {/* Totals */}
         <View style={styles.totalsSection}>
+          {hasAnyDiscount && (
+            <View style={styles.totalRow}>
+              <Text style={[styles.totalLabel, { color: '#ef4444' }]}>Total Discount</Text>
+              <Text style={[styles.totalValue, { color: '#ef4444' }]}>
+                -{formatCurrency(invoice.lineItems.reduce((sum, item) =>
+                  sum + calculateLineDiscount(item.quantity, item.netAmount, item.discountType, item.discountValue), 0
+                ))}
+              </Text>
+            </View>
+          )}
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Subtotal</Text>
             <Text style={styles.totalValue}>{formatCurrency(totals.subtotal)}</Text>

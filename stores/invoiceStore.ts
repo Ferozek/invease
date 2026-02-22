@@ -68,8 +68,18 @@ const defaultInvoiceDetails: InvoiceDetails = {
   creditNoteFields: undefined,
 };
 
+/** Calculate post-discount net for a single line item */
+const getLineNet = (item: LineItem): number => {
+  const gross = item.netAmount * item.quantity;
+  if (!item.discountType || !item.discountValue) return gross;
+  const discount = item.discountType === 'percentage'
+    ? gross * (item.discountValue / 100)
+    : item.discountValue;
+  return Math.max(0, gross - discount);
+};
+
 const calculateTotals = (lineItems: LineItem[], cisStatus: CisStatus = 'not_applicable'): InvoiceTotals => {
-  const subtotal = lineItems.reduce((sum, item) => sum + (item.netAmount * item.quantity), 0);
+  const subtotal = lineItems.reduce((sum, item) => sum + getLineNet(item), 0);
 
   const vatBreakdown: { rate: VatRate; amount: number }[] = [];
   const vatRates: VatRate[] = ['0', '5', '20', 'reverse_charge'];
@@ -82,8 +92,8 @@ const calculateTotals = (lineItems: LineItem[], cisStatus: CisStatus = 'not_appl
     const vatPercent = rate === 'reverse_charge' ? 0 : parseInt(rate);
 
     const vatAmount = itemsWithRate.reduce((sum, item) => {
-      const netTotal = item.netAmount * item.quantity;
-      return sum + (netTotal * (vatPercent / 100));
+      const lineNet = getLineNet(item);
+      return sum + (lineNet * (vatPercent / 100));
     }, 0);
 
     // Always include reverse_charge in breakdown to show on invoice (even with 0 amount)
@@ -100,11 +110,11 @@ const calculateTotals = (lineItems: LineItem[], cisStatus: CisStatus = 'not_appl
   if (cisStatus !== 'not_applicable') {
     const labourTotal = lineItems
       .filter((item) => item.cisCategory === 'labour')
-      .reduce((sum, item) => sum + item.netAmount * item.quantity, 0);
+      .reduce((sum, item) => sum + getLineNet(item), 0);
 
     const materialsTotal = lineItems
       .filter((item) => item.cisCategory === 'materials')
-      .reduce((sum, item) => sum + item.netAmount * item.quantity, 0);
+      .reduce((sum, item) => sum + getLineNet(item), 0);
 
     const deductionRate = getCisDeductionRate(cisStatus);
     const deductionAmount = labourTotal * deductionRate;

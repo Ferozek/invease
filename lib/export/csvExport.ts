@@ -6,6 +6,7 @@
  */
 
 import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
+import type { SavedInvoice } from '@/stores/historyStore';
 
 // ===== Types =====
 
@@ -27,10 +28,14 @@ const LINE_ITEM_HEADERS = [
   'Customer Name',
   'Description',
   'Quantity',
-  'Net Amount',
+  'Unit Price',
+  'Discount Type',
+  'Discount Value',
+  'Discount Amount',
+  'Net Total',
   'VAT Rate',
   'VAT Amount',
-  'Line Total',
+  'Gross Total',
 ];
 
 /**
@@ -43,10 +48,15 @@ export function invoiceToLineItemRows(
   const dateFormatted = formatDateUK(invoice.details.date);
 
   return invoice.lineItems.map((item) => {
-    const net = item.netAmount * item.quantity;
+    const grossBeforeDiscount = item.netAmount * item.quantity;
+    const discountAmount = item.discountType && item.discountValue
+      ? (item.discountType === 'percentage'
+        ? grossBeforeDiscount * (item.discountValue / 100)
+        : Math.min(grossBeforeDiscount, item.discountValue))
+      : 0;
+    const netTotal = Math.max(0, grossBeforeDiscount - discountAmount);
     const vatRate = item.vatRate === 'reverse_charge' ? 0 : parseInt(item.vatRate);
-    const vatAmount = net * (vatRate / 100);
-    const lineTotal = net + vatAmount;
+    const vatAmount = netTotal * (vatRate / 100);
 
     return {
       'Invoice Number': invoice.details.invoiceNumber,
@@ -54,10 +64,14 @@ export function invoiceToLineItemRows(
       'Customer Name': invoice.customer.name,
       'Description': item.description,
       'Quantity': item.quantity,
-      'Net Amount': item.netAmount,
+      'Unit Price': item.netAmount,
+      'Discount Type': item.discountType || '',
+      'Discount Value': item.discountValue || '',
+      'Discount Amount': discountAmount,
+      'Net Total': netTotal,
       'VAT Rate': item.vatRate === 'reverse_charge' ? 'RC' : `${item.vatRate}%`,
       'VAT Amount': vatAmount,
-      'Line Total': lineTotal,
+      'Gross Total': netTotal + vatAmount,
     };
   });
 }
@@ -169,6 +183,62 @@ export function downloadCsv(csvContent: string, filename: string): void {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+// ===== History Export =====
+
+const HISTORY_HEADERS = [
+  'Invoice Number',
+  'Date',
+  'Due Date',
+  'Customer',
+  'Type',
+  'Subtotal',
+  'VAT',
+  'Total',
+  'Status',
+  'Amount Paid',
+  'Outstanding',
+];
+
+/**
+ * Derives a human-readable payment status for CSV export
+ */
+function derivePaymentStatus(inv: SavedInvoice): string {
+  const isCreditNote = inv.documentType === 'credit_note';
+  if (isCreditNote) return 'Credit Note';
+  const paid = inv.amountPaid || 0;
+  if (paid >= inv.total) return 'Paid';
+  const today = new Date().toISOString().split('T')[0];
+  if (inv.dueDate && inv.dueDate < today) return 'Overdue';
+  if (paid > 0) return 'Partial';
+  return 'Unpaid';
+}
+
+/**
+ * Generates CSV for history export (respects pre-filtered list)
+ */
+export function generateHistoryExportCsv(invoices: SavedInvoice[]): string {
+  const rows: CsvRow[] = invoices.map((inv) => {
+    const paid = inv.amountPaid || 0;
+    const outstanding = Math.max(0, inv.total - paid);
+
+    return {
+      'Invoice Number': inv.invoiceNumber,
+      'Date': formatDateUK(inv.invoice.details.date),
+      'Due Date': inv.dueDate ? formatDateUK(inv.dueDate) : '',
+      'Customer': inv.customerName,
+      'Type': inv.documentType === 'credit_note' ? 'Credit Note' : 'Invoice',
+      'Subtotal': inv.totals.subtotal,
+      'VAT': inv.totals.totalVat,
+      'Total': inv.total,
+      'Status': derivePaymentStatus(inv),
+      'Amount Paid': paid,
+      'Outstanding': outstanding,
+    };
+  });
+
+  return rowsToCsv(rows, HISTORY_HEADERS);
 }
 
 // ===== Helpers =====

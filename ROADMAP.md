@@ -2,7 +2,7 @@
 
 **Created:** 2026-02-21
 **Last Updated:** 2026-02-22
-**Status:** Phases 1-2.5 + v1.1 complete. Phase 3 (backend) next.
+**Status:** Phases 1-2.5 + v1.1 complete. Environment split + Phase 3 design next.
 
 ---
 
@@ -73,12 +73,35 @@ Each phase builds naturally on the previous one. No phase requires rewriting wha
 | Offline works    | No                   | No                 | **Yes (PWA)**               |
 | UK-specific      | Generic              | Generic            | **UK-first (VAT, CIS, CH)** |
 
-### Competitor MTD pricing
+### Competitor pricing comparison (researched Feb 2026)
 
-- **Zoho Books:** Free plan includes MTD VAT, MTD ITSA, SA103F/S reports. Revenue cap <£35K. 1,000 invoices/year.
-- **Xero:** No free tier. Starts £29/mo (£5.80 promo for 3 months). Full MTD support.
-- **Clear Books:** Free MTD software for sole traders + landlords. Quarterly HMRC submissions.
-- **QuickFile:** Free, HMRC-recognised, full MTD ITSA support.
+| Software        | Cheapest Paid        | Free Tier?         | MTD VAT   | MTD ITSA        | CIS            | Recurring      | Email Invoices |
+| --------------- | -------------------- | ------------------ | --------- | --------------- | -------------- | -------------- | -------------- |
+| **Zoho Books**  | ~£12/mo              | Yes (<£35k rev)    | Standard+ | All plans       | No             | All plans      | All plans      |
+| **Xero**        | £16/mo (Ignite)      | No (trial only)    | All plans | Coming Apr 2026 | Add-on         | Grow+ (£33/mo) | All plans      |
+| **QuickBooks**  | £10/mo (Sole Trader) | No                 | All plans | Pilot active    | All plans      | All plans      | All plans      |
+| **FreeAgent**   | £19/mo               | NatWest/RBS free   | All plans | All plans       | All plans      | All plans      | All plans      |
+| **Clear Books** | £6.75/mo (Small)     | Yes (sole traders) | Medium+   | All plans       | Paid plans     | Paid plans     | All plans      |
+| **QuickFile**   | £60/year (Large)     | Yes (<1k entries)  | Paid sub  | Coming          | No             | All tiers      | All tiers      |
+| **Sage**        | £7/mo (Individual)   | Yes (sole traders) | All plans | All plans       | Standard+      | Paid plans     | All plans      |
+| **Invease**     | Free                 | **Yes (no cap)**   | Phase 5   | Phase 5         | **Yes (free)** | Phase 3        | Phase 3        |
+
+**Detailed breakdown:**
+
+- **Zoho Books** — Free: <£35K revenue, 1,000 invoices/year, 1 user, MTD ITSA included, recurring + email included. No CIS at any tier. Standard (£12/mo) adds MTD VAT.
+- **Xero** — No free tier. Ignite (£16/mo) limited to 20 invoices/month. Grow (£33/mo) unlimited + recurring. CIS is a paid add-on. 75% off promo first 3 months common.
+- **QuickBooks** — No free tier but aggressive promos (£1/mo for 6 months). Sole Trader (£10/mo) has MTD VAT + CIS. All plans include recurring + email. MTD ITSA in pilot.
+- **FreeAgent** — £19-29/mo by business type. Free for NatWest/RBS/Ulster/Mettle customers (full product, no restrictions). CIS + payroll on all plans. MTD ITSA fully supported.
+- **Clear Books** — Free for sole traders/landlords (basic MTD ITSA, no VAT filing). Full plan from £6.75/mo. CIS from Medium (£14.50/mo). HMRC-recognised CIS e-filing.
+- **QuickFile** — Free under 1,000 ledger entries/year. First MTD VAT return free, then £45+VAT/year. No CIS. Recurring on all tiers including free.
+- **Sage** — Free MTD plan for sole traders. Accounting Start (£18/mo) for full features. CIS from Standard (£39/mo). 90% off first 3 months promo.
+
+**Key gaps Invease can exploit:**
+
+- CIS is absent or paid-only at Zoho, QuickFile, Clear Books, Sage — we have it free
+- Recurring invoices are gated behind £10-33/mo at most competitors — we can offer it free
+- No competitor offers zero-account, instant invoicing — our 30-second onboarding is unique
+- The free space has caps (revenue, entries, invoices) — we have none
 
 ### Our strategic position
 
@@ -91,14 +114,14 @@ Invease can't out-feature Zoho or Xero. It wins on **simplicity, speed, and priv
 
 ### Features to adopt from competitors
 
-| Feature                   | Who has it              | Our phase | Why                                   |
-| ------------------------- | ----------------------- | --------- | ------------------------------------- |
-| Payment status tracking   | Everyone                | 2.5       | Table stakes — "who owes me?"         |
-| Automated payment chasers | Xero, Zoho              | 3         | Xero's killer feature                 |
-| Receipt scanning          | Zoho (free!), Xero      | 4         | Camera -> categorise -> done          |
-| SA103F/SA103S reports     | Zoho (free!)            | 5         | Self-employment summary from data     |
-| CIS returns to HMRC       | Zoho (paid)             | 5         | Valuable for K&R construction clients |
-| Quarterly MTD submissions | Zoho, Xero, Clear Books | 5         | Legal requirement from April 2026     |
+| Feature                   | Who has it                       | Our phase | Why                                   |
+| ------------------------- | -------------------------------- | --------- | ------------------------------------- |
+| Payment status tracking   | Everyone                         | 2.5       | Table stakes — "who owes me?"         |
+| Automated payment chasers | Xero, Zoho                       | 3         | Xero's killer feature                 |
+| Receipt scanning          | Zoho (free!), Xero               | 4         | Camera -> categorise -> done          |
+| SA103F/SA103S reports     | Zoho (free!)                     | 5         | Self-employment summary from data     |
+| CIS returns to HMRC       | QB, FreeAgent, Clear Books, Sage | 5         | Valuable for K&R construction clients |
+| Quarterly MTD submissions | Zoho, Xero, Clear Books          | 5         | Legal requirement from April 2026     |
 
 ### Features NOT to add
 
@@ -287,12 +310,115 @@ Think "how would Apple handle this?" for every edge case. Clarity over clevernes
 
 ---
 
+## Pre-Phase 3: Environment Strategy
+
+**Status:** NEXT (before any backend work)
+**Decision by:** Matt (Senior Dev) — 2026-02-22 phone call
+
+### The problem
+
+Currently: push to `main` → Vercel auto-deploys to production. No gate between code and live users.
+
+### The solution: dev branch + Vercel Preview Deployments
+
+```
+dev branch (feature work)
+    -> Push -> Vercel auto-creates preview URL (e.g. invease-abc123.vercel.app)
+    -> Verify on preview URL
+    -> PR from dev -> main
+    -> Merge = production deploy
+```
+
+**No extra infrastructure needed.** Vercel Preview Deployments are free and automatic for non-production branches. Environment variables can differ per environment (Vercel dashboard > Settings > Environment Variables > select Preview vs Production).
+
+**Why this matters for Phase 3:** When Supabase enters, we'll need separate databases for dev/prod. The branch-based workflow means:
+
+- `dev` branch → Supabase dev project (sandbox data, test users)
+- `main` branch → Supabase prod project (real data, real users)
+- Preview URLs use dev env vars automatically
+
+**Setup steps:**
+
+1. Create `dev` branch from current `main`
+2. In Vercel dashboard: set env vars per environment (Preview vs Production)
+3. Update CLAUDE.md / team docs: "work on `dev`, PR to `main` for production"
+4. GitHub branch protection on `main`: require PR, no direct push
+
+---
+
 ## Phase 3: "Stay Connected" (Backend + Email + Recurring)
 
-**Status:** PLANNED
+**Status:** PLANNED — design phase (schema + security before code)
 **Apple principle:** _The platform enables the ecosystem._
 
 This is the **App Store moment** — Invease stops being a tool and becomes a service. User accounts enable everything that follows.
+
+### Matt's guidance (Senior Dev, 2026-02-22)
+
+> Supabase is fine, but think about recurring invoices and security first. Think about PII — B2C is different from B2B. Think about each user persona, they may require different things.
+
+### User Personas — Design the Schema Around These
+
+Different users have fundamentally different needs. The data model must flex per persona from day one.
+
+| Persona                    | Example                     | Key needs                                     | PII risk            | CIS? | VAT?   | Recurring? |
+| -------------------------- | --------------------------- | --------------------------------------------- | ------------------- | ---- | ------ | ---------- |
+| **CIS subcontractor**      | Builder, plasterer          | CIS deductions, UTR, materials vs labour      | Low (B2B)           | Yes  | Maybe  | No         |
+| **Sole trader consultant** | IT contractor, designer     | Professional emails, payment links, recurring | Low (B2B)           | No   | Likely | Yes        |
+| **Tradesperson (B2C)**     | Plumber, electrician, tutor | Simple invoices, "Pay Now" link               | **High (B2C)**      | No   | Maybe  | Sometimes  |
+| **Accountant (K&R)**       | Practice managing clients   | Multi-user oversight, review, bulk ops        | High (multi-tenant) | N/A  | N/A    | N/A        |
+
+**Schema implications:**
+
+- CIS fields, VAT registration, recurring config = **optional per user**, not global
+- Feature gating per plan/persona (free = basic, pro = recurring + email + expenses)
+- Row-Level Security (RLS) differs: accountant sees client data, client sees own data only
+- B2C invoices need stricter PII controls than B2B
+
+### PII: B2C vs B2B — The Gap
+
+**Confirmed:** K&R clients invoice individuals (B2C), not just businesses.
+
+**Why this matters when Supabase enters:**
+
+| Aspect                 | Client-side (now)         | Server-side (Phase 3)                                                        |
+| ---------------------- | ------------------------- | ---------------------------------------------------------------------------- |
+| Customer data location | User's device only        | Our Supabase database                                                        |
+| Who controls the data  | The user                  | Us (data processor under GDPR)                                               |
+| Third-party consent    | Not needed (local tool)   | **Needed** — the invoiced person never consented to server storage           |
+| Lawful basis           | N/A                       | Legitimate interests of the user (needs formal assessment)                   |
+| Right to erasure       | User deletes localStorage | Must support deletion requests from the _invoiced person_                    |
+| Encryption             | Browser handles it        | **Encryption at rest** required (Supabase default), plus field-level for PII |
+| Data breach impact     | One user affected         | All users' customer data at risk                                             |
+
+**B2C invoice data that becomes PII on our servers:**
+
+- Personal name (not company name)
+- Home address (not business address)
+- Personal email
+- Phone number (if added later)
+- Payment history (financial data)
+
+**Required before storing customer PII server-side:**
+
+1. **Data Protection Impact Assessment (DPIA)** — GDPR Art 35 requires this for large-scale processing of personal data
+2. **Privacy Policy update** — disclose server-side storage, retention periods, third-party sub-processors (Supabase, Resend, Stripe)
+3. **Lawful basis documentation** — legitimate interests balancing test for storing third-party PII
+4. **Encryption strategy** — Supabase encrypts at rest by default; consider field-level encryption for PII columns
+5. **Data retention policy** — how long do we keep customer PII? Auto-delete after X months of inactivity?
+6. **Right to erasure mechanism** — if an invoiced person contacts us, we must be able to find and delete their data across all users' invoices
+
+### Recurring Invoices — Security Design
+
+Recurring invoices compound the PII and security challenge:
+
+| Concern                                         | Mitigation                                                               |
+| ----------------------------------------------- | ------------------------------------------------------------------------ |
+| Customer details stored permanently             | Retention limits + auto-archive after invoice is paid and period expires |
+| Cron job auto-creates invoices                  | Idempotent (safe to retry), audit logged, failure alerts                 |
+| Auto-email sends customer PII to email provider | Resend processes data under DPA; minimise data in email body             |
+| Stripe/GoCardless tokens per user               | Encrypted column in Supabase, scoped per user, never exposed to client   |
+| Recurring schedule misconfiguration             | Confirmation step before enabling, easy cancel, clear status UI          |
 
 ### What to build
 
@@ -314,7 +440,7 @@ This is the **App Store moment** — Invease stops being a tool and becomes a se
 | **Vercel Postgres + NextAuth** | Stays in Vercel ecosystem, simple                           | Less features out of the box |
 | **Firebase**                   | Real-time sync, good mobile SDK                             | Google lock-in, NoSQL        |
 
-**Recommendation: Supabase** — Auth, Postgres, Realtime, Storage all in one. Free tier covers early usage. Scales well. Works with both Next.js and Expo.
+**Decision: Supabase** — endorsed by Matt with caveats (design security + recurring first). Auth, Postgres, Realtime, Storage all in one. Free tier covers early usage. Scales well. Works with both Next.js and Expo.
 
 ### Key architecture shift
 
@@ -328,6 +454,35 @@ User creates invoice (works offline)
 ```
 
 The user never feels the backend. It's invisible. Apple approach.
+
+### Supabase Schema Design Principles
+
+Design around personas, not features:
+
+```sql
+-- Users have a persona/business type that gates features
+users.business_type     -- sole_trader | limited_company | partnership
+users.cis_registered    -- boolean (shows CIS UI)
+users.vat_registered    -- boolean (shows VAT fields)
+
+-- Customers are per-user, with PII flag
+customers.is_individual -- boolean (B2C = true, triggers stricter handling)
+customers.user_id       -- FK, RLS enforced
+
+-- Invoices reference customers by ID (not by name string)
+invoices.customer_id    -- FK to customers table
+
+-- Recurring schedules are optional
+recurring_schedules.invoice_template_id
+recurring_schedules.frequency  -- weekly | monthly | quarterly
+recurring_schedules.next_run
+recurring_schedules.enabled
+
+-- RLS policies
+-- Users see only their own data
+-- Accountant role sees linked clients' data
+-- No cross-user data access ever
+```
 
 ### Email delivery
 
@@ -346,7 +501,7 @@ Requires backend because OAuth token exchange is server-side (security requireme
 | OAuth redirect endpoint      | Sends user to Stripe/GoCardless auth page                            |
 | OAuth callback endpoint      | Receives auth code back                                              |
 | Token exchange (server-side) | Swaps code for access token (Stripe secret key can't be client-side) |
-| Token storage (Supabase)     | Securely stores access token per user                                |
+| Token storage (Supabase)     | Securely stores encrypted access token per user                      |
 | Payment Link creation API    | Auto-generates per-invoice payment URL with correct amount           |
 | Webhook endpoint             | Receives "payment completed" → auto-marks invoice as paid            |
 
@@ -359,7 +514,18 @@ Requires backend because OAuth token exchange is server-side (security requireme
 
 **Customer experience:** Receives invoice → clicks "Pay Now" → pays by card or bank → invoice auto-marked paid.
 
-### Effort: ~2-3 weeks
+### Phase 3 Implementation Order
+
+1. **Environment split** (dev/prod branches + Vercel preview)
+2. **Supabase schema design** (users, customers, invoices, RLS policies)
+3. **DPIA for PII** (before storing any customer data server-side)
+4. **Auth + cloud sync** (user accounts, offline-first sync)
+5. **Email delivery** (Resend integration)
+6. **Recurring invoices** (schedules, cron, idempotent generation)
+7. **Payment links** (Stripe/GoCardless OAuth)
+8. **Privacy Policy update** (disclose server-side storage)
+
+### Effort: ~3-4 weeks (increased from 2-3 due to security/PII design work)
 
 ---
 
@@ -732,6 +898,11 @@ features: {
 | 2026-02-22 | v1.1 verified complete                                  | All 6 items confirmed wired up and functional. Roadmap updated                                                                                                                                      | Dev               |
 | 2026-02-22 | Remove + button from preview toolbar                    | Apple HIG: preview toolbar = document actions only (expand, export, share, history, settings). New Invoice is app-level — ⌘N and top button are sufficient                                          | UX                |
 | 2026-02-22 | Remove sample bank details from Quick Start             | Bank details are optional and security-sensitive — shouldn't be pre-filled even as sample data                                                                                                      | Dev               |
+| 2026-02-22 | Dev/prod environment split before Phase 3               | Matt: need a gate between dev and production. Use `dev` branch + Vercel Preview Deployments. Zero config, free                                                                                      | Matt (Senior Dev) |
+| 2026-02-22 | Supabase endorsed with caveats                          | Matt: Supabase is fine, but design security + recurring invoices first, don't bolt on after                                                                                                         | Matt (Senior Dev) |
+| 2026-02-22 | B2C PII is a real concern                               | Matt: K&R clients invoice individuals. Personal names, home addresses, emails = PII. Needs DPIA, encryption, right to erasure before server-side storage                                            | Matt (Senior Dev) |
+| 2026-02-22 | Design schema around user personas                      | Matt: different users (CIS builder, consultant, B2C tradesperson, accountant) need different things. Schema must flex per persona from day one                                                      | Matt (Senior Dev) |
+| 2026-02-22 | Phase 3 effort increased to 3-4 weeks                   | Security design, DPIA, persona-based schema add ~1 week to original 2-3 week estimate                                                                                                               | Matt (Senior Dev) |
 
 ---
 
@@ -745,6 +916,10 @@ features: {
 6. HMRC Questionnaire timeline — when to submit?
 7. Direct Debit mandate consultation outcome — impact on payment APIs?
 8. Should we add `llms-full.txt` with detailed technical docs for AI agents?
+9. **DPIA scope:** Do we need a formal DPIA before Supabase, or can we self-assess? (ICO has a screening checklist)
+10. **Data retention:** How long do we keep customer PII server-side? (30 days after invoice paid? 6 years for HMRC?)
+11. **Right to erasure:** If an invoiced person requests deletion, do we anonymise or fully delete? (HMRC record-keeping conflicts with GDPR erasure)
+12. **GitHub branch protection:** Enable on `main` before Phase 3? (require PR review, no direct push)
 
 ---
 

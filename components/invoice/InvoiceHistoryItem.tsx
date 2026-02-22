@@ -19,6 +19,7 @@ export interface InvoiceHistoryItemProps {
   onDelete: () => void;
   onMarkAsPaid: () => void;
   onMarkAsUnpaid: () => void;
+  onRecordPayment: (amount: number) => void;
   onCreateCreditNote?: () => void;
   showPeekHint?: boolean;
 }
@@ -37,6 +38,7 @@ export default function InvoiceHistoryItem({
   onDelete,
   onMarkAsPaid,
   onMarkAsUnpaid,
+  onRecordPayment,
   onCreateCreditNote,
   showPeekHint,
 }: InvoiceHistoryItemProps) {
@@ -230,6 +232,7 @@ export default function InvoiceHistoryItem({
           invoice={invoice}
           onMarkAsPaid={onMarkAsPaid}
           onMarkAsUnpaid={onMarkAsUnpaid}
+          onRecordPayment={onRecordPayment}
         />
       </motion.div>
     </div>

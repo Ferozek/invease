@@ -52,6 +52,8 @@ export interface InvoiceDetails {
 
 export type VatRate = '0' | '5' | '20' | 'reverse_charge';
 
+export type DiscountType = 'percentage' | 'fixed';
+
 export interface LineItem {
   id: string;
   description: string;
@@ -59,6 +61,8 @@ export interface LineItem {
   netAmount: number;
   vatRate: VatRate;
   cisCategory: CisCategory; // For CIS subcontractors: labour vs materials
+  discountType?: DiscountType;
+  discountValue?: number;    // percentage (0-100) or fixed amount (£)
 }
 
 export interface BankDetails {

@@ -5,7 +5,7 @@ import { useCompanyStore } from '@/stores/companyStore';
 import { useInvoiceStore } from '@/stores/invoiceStore';
 import {
   formatCurrency,
-  calculateLineTotal,
+  calculateLineNet,
   formatDateUK,
   calculateDueDate,
   getPaymentTermsText,
@@ -157,19 +157,27 @@ export default function InvoicePreview({ totals }: InvoicePreviewProps) {
             <tbody>
               {lineItems
                 .filter((item) => item.description)
-                .map((item) => (
-                  <tr key={item.id} className="border-b border-slate-100">
-                    <td className="py-1">
-                      {item.description}
-                      <span className="text-slate-400 ml-1">x{item.quantity}</span>
-                    </td>
-                    <td className="text-right py-1">
-                      {formatCurrency(
-                        calculateLineTotal(item.quantity, item.netAmount, item.vatRate)
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                .map((item) => {
+                  const hasDiscount = !!item.discountType && !!item.discountValue && item.discountValue > 0;
+                  return (
+                    <tr key={item.id} className="border-b border-slate-100">
+                      <td className="py-1">
+                        {item.description}
+                        <span className="text-slate-400 ml-1">x{item.quantity}</span>
+                        {hasDiscount && (
+                          <span className="text-red-500 ml-1 text-[10px]">
+                            (-{item.discountType === 'percentage' ? `${item.discountValue}%` : formatCurrency(item.discountValue!)})
+                          </span>
+                        )}
+                      </td>
+                      <td className="text-right py-1">
+                        {formatCurrency(
+                          calculateLineNet(item.quantity, item.netAmount, item.discountType, item.discountValue)
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </table>
         </div>

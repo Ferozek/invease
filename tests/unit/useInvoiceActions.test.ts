@@ -84,6 +84,7 @@ function makeSavedInvoice(overrides: Partial<SavedInvoice> = {}): SavedInvoice {
     documentType: 'invoice',
     status: 'unpaid',
     dueDate: '2026-03-24',
+    amountPaid: 0,
     ...overrides,
   };
 }

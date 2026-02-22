@@ -26,10 +26,11 @@ export interface SavedInvoice {
   invoiceNumber: string;
   total: number;
   documentType: DocumentType;
-  // Payment tracking (Phase 2.5)
+  // Payment tracking
   status: PaymentStatus;
   dueDate: string;
   paidDate?: string;
+  amountPaid: number;
 }
 
 export interface RecentCustomer {
@@ -66,6 +67,7 @@ export interface HistoryState {
   // Payment actions
   markAsPaid: (id: string) => void;
   markAsUnpaid: (id: string) => void;
+  recordPayment: (id: string, amount: number) => void;
 
   // Customer actions
   addRecentCustomer: (customer: RecentCustomer) => void;
@@ -102,6 +104,7 @@ export const useHistoryStore = create<HistoryState>()(
           documentType: docType,
           status: 'unpaid',
           dueDate,
+          amountPaid: 0,
         };
 
         const recentCustomer: RecentCustomer = {
@@ -142,7 +145,7 @@ export const useHistoryStore = create<HistoryState>()(
         set((state) => ({
           invoices: state.invoices.map((inv) =>
             inv.id === id
-              ? { ...inv, status: 'paid' as PaymentStatus, paidDate: new Date().toISOString() }
+              ? { ...inv, status: 'paid' as PaymentStatus, paidDate: new Date().toISOString(), amountPaid: inv.total }
               : inv
           ),
         }));
@@ -152,9 +155,25 @@ export const useHistoryStore = create<HistoryState>()(
         set((state) => ({
           invoices: state.invoices.map((inv) =>
             inv.id === id
-              ? { ...inv, status: 'unpaid' as PaymentStatus, paidDate: undefined }
+              ? { ...inv, status: 'unpaid' as PaymentStatus, paidDate: undefined, amountPaid: 0 }
               : inv
           ),
+        }));
+      },
+
+      recordPayment: (id, amount) => {
+        set((state) => ({
+          invoices: state.invoices.map((inv) => {
+            if (inv.id !== id) return inv;
+            const newAmountPaid = Math.min(inv.total, Math.max(0, (inv.amountPaid || 0) + amount));
+            const isFullyPaid = newAmountPaid >= inv.total;
+            return {
+              ...inv,
+              amountPaid: newAmountPaid,
+              status: (isFullyPaid ? 'paid' : 'unpaid') as PaymentStatus,
+              paidDate: isFullyPaid ? new Date().toISOString() : inv.paidDate,
+            };
+          }),
         }));
       },
 
@@ -203,7 +222,7 @@ export const useHistoryStore = create<HistoryState>()(
     {
       name: 'invease-history',
       storage: createJSONStorage(() => localStorage),
-      version: 3,
+      version: 4,
       migrate: (persistedState, version) => {
         const state = persistedState as { invoices?: SavedInvoice[] };
         if (version < 2 && state.invoices) {
@@ -222,6 +241,13 @@ export const useHistoryStore = create<HistoryState>()(
               inv.invoice?.details?.date || getTodayISO(),
               inv.invoice?.details?.paymentTerms || '30'
             ),
+          }));
+        }
+        if (version < 4 && state.invoices) {
+          // v3 → v4: Add amountPaid for partial payments
+          state.invoices = state.invoices.map((inv) => ({
+            ...inv,
+            amountPaid: inv.status === 'paid' ? inv.total : 0,
           }));
         }
         return state as HistoryState;
@@ -296,6 +322,7 @@ export const selectDashboardStats = (
   for (const inv of state.invoices) {
     const inPeriod = isWithinPeriod(inv.invoice.details.date, period);
     const isCreditNote = inv.documentType === 'credit_note';
+    const paid = inv.amountPaid || 0;
 
     // Period stats (invoiced this month/quarter/year)
     if (inPeriod) {
@@ -304,10 +331,8 @@ export const selectDashboardStats = (
       } else {
         totalInvoiced += inv.total;
         invoiceCount++;
-        // Collection stats for the ring
-        if (inv.status === 'paid') {
-          totalCollected += inv.total;
-        }
+        // Collection stats: use actual amount paid (supports partial payments)
+        totalCollected += paid;
       }
     }
 
@@ -323,13 +348,16 @@ export const selectDashboardStats = (
       if (!relatedIsPaid) {
         currentAmount -= inv.total;
       }
-    } else if ((inv.status || 'unpaid') === 'unpaid') {
-      if (inv.dueDate && inv.dueDate < today) {
-        overdueAmount += inv.total;
-        overdueCount++;
-      } else {
-        currentAmount += inv.total;
-        currentCount++;
+    } else {
+      const outstanding = inv.total - paid;
+      if (outstanding > 0) {
+        if (inv.dueDate && inv.dueDate < today) {
+          overdueAmount += outstanding;
+          overdueCount++;
+        } else {
+          currentAmount += outstanding;
+          currentCount++;
+        }
       }
     }
   }
@@ -354,7 +382,7 @@ export const selectOverdueInvoices = (state: HistoryState) => {
   return state.invoices.filter(
     (inv) =>
       (inv.documentType || 'invoice') !== 'credit_note' &&
-      (inv.status || 'unpaid') === 'unpaid' &&
+      (inv.amountPaid || 0) < inv.total &&
       inv.dueDate &&
       inv.dueDate < today
   );
@@ -364,14 +392,14 @@ export const selectUnpaidInvoices = (state: HistoryState) =>
   state.invoices.filter(
     (inv) =>
       (inv.documentType || 'invoice') !== 'credit_note' &&
-      (inv.status || 'unpaid') === 'unpaid'
+      (inv.amountPaid || 0) < inv.total
   );
 
 export const selectPaidInvoices = (state: HistoryState) =>
   state.invoices.filter(
     (inv) =>
       (inv.documentType || 'invoice') !== 'credit_note' &&
-      inv.status === 'paid'
+      (inv.amountPaid || 0) >= inv.total
   );
 
 // ===== Customer Selectors =====

@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHistoryStore, type SavedInvoice } from '@/stores/historyStore';
+import { generateHistoryExportCsv, downloadCsv } from '@/lib/export/csvExport';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import InvoiceHistoryItem, { PEEK_HINT_KEY } from './InvoiceHistoryItem';
 import CustomerMergePanel from './CustomerMergePanel';
@@ -40,6 +41,7 @@ export default function InvoiceHistoryPanel({
   const deleteInvoice = useHistoryStore((state) => state.deleteInvoice);
   const markAsPaid = useHistoryStore((state) => state.markAsPaid);
   const markAsUnpaid = useHistoryStore((state) => state.markAsUnpaid);
+  const recordPayment = useHistoryStore((state) => state.recordPayment);
 
   // Derive state from props — official React pattern for adjusting state when props change
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
@@ -89,7 +91,8 @@ export default function InvoiceHistoryPanel({
     let unpaid = 0, overdue = 0, paid = 0;
     for (const inv of docFiltered) {
       if (inv.documentType === 'credit_note') continue;
-      if (inv.status === 'paid') paid++;
+      const isFullyPaid = (inv.amountPaid || 0) >= inv.total;
+      if (isFullyPaid) paid++;
       else if (inv.dueDate && inv.dueDate < today) { overdue++; unpaid++; }
       else unpaid++;
     }
@@ -110,9 +113,10 @@ export default function InvoiceHistoryPanel({
     if (statusFilter !== 'all') {
       results = results.filter((inv) => {
         if (inv.documentType === 'credit_note') return false;
-        if (statusFilter === 'paid') return inv.status === 'paid';
-        if (statusFilter === 'overdue') return (inv.status || 'unpaid') === 'unpaid' && inv.dueDate && inv.dueDate < today;
-        if (statusFilter === 'unpaid') return (inv.status || 'unpaid') === 'unpaid';
+        const isFullyPaid = (inv.amountPaid || 0) >= inv.total;
+        if (statusFilter === 'paid') return isFullyPaid;
+        if (statusFilter === 'overdue') return !isFullyPaid && inv.dueDate && inv.dueDate < today;
+        if (statusFilter === 'unpaid') return !isFullyPaid;
         return true;
       });
     }
@@ -128,6 +132,13 @@ export default function InvoiceHistoryPanel({
 
     return results;
   }, [invoices, searchQuery, filterTab, statusFilter]);
+
+  const handleExportCsv = useCallback(() => {
+    if (filteredInvoices.length === 0) return;
+    const csv = generateHistoryExportCsv(filteredInvoices);
+    const date = new Date().toISOString().split('T')[0];
+    downloadCsv(csv, `invease-history-${date}.csv`);
+  }, [filteredInvoices]);
 
   // Peek hint for first unpaid invoice
   const peekHintId = useMemo(() => {
@@ -179,6 +190,20 @@ export default function InvoiceHistoryPanel({
             <div className="flex items-center justify-between p-4 border-b border-[var(--surface-border)]">
               <h2 className="text-lg font-semibold text-[var(--text-primary)]">History</h2>
               <div className="flex items-center gap-1">
+                {/* Export CSV button */}
+                {filteredInvoices.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleExportCsv}
+                    className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
+                    aria-label="Export to CSV"
+                    title="Export CSV"
+                  >
+                    <svg className="w-5 h-5 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                    </svg>
+                  </button>
+                )}
                 {/* Customers / Merge button */}
                 {invoices.length > 0 && (
                   <button
@@ -340,6 +365,7 @@ export default function InvoiceHistoryPanel({
                             onDelete={() => handleDeleteRequest(inv)}
                             onMarkAsPaid={() => markAsPaid(inv.id)}
                             onMarkAsUnpaid={() => markAsUnpaid(inv.id)}
+                            onRecordPayment={(amount) => recordPayment(inv.id, amount)}
                             onCreateCreditNote={
                               onCreateCreditNote && (inv.documentType || 'invoice') === 'invoice'
                                 ? () => onCreateCreditNote(inv)
