@@ -46,6 +46,25 @@ interface CompanyProfileResponse {
   date_of_creation?: string;
 }
 
+/** Fetch with exponential backoff retry for transient failures (429, 500, 502, 503, 504) */
+async function fetchWithRetry(
+  url: string | URL,
+  init: RequestInit,
+  maxRetries = 2
+): Promise<Response> {
+  let lastResponse: Response | null = null;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const res = await fetch(url, init);
+    if (res.ok || (res.status < 500 && res.status !== 429)) return res;
+    lastResponse = res;
+    if (attempt < maxRetries) {
+      const delay = Math.min(1000 * 2 ** attempt, 4000);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+  return lastResponse!;
+}
+
 function authHeader(): string | undefined {
   // Read directly from process.env to bypass validation module caching issues
   const key = process.env.COMPANIES_HOUSE_API_KEY;
@@ -67,7 +86,7 @@ export async function searchCompanies(q: string, limit = 5): Promise<CompanyLite
   url.searchParams.set('q', q);
   url.searchParams.set('items_per_page', String(limit));
 
-  const res = await fetch(url, { headers: { Authorization: auth } });
+  const res = await fetchWithRetry(url, { headers: { Authorization: auth } });
   if (!res.ok) {
     logger.warn(`[companiesHouse] Search failed (${res.status})`);
     return [];
@@ -91,7 +110,7 @@ export async function getCompanyByNumber(number: string): Promise<CompanyLite | 
     return null;
   }
 
-  const res = await fetch(
+  const res = await fetchWithRetry(
     `https://api.company-information.service.gov.uk/company/${encodeURIComponent(number)}`,
     { headers: { Authorization: auth } }
   );
