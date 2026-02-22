@@ -230,6 +230,46 @@ Invease can't out-feature Zoho or Xero. It wins on **simplicity, speed, and priv
 
 - Statement of Account PDF (spec written, client-side feasible via `selectUniqueCustomers()` + @react-pdf/renderer)
 - Bank transfer UX improvements (QR code on PDF, prominent payment section, auto-generated payment reference)
+- **Line item discounts** (Xero feature parity — see design spec below)
+
+#### Line Item Discounts — Design Spec
+
+**What:** Optional discount per line item (percentage or fixed amount). Common in Xero, QuickBooks, Zoho.
+
+**Where it fits:** Invoice form > Line Items section. No backend required — pure client-side calculation.
+
+**Apple HIG approach by device:**
+
+| Device             | Pattern                                                                                                                                                                                                                                                               | Detail |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| **iPhone**         | Progressive disclosure — discount is hidden by default. Tap "Add discount" link below the line item row. Opens an inline field (not a modal). Percentage toggle vs fixed amount as a segmented control (Apple HIG pill switcher).                                     |
+| **iPad**           | Same as iPhone but discount field appears inline in the wider line item card. Segmented control sits to the right of the amount field. More horizontal space = show both % and £ options side by side.                                                                |
+| **Desktop/Laptop** | Discount column appears in the line items table when any discount is present. Column header: "Discount". Dropdown in the column header to toggle between % and £ for the whole invoice (Xero pattern). Empty by default — field only becomes visible after first use. |
+
+**Calculation logic:**
+
+```
+lineNet = (netAmount × quantity) - discount
+  where discount = netAmount × quantity × (discountPercent / 100)  [percentage mode]
+     or discount = discountAmount                                   [fixed mode]
+VAT is calculated on lineNet (post-discount)
+```
+
+**Data model addition to `LineItem`:**
+
+```ts
+discountType?: 'percentage' | 'fixed';  // undefined = no discount
+discountValue?: number;                  // percentage (0-100) or fixed amount
+```
+
+**PDF output:** Show discount as a separate line under the line item (italic, muted text):
+
+```
+Web Development         2 × £500.00    £1,000.00
+  Discount (10%)                         -£100.00
+```
+
+**Priority:** Low — nice-to-have for Xero parity, not required for MVP or K&R clients.
 
 ### Edge cases & Apple UX patterns (apply across all phases)
 
