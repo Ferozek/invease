@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
 import { useHistoryStore, type SavedInvoice } from '@/stores/historyStore';
 import { generateHistoryExportCsv, downloadCsv } from '@/lib/export/csvExport';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
@@ -39,11 +40,14 @@ export default function InvoiceHistoryPanel({
   const [showMergePanel, setShowMergePanel] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const invoices = useHistoryStore((state) => state.invoices);
   const deleteInvoice = useHistoryStore((state) => state.deleteInvoice);
   const markAsPaid = useHistoryStore((state) => state.markAsPaid);
   const markAsUnpaid = useHistoryStore((state) => state.markAsUnpaid);
   const recordPayment = useHistoryStore((state) => state.recordPayment);
+  const bulkMarkAsPaid = useHistoryStore((state) => state.bulkMarkAsPaid);
+  const bulkDelete = useHistoryStore((state) => state.bulkDelete);
 
   // Derive state from props — official React pattern for adjusting state when props change
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
@@ -440,6 +444,54 @@ export default function InvoiceHistoryPanel({
                 ))
               )}
             </div>
+
+            {/* Bulk Actions Toolbar — Apple-style bottom bar when items selected */}
+            {selectionMode && selectedIds.size > 0 && (
+              <motion.div
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                className="border-t border-[var(--surface-border)] bg-[var(--surface-card)] px-4 py-3 flex items-center gap-2"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    bulkMarkAsPaid(Array.from(selectedIds));
+                    toast.success(`${selectedIds.size} marked as paid`);
+                    setSelectedIds(new Set());
+                    setSelectionMode(false);
+                  }}
+                  className="cursor-pointer flex-1 py-2.5 rounded-xl bg-[#34C759] text-white text-sm font-semibold
+                    hover:bg-[#2DB84E] transition-colors min-h-[44px]"
+                >
+                  Mark as Paid
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const selected = filteredInvoices.filter((inv) => selectedIds.has(inv.id));
+                    if (selected.length === 0) return;
+                    const csv = generateHistoryExportCsv(selected);
+                    const date = new Date().toISOString().split('T')[0];
+                    downloadCsv(csv, `invease-selected-${date}.csv`);
+                    toast.success(`${selected.length} exported to CSV`);
+                  }}
+                  className="cursor-pointer py-2.5 px-4 rounded-xl bg-[var(--surface-elevated)] text-[var(--text-primary)] text-sm font-medium
+                    hover:bg-[var(--surface-border)] transition-colors min-h-[44px]"
+                >
+                  Export
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowBulkDeleteConfirm(true)}
+                  className="cursor-pointer py-2.5 px-4 rounded-xl bg-[var(--destructive-bg)] text-[var(--destructive-text)] text-sm font-semibold
+                    hover:opacity-80 transition-opacity min-h-[44px]"
+                >
+                  Delete
+                </button>
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Delete Confirmation Dialog */}
@@ -449,6 +501,24 @@ export default function InvoiceHistoryPanel({
             onConfirm={handleConfirmDelete}
             title="Delete Invoice?"
             message={invoiceToDelete ? `This will permanently delete invoice #${invoiceToDelete.invoiceNumber} for ${invoiceToDelete.customerName}. This cannot be undone.` : ''}
+            confirmText="Delete"
+            cancelText="Keep"
+            isDestructive
+          />
+
+          {/* Bulk Delete Confirmation Dialog */}
+          <ConfirmDialog
+            isOpen={showBulkDeleteConfirm}
+            onClose={() => setShowBulkDeleteConfirm(false)}
+            onConfirm={() => {
+              bulkDelete(Array.from(selectedIds));
+              toast.success(`${selectedIds.size} deleted`);
+              setShowBulkDeleteConfirm(false);
+              setSelectedIds(new Set());
+              setSelectionMode(false);
+            }}
+            title={`Delete ${selectedIds.size} item${selectedIds.size === 1 ? '' : 's'}?`}
+            message={`This will permanently delete ${selectedIds.size} selected invoice${selectedIds.size === 1 ? '' : 's'}. This cannot be undone.`}
             confirmText="Delete"
             cancelText="Keep"
             isDestructive

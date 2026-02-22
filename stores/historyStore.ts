@@ -69,6 +69,10 @@ export interface HistoryState {
   markAsUnpaid: (id: string) => void;
   recordPayment: (id: string, amount: number) => void;
 
+  // Bulk actions
+  bulkMarkAsPaid: (ids: string[]) => void;
+  bulkDelete: (ids: string[]) => void;
+
   // Customer actions
   addRecentCustomer: (customer: RecentCustomer) => void;
   getRecentCustomers: () => RecentCustomer[];
@@ -158,6 +162,24 @@ export const useHistoryStore = create<HistoryState>()(
               ? { ...inv, status: 'unpaid' as PaymentStatus, paidDate: undefined, amountPaid: 0 }
               : inv
           ),
+        }));
+      },
+
+      bulkMarkAsPaid: (ids) => {
+        const idSet = new Set(ids);
+        set((state) => ({
+          invoices: state.invoices.map((inv) =>
+            idSet.has(inv.id)
+              ? { ...inv, status: 'paid' as PaymentStatus, paidDate: new Date().toISOString(), amountPaid: inv.total }
+              : inv
+          ),
+        }));
+      },
+
+      bulkDelete: (ids) => {
+        const idSet = new Set(ids);
+        set((state) => ({
+          invoices: state.invoices.filter((inv) => !idSet.has(inv.id)),
         }));
       },
 
