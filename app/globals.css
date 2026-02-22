@@ -412,6 +412,18 @@
   color: var(--text-muted);
 }
 
+/* Slide-up animation for cookie consent banner */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 /* Shake animation for validation errors - per Apple HIG */
 @keyframes shake {
   0%, 100% {
