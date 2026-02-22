@@ -20,9 +20,11 @@ export default function InvoiceDefaults() {
   const defaultPaymentTerms = useSettingsStore((s) => s.defaultPaymentTerms);
   const defaultVatRate = useSettingsStore((s) => s.defaultVatRate);
   const defaultNotes = useSettingsStore((s) => s.defaultNotes);
+  const showLatePaymentNotice = useSettingsStore((s) => s.showLatePaymentNotice);
   const setDefaultPaymentTerms = useSettingsStore((s) => s.setDefaultPaymentTerms);
   const setDefaultVatRate = useSettingsStore((s) => s.setDefaultVatRate);
   const setDefaultNotes = useSettingsStore((s) => s.setDefaultNotes);
+  const setShowLatePaymentNotice = useSettingsStore((s) => s.setShowLatePaymentNotice);
 
   return (
     <div className="space-y-4">
@@ -103,6 +105,39 @@ export default function InvoiceDefaults() {
         <p className="mt-1 text-xs text-[var(--text-muted)]">
           Added to every new invoice. {defaultNotes.length}/2000
         </p>
+      </div>
+
+      {/* Late Payment Interest Notice */}
+      <div className="flex items-center justify-between">
+        <div className="flex-1 min-w-0">
+          <label
+            htmlFor="late-payment-notice"
+            className="block text-sm font-medium text-[var(--text-primary)]"
+          >
+            Late Payment Notice
+          </label>
+          <p className="text-xs text-[var(--text-muted)] mt-0.5">
+            Statutory interest notice on invoices (UK law)
+          </p>
+        </div>
+        <button
+          id="late-payment-notice"
+          type="button"
+          role="switch"
+          aria-checked={showLatePaymentNotice}
+          onClick={() => setShowLatePaymentNotice(!showLatePaymentNotice)}
+          className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full
+            transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2
+            focus:ring-[var(--brand-blue)]/30 ${
+              showLatePaymentNotice ? 'bg-[var(--brand-blue)]' : 'bg-[var(--surface-border)]'
+            }`}
+        >
+          <span
+            className={`pointer-events-none inline-block h-6 w-6 transform rounded-full
+              bg-white shadow-sm ring-0 transition duration-200 ease-in-out mt-0.5
+              ${showLatePaymentNotice ? 'translate-x-5 ml-0.5' : 'translate-x-0.5'}`}
+          />
+        </button>
       </div>
     </div>
   );

@@ -2,6 +2,8 @@
 
 import { useState, useCallback } from 'react';
 import { useInvoiceStore } from '@/stores/invoiceStore';
+import { useHistoryStore, findInvoiceByNumber } from '@/stores/historyStore';
+import { formatDateUK } from '@/lib/dateUtils';
 import { validateRequired } from '@/lib/validationPatterns';
 import { FieldError } from '@/components/ui/FormField';
 import { PAYMENT_TERMS_OPTIONS } from '@/config/constants';
@@ -13,6 +15,9 @@ import CreditNoteFields from './CreditNoteFields';
  */
 export default function InvoiceDetailsForm() {
   const { details, setInvoiceDetails } = useInvoiceStore();
+
+  // Duplicate invoice number warning (non-blocking)
+  const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null);
 
   // Validation state
   const [errors, setErrors] = useState<Record<string, string | null>>({
@@ -35,6 +40,17 @@ export default function InvoiceDetailsForm() {
         break;
       case 'invoiceNumber':
         result = validateRequired(value, 'Invoice number');
+        // Check for duplicate in history (non-blocking warning)
+        if (value.trim()) {
+          const savedAt = findInvoiceByNumber(useHistoryStore.getState(), value);
+          setDuplicateWarning(
+            savedAt
+              ? `This number was used on ${formatDateUK(savedAt.slice(0, 10))}. Consider a unique number.`
+              : null
+          );
+        } else {
+          setDuplicateWarning(null);
+        }
         break;
       default:
         return;
@@ -45,7 +61,7 @@ export default function InvoiceDetailsForm() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
         <div>
           <label htmlFor="invoiceDate" className="form-label form-label-required">Invoice Date</label>
           <input
@@ -81,6 +97,26 @@ export default function InvoiceDetailsForm() {
             onBlur={(e) => handleBlur('invoiceNumber', e.target.value)}
           />
           <FieldError error={touched.invoiceNumber ? errors.invoiceNumber : null} />
+          {duplicateWarning && !errors.invoiceNumber && (
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+              <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+              </svg>
+              {duplicateWarning}
+            </p>
+          )}
+        </div>
+        <div>
+          <label htmlFor="poNumber" className="form-label">PO Number</label>
+          <input
+            id="poNumber"
+            type="text"
+            className="form-input"
+            placeholder="e.g. PO-12345"
+            value={details.poNumber}
+            onChange={(e) => setInvoiceDetails({ poNumber: e.target.value })}
+          />
+          <p className="text-xs text-[var(--text-muted)] mt-1">Customer&apos;s reference</p>
         </div>
         <div>
           <label htmlFor="paymentTerms" className="form-label form-label-required">Payment Terms</label>

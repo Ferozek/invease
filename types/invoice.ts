@@ -30,6 +30,7 @@ export interface InvoicerDetails {
 export interface CustomerDetails {
   name: string;
   email: string;
+  phone: string;
   address: string;
   postCode: string;
 }
@@ -44,6 +45,7 @@ export interface InvoiceDetails {
   date: string;
   supplyDate: string; // Optional: date goods/services were supplied (HMRC tax point, if different from invoice date)
   invoiceNumber: string;
+  poNumber: string; // Optional Purchase Order reference from customer
   paymentTerms: string; // Number of days, e.g., "30"
   notes: string; // Optional notes/terms for the invoice
   documentType: DocumentType; // 'invoice' or 'credit_note'

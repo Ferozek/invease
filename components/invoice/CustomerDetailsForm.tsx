@@ -74,6 +74,7 @@ export default function CustomerDetailsForm() {
     setCustomerDetails({
       name: c.name,
       email: c.email,
+      phone: c.phone || '',
       address: c.address,
       postCode: c.postCode,
     });
@@ -243,6 +244,19 @@ export default function CustomerDetailsForm() {
           onChange={(e) => setCustomerDetails({ email: e.target.value.toLowerCase() })}
         />
         <p className="text-xs text-[var(--text-muted)] mt-1">For sending invoice</p>
+      </div>
+      <div>
+        <label htmlFor="customerPhone" className="form-label">Phone</label>
+        <input
+          id="customerPhone"
+          type="tel"
+          autoComplete="tel"
+          className="form-input"
+          placeholder="e.g. 020 7946 0958"
+          value={customer.phone}
+          onChange={(e) => setCustomerDetails({ phone: e.target.value })}
+        />
+        <p className="text-xs text-[var(--text-muted)] mt-1">For payment queries</p>
       </div>
       <div>
         <label htmlFor="customerPostCode" className="form-label form-label-required">Post Code</label>

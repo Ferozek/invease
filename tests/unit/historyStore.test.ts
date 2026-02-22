@@ -36,6 +36,7 @@ function makeInvoiceData(overrides: {
     customer: {
       name: overrides.customerName || 'Acme Corp',
       email: 'test@acme.com',
+      phone: '',
       address: '2 Client Rd',
       postCode: 'C2 2CC',
     },
@@ -43,6 +44,7 @@ function makeInvoiceData(overrides: {
       date: overrides.date || '2026-02-22',
       supplyDate: '',
       invoiceNumber: overrides.invoiceNumber || 'INV-0001',
+      poNumber: '',
       paymentTerms: overrides.paymentTerms || '30',
       notes: '',
       documentType: docType,

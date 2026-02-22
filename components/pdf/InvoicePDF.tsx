@@ -29,9 +29,10 @@ interface InvoicePDFProps {
   templateId?: string;
   brandColor?: string;
   watermark?: WatermarkType;
+  showLatePaymentNotice?: boolean;
 }
 
-export default function InvoicePDF({ invoice, totals, templateId, brandColor, watermark }: InvoicePDFProps) {
+export default function InvoicePDF({ invoice, totals, templateId, brandColor, watermark, showLatePaymentNotice }: InvoicePDFProps) {
   const template = getTemplate(templateId || 'modern');
   const styles = createPdfStyles(template, brandColor || undefined);
   const isCreditNote = invoice.details.documentType === 'credit_note';
@@ -86,6 +87,9 @@ export default function InvoicePDF({ invoice, totals, templateId, brandColor, wa
               {isCreditNote ? 'CREDIT NOTE' : 'INVOICE'}
             </Text>
             <Text style={styles.invoiceNumber}>#{invoice.details.invoiceNumber}</Text>
+            {invoice.details.poNumber ? (
+              <Text style={styles.invoiceDate}>PO: {invoice.details.poNumber}</Text>
+            ) : null}
             {isCreditNote && invoice.details.creditNoteFields?.relatedInvoiceNumber && (
               <Text style={styles.creditNoteReference}>
                 Ref: Invoice #{invoice.details.creditNoteFields.relatedInvoiceNumber}
@@ -112,6 +116,7 @@ export default function InvoicePDF({ invoice, totals, templateId, brandColor, wa
             {invoice.customer.address}
             {'\n'}
             {invoice.customer.postCode}
+            {invoice.customer.phone ? `\nTel: ${invoice.customer.phone}` : ''}
           </Text>
         </View>
 
@@ -326,6 +331,15 @@ export default function InvoicePDF({ invoice, totals, templateId, brandColor, wa
             <Text style={styles.notesText}>{invoice.details.notes}</Text>
           </View>
         )}
+
+        {/* Late Payment Interest Notice — UK statutory right */}
+        {showLatePaymentNotice && !isCreditNote ? (
+          <View style={{ marginTop: 8, padding: 6 }}>
+            <Text style={{ fontSize: 7, color: template.colors.textMuted, fontStyle: 'italic', lineHeight: 1.4 }}>
+              Under the Late Payment of Commercial Debts (Interest) Act 1998, we reserve the right to charge interest on overdue invoices at 8% above the Bank of England base rate, plus a fixed compensation charge.
+            </Text>
+          </View>
+        ) : null}
 
         {/* Footer */}
         <Text style={styles.footer}>

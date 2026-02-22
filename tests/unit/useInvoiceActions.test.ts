@@ -32,6 +32,7 @@ function makeInvoiceData(overrides: Partial<InvoiceData> = {}): InvoiceData {
     customer: {
       name: 'Acme Corp',
       email: 'test@acme.com',
+      phone: '',
       address: '2 Client Rd',
       postCode: 'C2 2CC',
     },
@@ -39,6 +40,7 @@ function makeInvoiceData(overrides: Partial<InvoiceData> = {}): InvoiceData {
       date: '2026-02-22',
       supplyDate: '',
       invoiceNumber: 'INV-0001',
+      poNumber: '',
       paymentTerms: '30',
       notes: '',
       documentType: 'invoice',

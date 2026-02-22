@@ -64,6 +64,7 @@ export default function PDFPreviewModal({
   const [isSharePending, setIsSharePending] = useState(false);
   const brandColor = useSettingsStore((s) => s.customPrimaryColor);
   const templateId = useSettingsStore((s) => s.templateId);
+  const showLatePaymentNotice = useSettingsStore((s) => s.showLatePaymentNotice);
   const prefersReducedMotion = useReducedMotion();
 
   // Check if sharing is supported on mount
@@ -96,7 +97,7 @@ export default function PDFPreviewModal({
 
         // Generate PDF blob
         const blob = await pdf(
-          <InvoicePDF invoice={cleanedInvoice} totals={totals} templateId={templateId} brandColor={brandColor ?? undefined} watermark={watermark} />
+          <InvoicePDF invoice={cleanedInvoice} totals={totals} templateId={templateId} brandColor={brandColor ?? undefined} watermark={watermark} showLatePaymentNotice={showLatePaymentNotice} />
         ).toBlob();
 
         // Store blob for sharing
@@ -121,7 +122,7 @@ export default function PDFPreviewModal({
         URL.revokeObjectURL(pdfUrl);
       }
     };
-  }, [isOpen, invoice, totals, templateId, brandColor, watermark]);
+  }, [isOpen, invoice, totals, templateId, brandColor, watermark, showLatePaymentNotice]);
 
   // Handle escape key
   useEffect(() => {
@@ -419,7 +420,6 @@ ${companyName}`;
               {pdfUrl && !isLoading && !error && (
                 <iframe
                   src={pdfUrl}
-                  sandbox="allow-same-origin"
                   className="w-full h-full max-w-[800px] bg-white rounded shadow-lg"
                   title="Invoice PDF Preview"
                 />

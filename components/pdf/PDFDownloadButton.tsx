@@ -93,6 +93,7 @@ const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
     const [isMounted, setIsMounted] = useState(false);
     const brandColor = useSettingsStore((s) => s.customPrimaryColor);
     const templateId = useSettingsStore((s) => s.templateId);
+    const showLatePaymentNotice = useSettingsStore((s) => s.showLatePaymentNotice);
 
     // Only render on client
     useEffect(() => {
@@ -127,7 +128,7 @@ const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
 
         // Generate PDF blob
         const blob = await pdf(
-          <InvoicePDF invoice={cleanedInvoice} totals={totals} templateId={templateId} brandColor={brandColor ?? undefined} watermark={watermark} />
+          <InvoicePDF invoice={cleanedInvoice} totals={totals} templateId={templateId} brandColor={brandColor ?? undefined} watermark={watermark} showLatePaymentNotice={showLatePaymentNotice} />
         ).toBlob();
 
         // Create download link

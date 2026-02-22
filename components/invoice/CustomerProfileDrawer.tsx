@@ -1,9 +1,16 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useCallback } from 'react';
+import { pdf } from '@react-pdf/renderer';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHistoryStore, type SavedInvoice } from '@/stores/historyStore';
+import { useCompanyStore } from '@/stores/companyStore';
+import { useSettingsStore } from '@/stores/settingsStore';
 import { formatCurrency } from '@/lib/formatters';
+import { getCustomerInvoices, buildStatementRows, getStatementSummary } from '@/lib/statementUtils';
+import StatementPDF from '@/components/pdf/StatementPDF';
+import logger from '@/lib/logger';
 
 interface CustomerProfileDrawerProps {
   isOpen: boolean;
@@ -28,6 +35,13 @@ export default function CustomerProfileDrawer({
   const invoices = useHistoryStore((state) => state.invoices);
   const getCustomerNote = useHistoryStore((state) => state.getCustomerNote);
   const setCustomerNote = useHistoryStore((state) => state.setCustomerNote);
+  const companyName = useCompanyStore((s) => s.companyName);
+  const companyAddress = useCompanyStore((s) => s.address);
+  const companyPostCode = useCompanyStore((s) => s.postCode);
+  const templateId = useSettingsStore((s) => s.templateId);
+  const brandColor = useSettingsStore((s) => s.customPrimaryColor);
+
+  const [isGeneratingStatement, setIsGeneratingStatement] = useState(false);
 
   // Sync note text when customer changes (React "derive state from props" pattern)
   const [noteText, setNoteText] = useState('');
@@ -72,6 +86,48 @@ export default function CustomerProfileDrawer({
       creditNoteCount,
     };
   }, [customerInvoices]);
+
+  // Download Statement handler
+  const handleDownloadStatement = useCallback(async () => {
+    if (isGeneratingStatement || customerInvoices.length === 0) return;
+    setIsGeneratingStatement(true);
+    try {
+      const sorted = getCustomerInvoices(invoices, customerName);
+      const rows = buildStatementRows(sorted);
+      const summary = getStatementSummary(sorted);
+      const latest = customerInvoices[0];
+
+      const blob = await pdf(
+        <StatementPDF
+          companyName={companyName || 'Your Company'}
+          companyAddress={companyAddress}
+          companyPostCode={companyPostCode}
+          customerName={customerName}
+          customerAddress={latest?.invoice.customer.address || ''}
+          customerPostCode={latest?.invoice.customer.postCode || ''}
+          rows={rows}
+          summary={summary}
+          templateId={templateId}
+          brandColor={brandColor ?? undefined}
+        />
+      ).toBlob();
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Statement-${customerName.replace(/\s+/g, '-')}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('Statement downloaded');
+    } catch (error) {
+      toast.error('Failed to generate statement');
+      logger.error('Statement generation failed', error);
+    } finally {
+      setIsGeneratingStatement(false);
+    }
+  }, [isGeneratingStatement, customerInvoices, invoices, customerName, companyName, companyAddress, companyPostCode, templateId, brandColor]);
 
   // Customer details from most recent invoice
   const latestInvoice = customerInvoices[0];
@@ -123,6 +179,29 @@ export default function CustomerProfileDrawer({
                   {customerName}
                 </h2>
               </div>
+              <div className="flex items-center gap-1">
+                {customerInvoices.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleDownloadStatement}
+                    disabled={isGeneratingStatement}
+                    className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors shrink-0
+                      text-[var(--brand-blue)] disabled:opacity-50"
+                    aria-label="Download Statement"
+                    title="Download Statement of Account"
+                  >
+                    {isGeneratingStatement ? (
+                      <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                      </svg>
+                    )}
+                  </button>
+                )}
               <button
                 type="button"
                 onClick={onClose}
@@ -133,6 +212,7 @@ export default function CustomerProfileDrawer({
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
+              </div>
             </div>
 
             {/* Customer Details */}

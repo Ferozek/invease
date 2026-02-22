@@ -35,6 +35,7 @@ interface SettingsState {
   defaultPaymentTerms: string;
   defaultVatRate: VatRate;
   defaultNotes: string;
+  showLatePaymentNotice: boolean;
 
   // Actions - Template
   setTemplateId: (id: string) => void;
@@ -56,6 +57,7 @@ interface SettingsState {
   setDefaultPaymentTerms: (terms: string) => void;
   setDefaultVatRate: (rate: VatRate) => void;
   setDefaultNotes: (notes: string) => void;
+  setShowLatePaymentNotice: (show: boolean) => void;
 }
 
 // ===== Store =====
@@ -71,6 +73,7 @@ export const useSettingsStore = create<SettingsState>()(
       defaultPaymentTerms: '30',
       defaultVatRate: '20' as VatRate,
       defaultNotes: '',
+      showLatePaymentNotice: false,
 
       // Template Actions
       setTemplateId: (id) => set({ templateId: id }),
@@ -136,18 +139,21 @@ export const useSettingsStore = create<SettingsState>()(
       setDefaultPaymentTerms: (terms) => set({ defaultPaymentTerms: terms }),
       setDefaultVatRate: (rate) => set({ defaultVatRate: rate }),
       setDefaultNotes: (notes) => set({ defaultNotes: notes }),
+      setShowLatePaymentNotice: (show) => set({ showLatePaymentNotice: show }),
     }),
     {
       name: 'invease-settings',
       storage: createJSONStorage(() => localStorage),
-      version: 2,
+      version: 3,
       migrate: (persisted, version) => {
         const state = persisted as Record<string, unknown>;
         if (version < 2) {
-          // Add invoice defaults for existing users
           state.defaultPaymentTerms = state.defaultPaymentTerms ?? '30';
           state.defaultVatRate = state.defaultVatRate ?? '20';
           state.defaultNotes = state.defaultNotes ?? '';
+        }
+        if (version < 3) {
+          state.showLatePaymentNotice = state.showLatePaymentNotice ?? false;
         }
         return state as unknown as SettingsState;
       },
@@ -164,3 +170,4 @@ export const selectCnNumberingConfig = (state: SettingsState) => state.cnNumberi
 export const selectDefaultPaymentTerms = (state: SettingsState) => state.defaultPaymentTerms;
 export const selectDefaultVatRate = (state: SettingsState) => state.defaultVatRate;
 export const selectDefaultNotes = (state: SettingsState) => state.defaultNotes;
+export const selectShowLatePaymentNotice = (state: SettingsState) => state.showLatePaymentNotice;

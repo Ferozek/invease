@@ -55,6 +55,7 @@ const createEmptyLineItem = (isCis: boolean = false, vatRate?: VatRate): LineIte
 const defaultCustomer: CustomerDetails = {
   name: '',
   email: '',
+  phone: '',
   address: '',
   postCode: '',
 };
@@ -63,6 +64,7 @@ const defaultInvoiceDetails: InvoiceDetails = {
   date: getTodayISO(),
   supplyDate: '',
   invoiceNumber: '',
+  poNumber: '',
   paymentTerms: '30', // Default to 30 days
   notes: '', // Optional notes/terms
   documentType: 'invoice',

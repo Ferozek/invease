@@ -49,6 +49,7 @@ export default function EmailInvoiceButton({
   const [canShare, setCanShare] = useState(false);
   const brandColor = useSettingsStore((s) => s.customPrimaryColor);
   const templateId = useSettingsStore((s) => s.templateId);
+  const showLatePaymentNotice = useSettingsStore((s) => s.showLatePaymentNotice);
 
   useEffect(() => {
     setCanShare(canShareFiles());
@@ -98,7 +99,7 @@ ${companyName}`;
       };
 
       const blob = await pdf(
-        <InvoicePDF invoice={cleanedInvoice} totals={totals} templateId={templateId} brandColor={brandColor ?? undefined} />
+        <InvoicePDF invoice={cleanedInvoice} totals={totals} templateId={templateId} brandColor={brandColor ?? undefined} showLatePaymentNotice={showLatePaymentNotice} />
       ).toBlob();
 
       const fileName = `Invoice-${invoiceNumber}.pdf`;

@@ -312,6 +312,14 @@ function generateId(docType: DocumentType = 'invoice'): string {
 
 export const selectInvoiceCount = (state: HistoryState) => state.invoices.length;
 
+/** Check if an invoice number already exists in history. Returns the saved date or null. */
+export const findInvoiceByNumber = (state: HistoryState, number: string): string | null => {
+  if (!number.trim()) return null;
+  const lower = number.toLowerCase().trim();
+  const match = state.invoices.find((inv) => inv.invoiceNumber.toLowerCase().trim() === lower);
+  return match ? match.savedAt : null;
+};
+
 export const selectRecentInvoices = (state: HistoryState, limit = 10) =>
   state.invoices.slice(0, limit);
 
@@ -452,6 +460,7 @@ export const selectPaidInvoices = (state: HistoryState) =>
 export interface UniqueCustomer {
   name: string;
   email: string;
+  phone: string;
   address: string;
   postCode: string;
   invoiceCount: number;
@@ -470,6 +479,7 @@ export const selectUniqueCustomers = (state: HistoryState): UniqueCustomer[] => 
     map.set(key, {
       name: inv.invoice.customer.name,
       email: inv.invoice.customer.email || existing?.email || '',
+      phone: inv.invoice.customer.phone || existing?.phone || '',
       address: inv.invoice.customer.address,
       postCode: inv.invoice.customer.postCode,
       invoiceCount: (existing?.invoiceCount || 0) + 1,

@@ -22,9 +22,11 @@ const validInvoice: InvoiceData = {
     address: '456 Client Road',
     postCode: 'M1 1AA',
     email: 'client@example.com',
+    phone: '',
   },
   details: {
     invoiceNumber: 'INV-0001',
+    poNumber: '',
     date: '2026-02-15',
     supplyDate: '2026-02-15',
     paymentTerms: '30',
