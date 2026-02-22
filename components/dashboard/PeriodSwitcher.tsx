@@ -47,7 +47,7 @@ export default function PeriodSwitcher({ period, onChange }: { period: Period; o
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -4, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="absolute right-0 top-full mt-1 z-50 bg-[var(--surface-card)] border border-[var(--surface-border)] rounded-xl shadow-lg overflow-hidden min-w-[140px]"
+              className="absolute right-0 top-full mt-1 z-50 bg-[var(--surface-card)] border border-[var(--surface-border)] rounded-xl shadow-lg overflow-hidden min-w-[140px] max-w-[calc(100vw-2rem)]"
               role="listbox"
             >
               {(['month', 'quarter', 'year'] as Period[]).map((p) => (

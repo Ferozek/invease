@@ -50,7 +50,7 @@ export default function CollectionRing({ collected, invoiced }: { collected: num
           </span>
         </div>
       </div>
-      <p className="text-[10px] text-[var(--text-muted)] mt-1 text-center leading-tight">
+      <p className="text-xs text-[var(--text-muted)] mt-1 text-center leading-tight">
         {formatCurrency(collected)}
         <br />
         collected

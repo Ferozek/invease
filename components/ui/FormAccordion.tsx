@@ -71,7 +71,7 @@ export function FormAccordionSection({
   const isOptional = variant === 'optional';
 
   // Visual hierarchy: completed sections get green left accent
-  const completedBorder = isComplete && !isOpen
+  const completedBorder = isComplete
     ? 'border-l-[3px] border-l-green-400 dark:border-l-green-600'
     : '';
 
@@ -83,7 +83,7 @@ export function FormAccordionSection({
           ? 'border-[var(--brand-blue)]/30 shadow-md ring-1 ring-[var(--brand-blue)]/10'
           : 'border-[var(--surface-border)]'
         }
-        ${isOptional && !isOpen ? 'opacity-80' : ''}
+        ${isOptional && !isOpen ? 'text-[var(--text-muted)]' : ''}
         ${completedBorder}
         ${className}
       `}
@@ -110,12 +110,12 @@ export function FormAccordionSection({
               </svg>
             </span>
           ) : (
-            <span className={`flex items-center justify-center w-6 h-6 rounded-full border-2 ${
+            <span className={`flex items-center justify-center w-7 h-7 rounded-full border-2 ${
               isOpen
                 ? 'border-[var(--brand-blue)] bg-[var(--brand-blue-50)]'
                 : 'border-[var(--surface-border)]'
             }`}>
-              <span className={`w-2 h-2 rounded-full ${
+              <span className={`w-2.5 h-2.5 rounded-full ${
                 isOpen ? 'bg-[var(--brand-blue)]' : ''
               }`} />
             </span>

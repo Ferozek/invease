@@ -45,6 +45,10 @@
   --badge-neutral-bg: #f1f5f9;
   --badge-neutral-text: #334155;
 
+  /* Destructive / system red — Apple HIG */
+  --destructive-text: #FF3B30;
+  --destructive-bg-hover: rgba(255, 59, 48, 0.08);
+
   /* Form colors — Apple: slightly inset inputs */
   --input-bg: #f8f8fa;
   --input-border: rgba(0, 0, 0, 0.08);
@@ -86,6 +90,9 @@
   --badge-warning-text: #fbbf24;
   --badge-neutral-bg: #334155;
   --badge-neutral-text: #cbd5e1;
+
+  --destructive-text: #FF453A;
+  --destructive-bg-hover: rgba(255, 69, 58, 0.15);
 
   --input-bg: #1e293b;
   --input-border: #475569;

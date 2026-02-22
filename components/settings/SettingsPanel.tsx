@@ -66,33 +66,27 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               </button>
             </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-8">
+            {/* Content — Apple iOS Settings grouped list style */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-6">
               {/* PDF Template */}
               <section>
-                <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3 flex items-center gap-2">
-                  <svg className="w-4 h-4 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                  </svg>
+                <h3 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2 px-1">
                   PDF Appearance
                 </h3>
-                <div className="space-y-6">
+                <div className="bg-[var(--surface-elevated)] rounded-xl p-4 space-y-6">
                   <TemplateSelector />
                   <ColorPicker />
                 </div>
               </section>
 
-              <div className="border-t border-[var(--surface-border)]" />
-
               {/* Invoice Numbering */}
               <section>
-                <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-3 flex items-center gap-2">
-                  <svg className="w-4 h-4 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5l-3.9 19.5m-2.1-19.5l-3.9 19.5" />
-                  </svg>
+                <h3 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2 px-1">
                   Invoice Numbering
                 </h3>
-                <NumberingSettings />
+                <div className="bg-[var(--surface-elevated)] rounded-xl p-4">
+                  <NumberingSettings />
+                </div>
               </section>
             </div>
 

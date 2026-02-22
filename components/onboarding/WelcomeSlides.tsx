@@ -108,7 +108,7 @@ export default function WelcomeSlides({ onComplete }: WelcomeSlidesProps) {
   // Slide animation variants
   const slideVariants = {
     enter: (dir: number) => ({
-      x: dir > 0 ? 300 : -300,
+      x: dir > 0 ? 60 : -60,
       opacity: 0,
     }),
     center: {
@@ -116,7 +116,7 @@ export default function WelcomeSlides({ onComplete }: WelcomeSlidesProps) {
       opacity: 1,
     },
     exit: (dir: number) => ({
-      x: dir < 0 ? 300 : -300,
+      x: dir < 0 ? 60 : -60,
       opacity: 0,
     }),
   };

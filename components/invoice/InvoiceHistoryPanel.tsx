@@ -222,7 +222,7 @@ export default function InvoiceHistoryPanel({
                     bg-[var(--surface-elevated)] border border-[var(--surface-border)]
                     text-[var(--text-primary)] placeholder:text-[var(--text-muted)]
                     focus:outline-none focus:border-[var(--brand-blue)]
-                    focus:ring-2 focus:ring-[var(--brand-blue)]/20"
+                    focus:ring-2 focus:ring-[var(--brand-blue)]/40"
                 />
               </div>
 
@@ -276,7 +276,7 @@ export default function InvoiceHistoryPanel({
                       className={`cursor-pointer flex-1 px-2 py-1.5 text-xs font-medium rounded-md transition-all ${
                         statusFilter === tab.id
                           ? tab.id === 'overdue'
-                            ? 'bg-[var(--surface-card)] text-[#FF3B30] dark:text-[#FF453A] shadow-sm'
+                            ? 'bg-[var(--surface-card)] text-[var(--destructive-text)] shadow-sm'
                             : 'bg-[var(--surface-card)] text-[var(--text-primary)] shadow-sm'
                           : 'text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
                       }`}
@@ -285,7 +285,7 @@ export default function InvoiceHistoryPanel({
                       {tab.id !== 'all' && statusCounts[tab.id] > 0 && (
                         <span className={`ml-1 ${
                           statusFilter === tab.id
-                            ? tab.id === 'overdue' ? 'text-[#FF3B30]/70 dark:text-[#FF453A]/70' : 'text-[var(--text-muted)]'
+                            ? tab.id === 'overdue' ? 'opacity-70' : 'text-[var(--text-muted)]'
                             : ''
                         }`}>
                           ({statusCounts[tab.id]})

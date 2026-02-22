@@ -276,7 +276,7 @@ ${companyName}`;
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="fixed inset-4 md:inset-8 z-50 flex flex-col
-              bg-[var(--surface-card)] rounded-xl shadow-2xl overflow-hidden"
+              bg-[var(--surface-card)] rounded-xl shadow-2xl overflow-hidden max-w-4xl mx-auto"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-[var(--surface-border)]">

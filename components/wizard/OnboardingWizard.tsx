@@ -196,7 +196,7 @@ export default function OnboardingWizard() {
             <div className="flex-1 flex gap-2">
               {canSkip && (
                 <Button
-                  variant="muted"
+                  variant="ghost"
                   className="flex-1"
                   onClick={handleNext}
                 >

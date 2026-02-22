@@ -88,10 +88,10 @@ export default function DashboardSummary({ onViewAll, onViewOverdue }: Dashboard
               {/* Empty period state */}
               {stats.invoiceCount === 0 && stats.totalOutstanding <= 0 ? (
                 <div className="text-center py-6">
-                  <p className="text-sm text-[var(--text-muted)]">
+                  <p className="text-base font-medium text-[var(--text-secondary)]">
                     No invoices {period === 'month' ? 'this month' : period === 'quarter' ? 'this quarter' : 'this year'}
                   </p>
-                  <p className="text-xs text-[var(--text-muted)] mt-1">
+                  <p className="text-sm text-[var(--text-muted)] mt-1">
                     Create an invoice to see your stats here
                   </p>
                 </div>

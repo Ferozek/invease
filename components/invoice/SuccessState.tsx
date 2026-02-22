@@ -66,17 +66,20 @@ export default function SuccessState({
       <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
         {docLabel} Created!
       </h2>
-      <p className="text-[var(--text-secondary)] mb-8">
-        {docLabel} #{successContext.invoiceNumber || 'DRAFT'} has been downloaded
-        {successContext.customerName && (
-          <> for <span className="font-medium">{successContext.customerName}</span></>
-        )}
+      <p className="text-[var(--text-secondary)] mb-1">
+        {docLabel} #{successContext.invoiceNumber || 'DRAFT'} has been downloaded.
       </p>
+      {successContext.customerName && (
+        <p className="text-sm text-[var(--text-muted)] mb-8">
+          For <span className="font-medium text-[var(--text-secondary)]">{successContext.customerName}</span>
+        </p>
+      )}
+      {!successContext.customerName && <div className="mb-8" />}
 
       {/* Actions */}
       <div className="space-y-3">
         <Button variant="primary" fullWidth onClick={onCreateAnother}>
-          Create Another {docLabel}
+          New {docLabel}
         </Button>
 
         {/* Contextual CTA: offer credit note creation for invoices (Xero pattern) */}
