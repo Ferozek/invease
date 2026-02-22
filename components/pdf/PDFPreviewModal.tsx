@@ -56,6 +56,7 @@ export default function PDFPreviewModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [canShare, setCanShare] = useState(false);
+  const [isSharePending, setIsSharePending] = useState(false);
 
   // Check if sharing is supported on mount
   useEffect(() => {
@@ -153,11 +154,12 @@ export default function PDFPreviewModal({
 
   // Handle share via Web Share API
   const handleShare = useCallback(async () => {
-    if (!pdfBlob) return;
+    if (!pdfBlob || isSharePending) return;
 
     const filename = `${filePrefix}-${invoice.details.invoiceNumber || 'DRAFT'}.pdf`;
     const file = new File([pdfBlob], filename, { type: 'application/pdf' });
 
+    setIsSharePending(true);
     try {
       await navigator.share({
         title: `${docLabel} ${invoice.details.invoiceNumber || 'DRAFT'}`,
@@ -166,19 +168,23 @@ export default function PDFPreviewModal({
       });
       toast.success('Shared successfully');
     } catch (err) {
-      // User cancelled or share failed
-      if (err instanceof Error && err.name !== 'AbortError') {
-        toast.error('Share failed', {
-          description: 'Could not share the invoice',
-        });
-        logger.error('Invoice share failed', err);
+      // User cancelled, double-tap, or share failed
+      if (err instanceof Error && (err.name === 'AbortError' || err.name === 'InvalidStateError')) {
+        return;
       }
+      toast.error('Share failed', {
+        description: 'Could not share the invoice',
+      });
+      logger.error('Invoice share failed', err);
+    } finally {
+      setIsSharePending(false);
     }
-  }, [pdfBlob, invoice.details.invoiceNumber, invoice.invoicer.companyName]);
+  }, [pdfBlob, isSharePending, invoice.details.invoiceNumber, invoice.invoicer.companyName]);
 
   // Handle email - uses Web Share on mobile, mailto: on desktop
   const handleEmail = useCallback(async () => {
-    if (!pdfBlob) return;
+    if (!pdfBlob || isSharePending) return;
+    setIsSharePending(true);
 
     const invoiceNumber = invoice.details.invoiceNumber || 'DRAFT';
     const companyName = invoice.invoicer.companyName || 'Your Company';
@@ -216,9 +222,13 @@ ${companyName}`;
         });
         toast.success('Shared successfully');
       } catch (err) {
-        if (err instanceof Error && err.name !== 'AbortError') {
+        if (err instanceof Error && (err.name === 'AbortError' || err.name === 'InvalidStateError')) {
+          // User cancelled or double-tap — not an error
+        } else {
           toast.error('Share failed');
         }
+      } finally {
+        setIsSharePending(false);
       }
       return;
     }
@@ -241,7 +251,8 @@ ${companyName}`;
     toast.success('PDF downloaded', {
       description: 'Attach it to the email that opened',
     });
-  }, [pdfBlob, invoice, totals, canShare]);
+    setIsSharePending(false);
+  }, [pdfBlob, isSharePending, invoice, totals, canShare]);
 
   return (
     <AnimatePresence>

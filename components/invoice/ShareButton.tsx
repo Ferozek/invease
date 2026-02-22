@@ -48,6 +48,9 @@ export default function ShareButton({ invoice, totals }: ShareButtonProps) {
   }, []);
 
   const handleShare = useCallback(async () => {
+    // Guard against double-tap while share dialog is open
+    if (isSharing) return;
+
     // Validate invoice has basic data
     const validLineItems = getValidLineItems(invoice.lineItems);
     if (validLineItems.length === 0) {
@@ -90,13 +93,17 @@ export default function ShareButton({ invoice, totals }: ShareButtonProps) {
         toast.error('Share not allowed', { description: 'Please try again' });
         return;
       }
+      // InvalidStateError - share dialog already open (double-tap)
+      if (error instanceof Error && error.name === 'InvalidStateError') {
+        return;
+      }
       // Fall back to download if share fails
       toast.error('Unable to share', { description: 'Try downloading the PDF instead' });
       logger.error('Share failed', error);
     } finally {
       setIsSharing(false);
     }
-  }, [invoice, totals]);
+  }, [invoice, totals, isSharing]);
 
   // Don't render if Web Share API not supported
   if (!canShare) {

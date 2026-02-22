@@ -75,6 +75,9 @@ Best regards,
 ${companyName}`;
 
   const handleEmail = useCallback(async () => {
+    // Guard against double-tap while share dialog is open
+    if (isLoading) return;
+
     // Validate we have line items
     const validLineItems = getValidLineItems(invoice.lineItems);
     if (validLineItems.length === 0) {
@@ -136,12 +139,16 @@ ${companyName}`;
       if (error instanceof Error && error.name === 'AbortError') {
         return;
       }
+      // Share dialog already open (double-tap)
+      if (error instanceof Error && error.name === 'InvalidStateError') {
+        return;
+      }
       toast.error('Failed to email invoice');
       logger.error('Email invoice failed', error);
     } finally {
       setIsLoading(false);
     }
-  }, [invoice, totals, canShare, invoiceNumber, emailSubject, emailBody, customerEmail]);
+  }, [invoice, totals, canShare, isLoading, invoiceNumber, emailSubject, emailBody, customerEmail]);
 
   return (
     <Button

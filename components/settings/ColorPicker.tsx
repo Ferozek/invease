@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useCompanyStore } from '@/stores/companyStore';
 
 /**
  * Color Picker
@@ -25,6 +26,7 @@ const PRESET_COLORS = [
 export default function ColorPicker() {
   const customColor = useSettingsStore((state) => state.customPrimaryColor);
   const setCustomPrimaryColor = useSettingsStore((state) => state.setCustomPrimaryColor);
+  const companyName = useCompanyStore((state) => state.companyName);
   const [inputValue, setInputValue] = useState(customColor || '#0b4f7a');
 
   const handleColorChange = (color: string) => {
@@ -38,6 +40,7 @@ export default function ColorPicker() {
   };
 
   const isValidHex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(inputValue);
+  const activeColor = isValidHex ? inputValue : '#0b4f7a';
 
   return (
     <div className="space-y-3">
@@ -124,12 +127,36 @@ export default function ColorPicker() {
         </label>
       </div>
 
-      {/* Preview */}
+      {/* Live mini PDF preview */}
       <div
-        className="h-8 rounded-lg flex items-center justify-center text-white text-xs font-medium"
-        style={{ backgroundColor: isValidHex ? inputValue : '#0b4f7a' }}
+        className="rounded-lg border border-[var(--surface-border)] overflow-hidden bg-white"
+        aria-label="Invoice header preview"
       >
-        Preview: Invoice Header
+        {/* Header area */}
+        <div className="px-3 pt-3 pb-2 flex items-start justify-between"
+          style={{ borderBottom: `2px solid ${activeColor}` }}
+        >
+          <div>
+            <p className="text-[11px] font-bold leading-tight" style={{ color: activeColor }}>
+              {companyName || 'Your Company'}
+            </p>
+            <p className="text-[8px] text-gray-400 mt-0.5">123 Business St, London</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[13px] font-bold leading-tight" style={{ color: activeColor }}>
+              INVOICE
+            </p>
+            <p className="text-[8px] text-gray-500 mt-0.5">#INV-001</p>
+          </div>
+        </div>
+        {/* Mini table header */}
+        <div className="mx-3 mt-2 mb-3 rounded-sm flex gap-2 px-2 py-1"
+          style={{ backgroundColor: activeColor }}
+        >
+          <span className="text-[7px] text-white font-medium flex-1">DESCRIPTION</span>
+          <span className="text-[7px] text-white font-medium">QTY</span>
+          <span className="text-[7px] text-white font-medium">TOTAL</span>
+        </div>
       </div>
     </div>
   );

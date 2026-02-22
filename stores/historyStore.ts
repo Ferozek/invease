@@ -293,8 +293,17 @@ export const selectDashboardStats = (
     }
 
     // Outstanding stats (all time, split current vs overdue)
+    // Credit notes only reduce outstanding if the related invoice is still unpaid.
+    // If the related invoice is paid, the CN represents a refund — net effect is zero.
     if (isCreditNote) {
-      currentAmount -= inv.total;
+      const relatedInvNum = inv.invoice.details.creditNoteFields?.relatedInvoiceNumber;
+      const relatedInvoice = relatedInvNum
+        ? state.invoices.find((i) => i.invoiceNumber === relatedInvNum)
+        : undefined;
+      const relatedIsPaid = relatedInvoice?.status === 'paid';
+      if (!relatedIsPaid) {
+        currentAmount -= inv.total;
+      }
     } else if ((inv.status || 'unpaid') === 'unpaid') {
       if (inv.dueDate && inv.dueDate < today) {
         overdueAmount += inv.total;
