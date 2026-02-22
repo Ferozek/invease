@@ -358,6 +358,19 @@ export default function Home() {
     { key: '?', action: () => setShowShortcuts(true), description: 'Show Shortcuts' },
   ]);
 
+  // ===== Unsaved Changes Warning =====
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      const { customer, lineItems } = useInvoiceStore.getState();
+      const hasData = customer.name.trim() || lineItems.some((li) => li.description.trim());
+      if (hasData) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, []);
+
   // ===== Accordion + Completion State =====
   const completion = useFormCompletion();
   const accordion = useAccordion({
