@@ -353,8 +353,8 @@ export default function Home() {
     { ...APP_SHORTCUTS.NEW_INVOICE, action: handleNewInvoice },
     { ...APP_SHORTCUTS.OPEN_SETTINGS, action: () => setShowSettingsPanel(true) },
     { ...APP_SHORTCUTS.OPEN_PREVIEW, action: () => setShowPDFPreview(true) },
-    { ...APP_SHORTCUTS.UNDO, action: undo },
-    { ...APP_SHORTCUTS.REDO, action: redo },
+    { ...APP_SHORTCUTS.UNDO, action: () => { undo(); toast('Undo', { duration: 1500 }); } },
+    { ...APP_SHORTCUTS.REDO, action: () => { redo(); toast('Redo', { duration: 1500 }); } },
     { key: '?', action: () => setShowShortcuts(true), description: 'Show Shortcuts' },
   ]);
 
