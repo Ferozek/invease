@@ -71,9 +71,14 @@ export default function PrivacyPage() {
             <strong>Invoice drafts:</strong> Saved in sessionStorage (cleared when tab closes)
           </li>
           <li>
-            <strong>Invoice history:</strong> Saved in localStorage (persists across sessions)
+            <strong>Invoice history:</strong> Saved in localStorage (persists across sessions, up to 50 most recent)
           </li>
         </ul>
+        <p>
+          Your company details and invoice history are stored indefinitely on your device until
+          you delete them using the &quot;Start Over&quot; function in the app, or clear your
+          browser&apos;s localStorage manually.
+        </p>
 
         <h2>Third-Party Services</h2>
 
@@ -110,6 +115,26 @@ export default function PrivacyPage() {
           </a>.
         </p>
 
+        <h3>Sentry Error Tracking</h3>
+        <p>
+          We use Sentry to track and fix errors in the app. When an error occurs, we send:
+        </p>
+        <ul>
+          <li>The error message and JavaScript stack trace</li>
+          <li>Browser and device information</li>
+        </ul>
+        <p>
+          Sentry does not access your invoice data, company details, or bank information.
+          See{' '}
+          <a
+            href="https://sentry.io/privacy/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Sentry&apos;s privacy policy
+          </a>.
+        </p>
+
         <h2>Lawful Basis for Processing</h2>
         <p>
           Under UK GDPR, we process your data on the basis of <strong>legitimate interests</strong>.
@@ -127,6 +152,10 @@ export default function PrivacyPage() {
           <li>
             <strong>Usage analytics:</strong> We collect anonymised page view data via Vercel
             Analytics to improve the Service. No personal data is collected.
+          </li>
+          <li>
+            <strong>Error tracking:</strong> We use Sentry to capture JavaScript errors and
+            stack traces so we can fix issues quickly. No invoice or personal data is included.
           </li>
         </ul>
         <p>
