@@ -1,8 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Button from './Button';
 import FocusTrap from './FocusTrap';
 
 interface ConfirmDialogProps {
@@ -22,6 +21,8 @@ interface ConfirmDialogProps {
   cancelText?: string;
   /** Whether confirm action is destructive (red button) */
   isDestructive?: boolean;
+  /** If set, user must type this text to enable confirm button */
+  typeToConfirm?: string;
 }
 
 /**
@@ -43,12 +44,24 @@ export default function ConfirmDialog({
   confirmText = 'Confirm',
   cancelText = 'Cancel',
   isDestructive = false,
+  typeToConfirm,
 }: ConfirmDialogProps) {
+  const [confirmInput, setConfirmInput] = useState('');
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   const dialogRef = useRef<HTMLDivElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
+  const confirmEnabled = !typeToConfirm || confirmInput.toLowerCase() === typeToConfirm.toLowerCase();
 
   // FocusTrap handles initial focus, but we track the trigger element for restoration
   const triggerElementRef = useRef<HTMLElement | null>(null);
+
+  // Reset type-to-confirm input when dialog opens (React 19 derive-state-from-props)
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      setConfirmInput('');
+    }
+  }
 
   // Store the trigger element when dialog opens
   useEffect(() => {
@@ -132,6 +145,22 @@ export default function ConfirmDialog({
               >
                 {message}
               </p>
+              {typeToConfirm && (
+                <div className="mt-3">
+                  <p className="text-xs text-[var(--text-muted)] mb-1.5">
+                    Type <span className="font-mono font-semibold text-[var(--text-primary)]">{typeToConfirm}</span> to confirm
+                  </p>
+                  <input
+                    type="text"
+                    value={confirmInput}
+                    onChange={(e) => setConfirmInput(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-[var(--surface-border)] rounded-lg bg-[var(--surface-elevated)] text-[var(--text-primary)] text-center focus:outline-none focus:border-[var(--brand-red)] focus:ring-1 focus:ring-[var(--brand-red)]/40"
+                    placeholder={typeToConfirm}
+                    autoComplete="off"
+                    spellCheck={false}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Actions - Apple style: stacked on mobile, side by side on larger */}
@@ -148,10 +177,13 @@ export default function ConfirmDialog({
               <button
                 type="button"
                 onClick={handleConfirm}
+                disabled={!confirmEnabled}
                 className={`cursor-pointer flex-1 px-4 py-3 font-semibold active:opacity-80 transition-colors focus:outline-none ${
-                  isDestructive
-                    ? 'text-[var(--destructive-text)] hover:bg-[var(--destructive-bg-hover)] focus:bg-[var(--destructive-bg-hover)]'
-                    : 'text-[var(--brand-blue)] hover:bg-[var(--surface-elevated)] focus:bg-[var(--surface-elevated)]'
+                  !confirmEnabled
+                    ? 'opacity-40 cursor-not-allowed'
+                    : isDestructive
+                      ? 'text-[var(--destructive-text)] hover:bg-[var(--destructive-bg-hover)] focus:bg-[var(--destructive-bg-hover)]'
+                      : 'text-[var(--brand-blue)] hover:bg-[var(--surface-elevated)] focus:bg-[var(--surface-elevated)]'
                 }`}
               >
                 {confirmText}
@@ -206,5 +238,3 @@ export function useConfirmDialog() {
   };
 }
 
-// Need to import useState for the hook
-import { useState } from 'react';

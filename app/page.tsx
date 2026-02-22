@@ -675,6 +675,7 @@ export default function Home() {
         confirmText="Clear Everything"
         cancelText="Cancel"
         isDestructive
+        typeToConfirm="DELETE"
       />
 
       <InvoiceHistoryPanel

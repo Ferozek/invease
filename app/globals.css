@@ -35,7 +35,7 @@
   /* Text colors (light mode) */
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-muted: #64748b;
 
   /* Badge colors — extracted as tokens */
   --badge-success-bg: #dcfce7;
