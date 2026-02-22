@@ -5,6 +5,7 @@ import TemplateSelector from './TemplateSelector';
 import ColorPicker from './ColorPicker';
 import NumberingSettings from './NumberingSettings';
 import InvoiceDefaults from './InvoiceDefaults';
+import DataManagement from './DataManagement';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -97,6 +98,16 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                 </h3>
                 <div className="bg-[var(--surface-elevated)] rounded-xl p-4">
                   <NumberingSettings />
+                </div>
+              </section>
+
+              {/* Your Data */}
+              <section>
+                <h3 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2 px-1">
+                  Your Data
+                </h3>
+                <div className="bg-[var(--surface-elevated)] rounded-xl p-4">
+                  <DataManagement />
                 </div>
               </section>
             </div>
