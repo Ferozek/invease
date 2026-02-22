@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Toaster } from 'sonner';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 import { siteConfig } from '@/config/site';
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
@@ -147,6 +148,7 @@ export default function RootLayout({
           className="sr-only"
         />
         <Analytics />
+        <SpeedInsights />
         <ServiceWorkerRegister />
       </body>
     </html>
