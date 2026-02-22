@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
 import InvoicePDF from './InvoicePDF';
+import { useSettingsStore } from '@/stores/settingsStore';
 import logger from '@/lib/logger';
 import { getValidLineItems } from '@/lib/invoiceUtils';
 import { hasBankDetails } from '@/lib/bankDetailsUtils';
@@ -57,6 +58,7 @@ export default function PDFPreviewModal({
   const [error, setError] = useState<string | null>(null);
   const [canShare, setCanShare] = useState(false);
   const [isSharePending, setIsSharePending] = useState(false);
+  const brandColor = useSettingsStore((s) => s.customPrimaryColor);
 
   // Check if sharing is supported on mount
   useEffect(() => {
@@ -88,7 +90,7 @@ export default function PDFPreviewModal({
 
         // Generate PDF blob
         const blob = await pdf(
-          <InvoicePDF invoice={cleanedInvoice} totals={totals} />
+          <InvoicePDF invoice={cleanedInvoice} totals={totals} brandColor={brandColor ?? undefined} />
         ).toBlob();
 
         // Store blob for sharing
@@ -113,7 +115,7 @@ export default function PDFPreviewModal({
         URL.revokeObjectURL(pdfUrl);
       }
     };
-  }, [isOpen, invoice, totals]);
+  }, [isOpen, invoice, totals, brandColor]);
 
   // Handle escape key
   useEffect(() => {

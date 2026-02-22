@@ -8,6 +8,7 @@ import { showInvoiceSuccess, handlePDFError, handleValidationError } from '@/lib
 import { getValidLineItems } from '@/lib/invoiceUtils';
 import { hasPartialBankDetails } from '@/lib/bankDetailsUtils';
 import InvoicePDF from './InvoicePDF';
+import { useSettingsStore } from '@/stores/settingsStore';
 import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
 
 interface PDFDownloadButtonProps {
@@ -88,6 +89,7 @@ const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
   function PDFDownloadButton({ invoice, totals, disabled = false, onSuccess }, ref) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+    const brandColor = useSettingsStore((s) => s.customPrimaryColor);
 
     // Only render on client
     useEffect(() => {
@@ -122,7 +124,7 @@ const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
 
         // Generate PDF blob
         const blob = await pdf(
-          <InvoicePDF invoice={cleanedInvoice} totals={totals} />
+          <InvoicePDF invoice={cleanedInvoice} totals={totals} brandColor={brandColor ?? undefined} />
         ).toBlob();
 
         // Create download link

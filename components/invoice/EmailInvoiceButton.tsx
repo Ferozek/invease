@@ -5,6 +5,7 @@ import { pdf } from '@react-pdf/renderer';
 import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
 import InvoicePDF from '@/components/pdf/InvoicePDF';
+import { useSettingsStore } from '@/stores/settingsStore';
 import logger from '@/lib/logger';
 import { getValidLineItems } from '@/lib/invoiceUtils';
 import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
@@ -46,6 +47,7 @@ export default function EmailInvoiceButton({
 }: EmailInvoiceButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [canShare, setCanShare] = useState(false);
+  const brandColor = useSettingsStore((s) => s.customPrimaryColor);
 
   useEffect(() => {
     setCanShare(canShareFiles());
@@ -95,7 +97,7 @@ ${companyName}`;
       };
 
       const blob = await pdf(
-        <InvoicePDF invoice={cleanedInvoice} totals={totals} />
+        <InvoicePDF invoice={cleanedInvoice} totals={totals} brandColor={brandColor ?? undefined} />
       ).toBlob();
 
       const fileName = `Invoice-${invoiceNumber}.pdf`;

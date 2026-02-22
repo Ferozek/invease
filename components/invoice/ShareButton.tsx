@@ -5,6 +5,7 @@ import { pdf } from '@react-pdf/renderer';
 import { toast } from 'sonner';
 import { ShareIcon } from '@/components/ui/icons';
 import InvoicePDF from '@/components/pdf/InvoicePDF';
+import { useSettingsStore } from '@/stores/settingsStore';
 import logger from '@/lib/logger';
 import { getValidLineItems } from '@/lib/invoiceUtils';
 import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
@@ -25,6 +26,7 @@ interface ShareButtonProps {
 export default function ShareButton({ invoice, totals }: ShareButtonProps) {
   const [isSharing, setIsSharing] = useState(false);
   const [canShare, setCanShare] = useState(false);
+  const brandColor = useSettingsStore((s) => s.customPrimaryColor);
 
   // Check Web Share API support on mount
   useEffect(() => {
@@ -68,7 +70,7 @@ export default function ShareButton({ invoice, totals }: ShareButtonProps) {
       };
 
       const blob = await pdf(
-        <InvoicePDF invoice={cleanedInvoice} totals={totals} />
+        <InvoicePDF invoice={cleanedInvoice} totals={totals} brandColor={brandColor ?? undefined} />
       ).toBlob();
 
       // Create file from blob
