@@ -62,7 +62,11 @@ export default function InvoicePDF({ invoice, totals, templateId, brandColor, wa
   const netPayable = totals.total - cisDeduction;
 
   return (
-    <Document>
+    <Document
+      title={`${isCreditNote ? 'Credit Note' : 'Invoice'} ${invoice.details.invoiceNumber}`}
+      author={invoice.invoicer.companyName || 'Invease'}
+      subject={`${isCreditNote ? 'Credit Note' : 'Invoice'} for ${invoice.customer.name}`}
+    >
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={isCreditNote ? [styles.header, styles.creditNoteHeader] : styles.header}>

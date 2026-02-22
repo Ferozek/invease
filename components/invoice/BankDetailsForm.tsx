@@ -7,7 +7,16 @@ export default function BankDetailsForm() {
   const { bankDetails, setBankDetails } = useCompanyStore();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-4">
+      <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50">
+        <svg className="w-4 h-4 text-green-600 dark:text-green-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+        </svg>
+        <p className="text-xs text-green-700 dark:text-green-300">
+          Bank details are stored in memory only and never saved to your device. They clear when you close this tab.
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
         <label className="form-label form-label-required">Account Number</label>
         <input
@@ -60,6 +69,7 @@ export default function BankDetailsForm() {
           onChange={(e) => setBankDetails({ reference: e.target.value })}
         />
       </div>
+    </div>
     </div>
   );
 }

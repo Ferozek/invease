@@ -81,6 +81,8 @@ export default function DashboardSummary({ onViewAll, onViewOverdue }: Dashboard
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.25, ease: 'easeInOut' }}
               className="overflow-hidden"
+              aria-live="polite"
+              aria-atomic="true"
             >
               {/* Empty period state */}
               {stats.invoiceCount === 0 && stats.totalOutstanding <= 0 ? (

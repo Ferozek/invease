@@ -199,7 +199,11 @@ export default function StatementPDF({
   const isCredit = summary.outstanding < 0;
 
   return (
-    <Document>
+    <Document
+      title={`Statement — ${customerName}`}
+      author={companyName || 'Invease'}
+      subject={`Statement of Account for ${customerName}`}
+    >
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={styles.header}>

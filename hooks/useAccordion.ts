@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 /**
  * useAccordion - Platform-agnostic accordion state management
@@ -39,11 +39,29 @@ export interface UseAccordionReturn {
   openNext: (completions: SectionDef[]) => void;
 }
 
+const STORAGE_KEY = 'invease-accordion-active';
+
 export function useAccordion({ defaultOpen, sectionIds }: UseAccordionOptions): UseAccordionReturn {
   const [activeSection, setActiveSection] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved && sectionIds.includes(saved)) return saved;
+      } catch { /* noop */ }
+    }
     if (defaultOpen) return defaultOpen;
     return sectionIds[0] ?? null;
   });
+
+  useEffect(() => {
+    try {
+      if (activeSection) {
+        localStorage.setItem(STORAGE_KEY, activeSection);
+      } else {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    } catch { /* noop */ }
+  }, [activeSection]);
 
   const toggleSection = useCallback((id: string) => {
     setActiveSection((current) => (current === id ? null : id));
