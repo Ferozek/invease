@@ -17,6 +17,7 @@ interface CompanyState {
   hasSeenWelcome: boolean; // Has seen the welcome slides
   isOnboarded: boolean; // Ready to use the app (after welcome)
   businessType: BusinessType | null;
+  businessTypeConfirmed: boolean; // True when user explicitly chose in wizard
 
   // Invoicer details
   logo: string | null;
@@ -38,6 +39,7 @@ interface CompanyState {
   // Actions - Onboarding
   markWelcomeSeen: () => void;
   setBusinessType: (type: BusinessType) => void;
+  confirmBusinessType: (type: BusinessType) => void; // User explicitly chose
   completeOnboarding: () => void;
   resetOnboarding: () => void; // Just go back to wizard to edit
   startOver: () => void; // Full reset including welcome
@@ -65,6 +67,7 @@ const defaultCompanyState = {
   hasSeenWelcome: false,
   isOnboarded: false,
   businessType: null as BusinessType | null,
+  businessTypeConfirmed: false,
   logo: null as string | null,
   logoFileName: null as string | null,
   companyName: '',
@@ -89,6 +92,8 @@ export const useCompanyStore = create<CompanyState>()(
       markWelcomeSeen: () => set({ hasSeenWelcome: true, isOnboarded: true }),
 
       setBusinessType: (type) => set({ businessType: type }),
+
+      confirmBusinessType: (type) => set({ businessType: type, businessTypeConfirmed: true }),
 
       completeOnboarding: () => set({ isOnboarded: true }),
 
@@ -139,12 +144,13 @@ export const useCompanyStore = create<CompanyState>()(
     }),
     {
       name: 'invease-company-details',
-      version: 2,
+      version: 3,
       // SECURITY: Bank details are intentionally excluded - never persisted
       partialize: (state) => ({
         hasSeenWelcome: state.hasSeenWelcome,
         isOnboarded: state.isOnboarded,
         businessType: state.businessType,
+        businessTypeConfirmed: state.businessTypeConfirmed,
         logo: state.logo,
         logoFileName: state.logoFileName,
         companyName: state.companyName,
@@ -163,6 +169,11 @@ export const useCompanyStore = create<CompanyState>()(
           // v1 → v2: Strip bank details that may have been persisted in old versions
           delete state.bankDetails;
           delete state.rememberBankDetails;
+        }
+        if (version < 3) {
+          // v2 → v3: Add businessTypeConfirmed flag
+          // Existing users who completed onboarding have confirmed their type
+          state.businessTypeConfirmed = !!(state.isOnboarded && state.businessType);
         }
         return state as unknown as CompanyState;
       },

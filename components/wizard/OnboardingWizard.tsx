@@ -39,10 +39,11 @@ const stepTransition = {
 };
 
 export default function OnboardingWizard() {
-  const { businessType, setBusinessType, completeOnboarding } = useCompanyStore();
+  const { businessType, businessTypeConfirmed, setBusinessType, confirmBusinessType, completeOnboarding } = useCompanyStore();
 
-  // If businessType already exists (editing), skip step 1 and go straight to Identity
-  const [step, setStep] = useState(() => businessType ? 2 : 1);
+  // Only skip step 1 if user explicitly confirmed their business type in the wizard
+  // Quick Start auto-sets sole_trader but shouldn't lock them in
+  const [step, setStep] = useState(() => businessTypeConfirmed ? 2 : 1);
   const [direction, setDirection] = useState(0);
   // Pre-select the stored business type for edit flow (so Back shows current selection)
   const [selectedType, setSelectedType] = useState<BusinessType | null>(businessType);
@@ -57,10 +58,10 @@ export default function OnboardingWizard() {
 
   const handleNext = useCallback(() => {
     if (step === 1 && selectedType) {
-      setBusinessType(selectedType);
+      confirmBusinessType(selectedType);
     }
     goToStep(step + 1);
-  }, [step, selectedType, setBusinessType, goToStep]);
+  }, [step, selectedType, confirmBusinessType, goToStep]);
 
   const handleBack = useCallback(() => {
     goToStep(step - 1);

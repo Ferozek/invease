@@ -19,8 +19,8 @@ test.describe('Onboarding', () => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => {
       localStorage.setItem('invease-company-details', JSON.stringify({
-        state: { hasSeenWelcome: true, isOnboarded: false, businessType: null },
-        version: 2,
+        state: { hasSeenWelcome: true, isOnboarded: false, businessType: null, businessTypeConfirmed: false },
+        version: 3,
       }));
     });
     await page.reload({ waitUntil: 'domcontentloaded' });
@@ -36,8 +36,8 @@ test.describe('Onboarding', () => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => {
       localStorage.setItem('invease-company-details', JSON.stringify({
-        state: { hasSeenWelcome: true, isOnboarded: false, businessType: null },
-        version: 2,
+        state: { hasSeenWelcome: true, isOnboarded: false, businessType: null, businessTypeConfirmed: false },
+        version: 3,
       }));
     });
     await page.reload({ waitUntil: 'domcontentloaded' });

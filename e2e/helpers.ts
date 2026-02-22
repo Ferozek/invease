@@ -14,6 +14,7 @@ export async function setupOnboardedUser(page: Page, overrides?: Record<string, 
         hasSeenWelcome: true,
         isOnboarded: true,
         businessType: 'sole_trader',
+        businessTypeConfirmed: true,
         companyName: 'Test Co',
         address: '1 Test St',
         postCode: 'SW1A 1AA',
@@ -24,7 +25,7 @@ export async function setupOnboardedUser(page: Page, overrides?: Record<string, 
         cisUtr: '',
         ...opts,
       },
-      version: 2,
+      version: 3,
     }));
   }, overrides || {});
 }
@@ -48,8 +49,9 @@ export async function quickStart(page: Page) {
         hasSeenWelcome: true,
         isOnboarded: false,
         businessType: null,
+        businessTypeConfirmed: false,
       },
-      version: 2,
+      version: 3,
     }));
   });
   await page.reload({ waitUntil: 'domcontentloaded' });
