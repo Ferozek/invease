@@ -92,7 +92,7 @@ export default function CompanySearch({ onCompanySelected }: CompanySearchProps)
   }
 
   return (
-    <div className="mb-4 relative">
+    <div className="mb-4 relative" role="search" aria-label="Companies House search">
       <label className="form-label">Search Companies House</label>
       <div className="relative">
         <input

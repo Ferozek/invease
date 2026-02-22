@@ -165,7 +165,7 @@ export default function InvoicePreview({ totals }: InvoicePreviewProps) {
                         {item.description}
                         <span className="text-slate-400 ml-1">x{item.quantity}</span>
                         {hasDiscount && (
-                          <span className="text-red-500 ml-1 text-[10px]">
+                          <span className="text-red-500 ml-1 text-xs">
                             (-{item.discountType === 'percentage' ? `${item.discountValue}%` : formatCurrency(item.discountValue!)})
                           </span>
                         )}

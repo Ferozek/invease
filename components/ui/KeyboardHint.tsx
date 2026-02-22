@@ -56,7 +56,7 @@ export default function KeyboardHint({
         {platformKeys.map((key, index) => (
           <kbd
             key={index}
-            className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-[10px] font-medium bg-[var(--surface-elevated)] border border-[var(--surface-border)] rounded shadow-sm"
+            className="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 text-xs font-medium bg-[var(--surface-elevated)] border border-[var(--surface-border)] rounded shadow-sm"
           >
             {key}
           </kbd>

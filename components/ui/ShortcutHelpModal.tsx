@@ -107,7 +107,7 @@ export default function ShortcutHelpModal({ isOpen, onClose }: ShortcutHelpModal
             <div className="px-5 pb-5 space-y-4">
               {SHORTCUT_GROUPS.map((group) => (
                 <div key={group.label}>
-                  <p className="text-[10px] font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
+                  <p className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider mb-2">
                     {group.label}
                   </p>
                   <div className="space-y-1.5">

@@ -149,7 +149,7 @@ export default function PaymentStatusRow({
           {days}d overdue
         </span>
         {isPartial && (
-          <span className="text-[10px] text-[var(--text-muted)] ml-1.5">
+          <span className="text-xs text-[var(--text-muted)] ml-1.5">
             {formatCurrency(amountPaid)} of {formatCurrency(invoice.total)} paid
           </span>
         )}
@@ -164,7 +164,7 @@ export default function PaymentStatusRow({
         <span className="text-xs font-medium text-[#007AFF] dark:text-[#0A84FF]" data-testid="status-indicator">
           {formatCurrency(outstanding)} outstanding
         </span>
-        <span className="text-[10px] text-[var(--text-muted)] ml-1.5">
+        <span className="text-xs text-[var(--text-muted)] ml-1.5">
           {formatCurrency(amountPaid)} paid
         </span>
       </div>

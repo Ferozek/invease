@@ -217,7 +217,7 @@ export default function InvoiceHistoryItem({
                 </p>
               )}
               {isCreditNote && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-semibold">
+                <span className="text-xs px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-semibold">
                   CN
                 </span>
               )}

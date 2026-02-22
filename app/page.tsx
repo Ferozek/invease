@@ -111,10 +111,12 @@ export default function Home() {
 
   // History store
   const saveInvoice = useHistoryStore((state) => state.saveInvoice);
+  const clearHistory = useHistoryStore((state) => state.clearHistory);
 
   // Settings store
   const consumeNextInvoiceNumber = useSettingsStore((state) => state.consumeNextInvoiceNumber);
   const consumeNextCreditNoteNumber = useSettingsStore((state) => state.consumeNextCreditNoteNumber);
+  const resetSettings = useSettingsStore((state) => state.resetSettings);
 
   // Auto-fill invoice number on initial load (when empty and onboarded)
   useEffect(() => {
@@ -313,9 +315,11 @@ export default function Home() {
   const handleResetAllData = useCallback(() => {
     resetInvoice(false);
     sessionStorage.removeItem('invease-invoice-draft');
+    clearHistory();
+    resetSettings();
     startOver();
     setShowResetAllConfirm(false);
-  }, [resetInvoice, startOver]);
+  }, [resetInvoice, clearHistory, resetSettings, startOver]);
 
   const handleDuplicateInvoice = useCallback(
     (saved: SavedInvoice) => {
@@ -550,7 +554,6 @@ export default function Home() {
                 <InvoiceToolbar
                   invoice={invoiceData}
                   totals={totals}
-                  onNewInvoice={handleNewInvoice}
                   onOpenPreview={() => setShowPDFPreview(true)}
                   onOpenHistory={() => setShowHistoryPanel(true)}
                   onOpenSettings={() => setShowSettingsPanel(true)}

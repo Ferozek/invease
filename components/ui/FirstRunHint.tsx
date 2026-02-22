@@ -109,7 +109,7 @@ export default function FirstRunHint({
 
             <p className="font-medium text-sm relative z-10">{title}</p>
             <p className="text-xs text-white/80 mt-1 relative z-10">{description}</p>
-            <p className="text-[10px] text-white/60 mt-2 relative z-10">Click to dismiss</p>
+            <p className="text-xs text-white/60 mt-2 relative z-10">Click to dismiss</p>
 
             {/* Arrow */}
             <div

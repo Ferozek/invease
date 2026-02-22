@@ -193,7 +193,7 @@ export default function CustomerDetailsForm() {
           >
             {customer.name.trim() === '' && (
               <div className="px-3 py-1.5 border-b border-[var(--surface-border)]">
-                <p className="text-[10px] font-medium text-[var(--text-muted)] uppercase tracking-wider">
+                <p className="text-xs font-medium text-[var(--text-muted)] uppercase tracking-wider">
                   Recent Customers
                 </p>
               </div>
@@ -218,7 +218,7 @@ export default function CustomerDetailsForm() {
                       <p className="font-medium text-[var(--text-primary)] text-sm">
                         {c.name}
                       </p>
-                      <span className="text-[10px] text-[var(--text-muted)] ml-2 shrink-0">
+                      <span className="text-xs text-[var(--text-muted)] ml-2 shrink-0">
                         {c.invoiceCount} {c.invoiceCount === 1 ? 'inv' : 'invs'}
                       </span>
                     </div>

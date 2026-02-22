@@ -58,6 +58,9 @@ interface SettingsState {
   setDefaultVatRate: (rate: VatRate) => void;
   setDefaultNotes: (notes: string) => void;
   setShowLatePaymentNotice: (show: boolean) => void;
+
+  // Full reset (used by "Clear Everything")
+  resetSettings: () => void;
 }
 
 // ===== Store =====
@@ -140,6 +143,18 @@ export const useSettingsStore = create<SettingsState>()(
       setDefaultVatRate: (rate) => set({ defaultVatRate: rate }),
       setDefaultNotes: (notes) => set({ defaultNotes: notes }),
       setShowLatePaymentNotice: (show) => set({ showLatePaymentNotice: show }),
+
+      // Full reset — returns all settings to factory defaults
+      resetSettings: () => set({
+        templateId: DEFAULT_TEMPLATE_ID,
+        customPrimaryColor: null,
+        numbering: DEFAULT_NUMBERING_CONFIG,
+        cnNumbering: DEFAULT_CN_NUMBERING_CONFIG,
+        defaultPaymentTerms: '30',
+        defaultVatRate: '20' as VatRate,
+        defaultNotes: '',
+        showLatePaymentNotice: false,
+      }),
     }),
     {
       name: 'invease-settings',

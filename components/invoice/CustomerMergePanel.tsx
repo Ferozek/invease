@@ -247,7 +247,7 @@ function DuplicateSuggestion({
 
   return (
     <div className="rounded-xl bg-[var(--surface-elevated)] p-3">
-      <p className="text-[10px] uppercase tracking-wider text-[var(--text-muted)] mb-2">
+      <p className="text-xs uppercase tracking-wider text-[var(--text-muted)] mb-2">
         {suggestion.reason}
       </p>
       <div className="flex items-center gap-2 text-sm">
