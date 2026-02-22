@@ -133,23 +133,23 @@ This is a validated market gap. The three largest tech companies have not entere
 
 ## Invease Feature Completeness (Pre-Backend)
 
-### What's Built — 78 Features
+### What's Built — 77 Features
 
-| Category         | Count | Highlights                                                                                                                                                        |
-| ---------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Invoice creation | 14    | Line items, 5 VAT rates, CIS (3 statuses), discounts, credit notes, PO numbers, supply dates, payment terms, notes, duplicate detection, undo/redo                |
-| PDF generation   | 8     | 3 templates, custom brand colour, watermarks (3 types), metadata, late payment notice, logo                                                                       |
-| Data management  | 10    | History (50 invoices), customer profiles, customer merge, statements, 3 CSV export formats, GDPR data export, recent customers autocomplete, search, bulk actions |
-| Settings         | 6     | Invoice numbering (5 patterns), CN numbering (2 patterns), template picker, colour picker, payment defaults, late payment toggle                                  |
-| Security         | 5     | Bank details memory-only, CSP, rate limiting, security headers (6), HSTS                                                                                          |
-| Accessibility    | 8     | WCAG 2.1 AA, 44px targets, focus management, keyboard shortcuts (7), reduced motion, haptics, aria-live, screen reader announcements                              |
-| PWA              | 4     | Manifest, service worker (cache-first + network-first), offline fallback, iOS splash screens (14 sizes)                                                           |
-| Design           | 6     | Dark mode (3 modes), spring animations, staggered lists, responsive layout, Apple HIG, press-down scale                                                           |
-| Legal            | 4     | Privacy policy, terms (MTD), accessibility statement, cookie consent                                                                                              |
-| Analytics        | 4     | Sentry (client + server), Vercel Analytics (consent-gated), Speed Insights, 6 custom events                                                                       |
-| CI/CD            | 5     | GitHub Actions (3 workflows), E2E tests (54+ Playwright), unit tests (106 Vitest), pre-commit hooks, lint-staged                                                  |
-| Integrations     | 3     | Companies House API, Web Share API (email invoice), JSON-LD structured data                                                                                       |
-| Onboarding       | 3     | Welcome slides, 5-step wizard, Quick Start with sample data                                                                                                       |
+| Category         | Count | Highlights                                                                                                                                         |
+| ---------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Invoice creation | 14    | Line items, 5 VAT rates, CIS (3 statuses), discounts, credit notes, PO numbers, supply dates, payment terms, notes, duplicate detection, undo/redo |
+| PDF generation   | 8     | 3 templates, custom brand colour, watermarks (3 types), metadata, late payment notice, logo                                                        |
+| Data management  | 9     | History (50 invoices), customer profiles, customer merge, statements, 3 CSV export formats, recent customers autocomplete, search, bulk actions    |
+| Settings         | 6     | Invoice numbering (5 patterns), CN numbering (2 patterns), template picker, colour picker, payment defaults, late payment toggle                   |
+| Security         | 5     | Bank details memory-only, CSP, rate limiting, security headers (7), HSTS                                                                           |
+| Accessibility    | 8     | WCAG 2.1 AA, 44px targets, focus management, keyboard shortcuts (7), reduced motion, haptics, aria-live, screen reader announcements               |
+| PWA              | 4     | Manifest, service worker (cache-first + network-first), offline fallback, iOS splash screens (14 sizes)                                            |
+| Design           | 6     | Dark mode (3 modes), spring animations, staggered lists, responsive layout, Apple HIG, press-down scale                                            |
+| Legal            | 4     | Privacy policy, terms (MTD), accessibility statement, cookie consent                                                                               |
+| Analytics        | 4     | Sentry (client + server), Vercel Analytics (consent-gated), Speed Insights, 6 custom events                                                        |
+| CI/CD            | 5     | GitHub Actions (3 workflows), E2E tests (26 Playwright across 5 suites), unit tests (604 Vitest across 20 files), pre-commit hooks, lint-staged    |
+| Integrations     | 3     | Companies House API, Web Share API (email invoice), JSON-LD structured data                                                                        |
+| Onboarding       | 3     | Welcome slides, 5-step wizard, Quick Start with sample data                                                                                        |
 
 ### What's Missing (Requires Backend — Phase 3)
 
@@ -175,7 +175,7 @@ How does Invease measure against Apple's 10 design principles?
 | ----------------------- | :-----------: | -------------------------------------------------------------------------------------------------------------------------------- |
 | **Aesthetic Integrity** |     9/10      | K&R brand colours, consistent typography (Inter + Playfair Display), card-based layout, gradient header                          |
 | **Consistency**         |     9/10      | Single Button component with 5 variants, CSS custom properties throughout, consistent spacing                                    |
-| **Direct Manipulation** |     8/10      | Accordion toggle, drag-free but click-to-expand pattern, inline editing. Missing: drag-to-reorder line items                     |
+| **Direct Manipulation** |     8/10      | Accordion toggle, click-to-expand pattern, inline editing, move-up/down reorder buttons. Missing: drag-to-reorder line items     |
 | **Feedback**            |     9/10      | Toast notifications, haptic feedback, success states, shake animation on validation, press-down scale, loading states            |
 | **Metaphors**           |     8/10      | Invoice preview as "paper", accordion as "expandable sections", wallet-style dashboard. Could add more spatial metaphors         |
 | **User Control**        |     10/10     | 50-state undo/redo, non-destructive editing, "Keep Current" on all dialogs, type-to-confirm for destructive actions              |
@@ -198,9 +198,8 @@ How does Invease measure against Apple's 10 design principles?
 
 ### Medium-Impact (No Backend Required)
 
-1. **Drag-to-reorder line items** — Apple direct manipulation principle
+1. **Drag-to-reorder line items** — Apple direct manipulation principle (move-up/down buttons exist, drag-and-drop would be the upgrade)
 2. **Invoice PDF accessibility** — Tagged PDF for screen readers (currently a known limitation)
-3. **QR code for bank transfer** — UK Faster Payments QR (prototype exists, needs real encoder)
 
 ### Low-Impact (Polish)
 

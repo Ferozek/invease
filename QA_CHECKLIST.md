@@ -8,13 +8,14 @@ Pre-production verification checklist. Run all checks before deploying to produc
 
 ```bash
 # Run all automated checks
-npm run type-check && npm run lint && npm run test:e2e
+npm run type-check && npm run lint && npm run test:unit && npm run test:e2e
 
 # Individual checks
 npm run type-check    # TypeScript validation
 npm run lint          # ESLint
+npm run test:unit     # Unit tests (604 Vitest tests across 20 files)
 npm run test:smoke    # Quick E2E smoke tests (~10s)
-npm run test:e2e      # Full E2E test suite (~2min)
+npm run test:e2e      # Full E2E test suite (26 Playwright tests across 5 suites)
 npm run build         # Production build
 ```
 
@@ -28,23 +29,25 @@ npm run build         # Production build
 - [ ] `npm run type-check` shows no TypeScript errors
 - [ ] `npm run lint` shows no ESLint errors
 
-### 2. E2E Tests
+### 2. Unit Tests
+
+- [ ] `npm run test:unit` - Full unit suite (604 tests across 20 files)
+
+### 3. E2E Tests
 
 - [ ] `npm run test:smoke` - Basic functionality (3 tests)
-- [ ] `npm run test:e2e` - Full suite (34 tests)
-  - Accessibility tests
-  - Onboarding wizard flow
-  - Invoice creation
-  - PDF generation
-  - Data persistence
-  - Form validation
-  - CIS features
+- [ ] `npm run test:e2e` - Full suite (26 tests across 5 suites)
+  - Smoke + accessibility (smoke.spec.ts)
+  - Onboarding wizard flow (onboarding.spec.ts)
+  - Invoice form + validation (invoice-form.spec.ts)
+  - PDF + documents (pdf-and-documents.spec.ts)
+  - Dashboard + payment tracking (dashboard.spec.ts)
 
 ---
 
 ## Manual Checks 🔍
 
-### 3. Core User Flows
+### 4. Core User Flows
 
 #### First-Time User
 
@@ -67,7 +70,7 @@ npm run build         # Production build
 - [ ] Save invoice to history → Appears in history panel
 - [ ] Load invoice from history → All fields restored
 
-### 4. Accessibility (Apple HIG)
+### 5. Accessibility (Apple HIG)
 
 #### Keyboard Navigation
 
@@ -89,7 +92,7 @@ npm run build         # Production build
 - [ ] Checkboxes/radios easy to tap
 - [ ] Close buttons accessible
 
-### 5. Cross-Browser Testing
+### 6. Cross-Browser Testing
 
 | Browser | Desktop | Mobile    |
 | ------- | ------- | --------- |
@@ -98,28 +101,28 @@ npm run build         # Production build
 | Firefox | [ ]     | [ ]       |
 | Edge    | [ ]     | -         |
 
-### 6. Dark Mode
+### 7. Dark Mode
 
 - [ ] Toggle dark mode → All text readable
 - [ ] Form inputs visible in dark mode
 - [ ] Preview card has proper contrast
 - [ ] No hardcoded colors (check for `#fff`, `#000`, `slate-`)
 
-### 7. Performance
+### 8. Performance
 
 - [ ] Lighthouse Performance score ≥ 90
 - [ ] Lighthouse Accessibility score ≥ 95
 - [ ] First Contentful Paint < 1.5s
 - [ ] No layout shifts during hydration
 
-### 8. Security
+### 9. Security
 
 - [ ] Bank details NOT in localStorage (check DevTools)
 - [ ] No API keys exposed in client bundle
 - [ ] CSP headers present (check Network tab)
 - [ ] HTTPS enforced
 
-### 9. PWA
+### 10. PWA
 
 - [ ] manifest.json loads correctly
 - [ ] App installable on iOS (Add to Home Screen)
@@ -127,7 +130,7 @@ npm run build         # Production build
 - [ ] Correct icon on home screen
 - [ ] Offline page shows when disconnected
 
-### 10. Legal Pages
+### 11. Legal Pages
 
 - [ ] /privacy page loads correctly
 - [ ] /terms page loads correctly (includes MTD disclaimer)
@@ -136,7 +139,7 @@ npm run build         # Production build
 - [ ] Back navigation works from legal pages
 - [ ] K&R Accountants attribution correct
 
-### 11. Rate Limiting & Security Headers
+### 12. Rate Limiting & Security Headers
 
 - [ ] API returns 429 after 30 requests/minute
 - [ ] Content-Security-Policy header present
@@ -152,6 +155,7 @@ npm run build         # Production build
 # Full verification (run before merge to main)
 npm run type-check && \
 npm run lint && \
+npm run test:unit && \
 npm run build && \
 npm run test:e2e
 
@@ -170,12 +174,13 @@ If you find issues, check:
 3. React DevTools for component state
 4. Zustand DevTools for store state
 
-Report issues at: https://github.com/anthropics/claude-code/issues
+Report issues at: https://github.com/Ferozek/invease/issues
 
 ---
 
 ## Version History
 
-| Version | Date       | Changes              |
-| ------- | ---------- | -------------------- |
-| 1.0.0   | 2026-02-17 | Initial QA checklist |
+| Version | Date       | Changes                                                          |
+| ------- | ---------- | ---------------------------------------------------------------- |
+| 1.0.0   | 2026-02-17 | Initial QA checklist                                             |
+| 1.1.0   | 2026-02-22 | Added unit tests section, corrected E2E counts, fixed issue link |

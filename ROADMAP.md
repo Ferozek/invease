@@ -185,7 +185,7 @@ Invease can't out-feature Zoho or Xero. It wins on **simplicity, speed, and priv
 - Quick Start mode (Skip -> straight to invoice with sample data)
 - Dark Mode Support (system preference + manual toggle)
 - Responsive Design (18 device profiles tested)
-- E2E Test Coverage (25 focused Playwright tests across 5 suites)
+- E2E Test Coverage (26 Playwright tests across 5 suites) + Unit Tests (604 Vitest tests across 20 files)
 - Apple HIG Accordion Layout (progressive disclosure, one section open at a time)
 - Auto-save with visual indicator
 - Undo/Redo functionality (Cmd+Z / Cmd+Shift+Z via Zundo)
@@ -206,7 +206,9 @@ Invease can't out-feature Zoho or Xero. It wins on **simplicity, speed, and priv
 - Zod validation schemas
 - Shared utilities (invoiceUtils, dateUtils, cisUtils, bankDetailsUtils, formatters)
 - Keyboard shortcuts (Cmd+Shift+D download, Cmd+Shift+N new, etc.)
-- Payment QR code component
+- Payment QR code component (real QR via `qrcode` package)
+- Line item discounts (percentage + fixed, progressive disclosure UI)
+- Statement of Account PDF (per-customer, running balance)
 - Customer autocomplete from invoice history (Apple Contacts pattern)
 - Customer merge panel with fuzzy duplicate detection (UK business suffix normalisation)
 - Dashboard with collection ring, period switcher, overdue alerts
@@ -235,7 +237,7 @@ Invease can't out-feature Zoho or Xero. It wins on **simplicity, speed, and priv
 | Color system fix        | Done   | Blue = action (primary CTA), red = destructive only (Apple HIG)                                   |
 | Visual hierarchy        | Done   | Required vs optional sections, green completion borders, active section ring                      |
 | Sidebar cleanup         | Done   | Pure preview + single CTA, "New Invoice" moved to toolbar                                         |
-| E2E test restructure    | Done   | 71 → 25 tests, 10 → 5 files, shared accordion-aware helpers                                       |
+| E2E test restructure    | Done   | 71 → 26 tests, 10 → 5 files, shared accordion-aware helpers                                       |
 
 ### Phase 2.5: Dashboard & Payment Tracking (COMPLETE)
 
@@ -249,11 +251,11 @@ Invease can't out-feature Zoho or Xero. It wins on **simplicity, speed, and priv
 | Component refactoring | Done   | InvoiceHistoryPanel 777→382 lines, extracted PaymentStatusRow, InvoiceHistoryItem, CollectionRing, PeriodSwitcher      |
 | Edge cases handled    | Done   | Negative outstanding (credit balance), CN without payment status, 0 invoices period, 100% ring green                   |
 
-**Remaining from Phase 2.5 (deferred to v1.1):**
+**Originally deferred from Phase 2.5 — now COMPLETE:**
 
-- Statement of Account PDF (spec written, client-side feasible via `selectUniqueCustomers()` + @react-pdf/renderer)
-- Bank transfer UX improvements (QR code on PDF, prominent payment section, auto-generated payment reference)
-- **Line item discounts** (Xero feature parity — see design spec below)
+- Statement of Account PDF (`StatementPDF.tsx` + `statementUtils.ts`)
+- Bank transfer UX improvements (real QR code via `qrcode` npm package, `PaymentQRCode.tsx`)
+- Line item discounts (percentage + fixed, full UI + PDF + CSV integration)
 
 #### Line Item Discounts — Design Spec
 
@@ -896,6 +898,8 @@ features: {
 | 2026-02-21 | Solicitor sign-off: pre-launch, last job                | May need to add more legals after HMRC MTD review — do legal review once, at the end                                                                                                                | Stakeholder       |
 | 2026-02-21 | v1.1 polish before Phase 3                              | OG image, JSON-LD, analytics events, keyboard hints, first-run hints, AI discoverability — all client-side, no backend needed                                                                       | Stakeholder + Dev |
 | 2026-02-22 | v1.1 verified complete                                  | All 6 items confirmed wired up and functional. Roadmap updated                                                                                                                                      | Dev               |
+| 2026-02-22 | Deferred Phase 2.5 items now complete                   | Statement of Account PDF, real QR codes, line item discounts — all built and integrated into PDF/CSV/UI                                                                                             | Dev               |
+| 2026-02-22 | Documentation audit                                     | Fixed test counts (26 E2E, 604 unit), removed false GDPR export claim, corrected security header count (7), updated QA_CHECKLIST                                                                    | Dev               |
 | 2026-02-22 | Remove + button from preview toolbar                    | Apple HIG: preview toolbar = document actions only (expand, export, share, history, settings). New Invoice is app-level — ⌘N and top button are sufficient                                          | UX                |
 | 2026-02-22 | Remove sample bank details from Quick Start             | Bank details are optional and security-sensitive — shouldn't be pre-filled even as sample data                                                                                                      | Dev               |
 | 2026-02-22 | Dev/prod environment split before Phase 3               | Matt: need a gate between dev and production. Use `dev` branch + Vercel Preview Deployments. Zero config, free                                                                                      | Matt (Senior Dev) |
