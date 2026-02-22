@@ -7,6 +7,7 @@ Free invoice generator for UK businesses. Built for K&R Accountants clients.
 ## Getting Started
 
 ```bash
+cp .env.example .env.local   # Add your API keys
 npm install
 npm run dev
 ```
