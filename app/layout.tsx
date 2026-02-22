@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     locale: 'en_GB',
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: siteConfig.name,
     description: siteConfig.description,
   },
@@ -77,6 +77,32 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* JSON-LD structured data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'SoftwareApplication',
+              name: 'Invease',
+              description: 'Free invoice generator for UK businesses. Create professional VAT invoices with CIS support. No account required — your data stays on your device.',
+              applicationCategory: 'BusinessApplication',
+              operatingSystem: 'Web',
+              url: 'https://invease.vercel.app',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'GBP',
+              },
+              featureList: 'UK VAT calculations, CIS support, PDF generation, Credit notes, Payment tracking, Offline PWA',
+              author: {
+                '@type': 'Organization',
+                name: 'K&R Accountants Ltd',
+                url: 'https://kraccountants.com',
+              },
+            }),
+          }}
+        />
         {/* iOS splash screens */}
         <link rel="apple-touch-startup-image" href="/icons/splash/iphone-se.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" />
         <link rel="apple-touch-startup-image" href="/icons/splash/iphone-8.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" />

@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, forwardRef } from 'react';
 import { pdf } from '@react-pdf/renderer';
 import Button from '@/components/ui/Button';
+import { analytics } from '@/lib/analytics';
 import { showInvoiceSuccess, handlePDFError, handleValidationError } from '@/lib/errorHandler';
 import { getValidLineItems } from '@/lib/invoiceUtils';
 import { hasPartialBankDetails } from '@/lib/bankDetailsUtils';
@@ -135,6 +136,7 @@ const PDFDownloadButton = forwardRef<HTMLButtonElement, PDFDownloadButtonProps>(
         URL.revokeObjectURL(url);
 
         showInvoiceSuccess(invoice.details.documentType);
+        analytics.invoiceDownloaded(invoice.details.documentType);
         onSuccess?.();
       } catch (error) {
         handlePDFError(error instanceof Error ? error : new Error('PDF generation failed'));

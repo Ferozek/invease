@@ -1,0 +1,28 @@
+# Invease
+> Free invoice generator for UK businesses
+
+Invease is a client-side web application that generates professional UK invoices.
+No account required. All data stays on the user's device.
+
+## Features
+- Invoice and credit note creation
+- UK VAT calculations (0%, 5%, 20%, reverse charge)
+- CIS (Construction Industry Scheme) support
+- Companies House integration for company lookup
+- PDF generation and download
+- Payment tracking dashboard
+- Customer autocomplete from history
+- PWA with offline support
+
+## Technical
+- Built with Next.js, React 19, TypeScript
+- No backend — all processing happens in the browser
+- Data stored in localStorage/sessionStorage
+- Bank details stored in memory only (never persisted)
+
+## Links
+- Website: https://invease.vercel.app
+- Privacy Policy: https://invease.vercel.app/privacy
+- Terms of Service: https://invease.vercel.app/terms
+- Accessibility: https://invease.vercel.app/accessibility
+- By K&R Accountants Ltd: https://kraccountants.com

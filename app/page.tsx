@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { toast } from 'sonner';
+import { analytics } from '@/lib/analytics';
 import { AnimatePresence, motion } from 'framer-motion';
 import { siteConfig } from '@/config/site';
 import { BUSINESS_TYPE_LABELS } from '@/config/constants';
@@ -47,6 +48,8 @@ import DashboardSummary from '@/components/dashboard/DashboardSummary';
 import SettingsPanel from '@/components/settings/SettingsPanel';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 import Footer from '@/components/shared/Footer';
+import ShortcutHelpModal from '@/components/ui/ShortcutHelpModal';
+import FirstRunHint from '@/components/ui/FirstRunHint';
 
 // Dynamically import PDF components to avoid SSR issues
 const PDFDownloadButton = dynamic(
@@ -77,6 +80,7 @@ export default function Home() {
   const [historyStatusFilter, setHistoryStatusFilter] = useState<StatusFilter | undefined>(undefined);
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
+  const [showShortcuts, setShowShortcuts] = useState(false);
 
   // Ref for triggering PDF download via keyboard shortcut
   const pdfButtonRef = useRef<HTMLButtonElement>(null);
@@ -155,6 +159,7 @@ export default function Home() {
     });
 
     markWelcomeSeen();
+    analytics.quickStartUsed();
   }, [companyName, customer.name, setCompanyDetails, setBankDetails, setCustomerDetails, setInvoiceDetails, updateLineItem, consumeNextInvoiceNumber, markWelcomeSeen]);
 
   // ===== Action Handlers =====
@@ -172,6 +177,7 @@ export default function Home() {
     if (successContext) setSuccessContext(null);
 
     if (type === 'credit_note') {
+      analytics.creditNoteCreated();
       const nextCnNumber = consumeNextCreditNoteNumber();
       setInvoiceDetails({
         documentType: 'credit_note',
@@ -251,6 +257,7 @@ export default function Home() {
 
   const handlePDFSuccess = useCallback(() => {
     saveInvoice(invoiceData, totals);
+    analytics.invoiceSaved(details.documentType);
     setSuccessContext({
       documentType: details.documentType,
       invoiceNumber: details.invoiceNumber,
@@ -349,6 +356,7 @@ export default function Home() {
     { ...APP_SHORTCUTS.OPEN_PREVIEW, action: () => setShowPDFPreview(true) },
     { ...APP_SHORTCUTS.UNDO, action: undo },
     { ...APP_SHORTCUTS.REDO, action: redo },
+    { key: '?', action: () => setShowShortcuts(true), description: 'Show Shortcuts' },
   ]);
 
   // ===== Accordion + Completion State =====
@@ -437,6 +445,16 @@ export default function Home() {
               </Card>
 
               {/* Accordion form — progressive disclosure (Apple HIG) */}
+              <div className="relative">
+                <FirstRunHint
+                  id="accordion-hint"
+                  title="Expandable Sections"
+                  description="Click section headers to expand and collapse them."
+                  position="top"
+                  delay={1000}
+                  autoDismiss={8000}
+                />
+              </div>
               <FormAccordion activeSection={accordion.activeSection} onToggle={accordion.toggleSection}>
                 <FormAccordionSection
                   id="customer"
@@ -501,6 +519,16 @@ export default function Home() {
             <div className="sticky top-6">
               <Card variant="accent" className="p-6 overflow-hidden">
                 {/* Toolbar — always visible (Apple: never hide navigation) */}
+                <div className="relative">
+                  <FirstRunHint
+                    id="shortcuts-hint"
+                    title="Keyboard Shortcuts"
+                    description="Press ? to see all available shortcuts."
+                    position="bottom"
+                    delay={3000}
+                    autoDismiss={8000}
+                  />
+                </div>
                 <InvoiceToolbar
                   invoice={invoiceData}
                   totals={totals}
@@ -540,7 +568,15 @@ export default function Home() {
                       <InvoiceTotalsSection totals={totals} />
 
                       {/* Download CTA */}
-                      <div className="mt-6">
+                      <div className="mt-6 relative">
+                        <FirstRunHint
+                          id="download-hint"
+                          title="Download Your Invoice"
+                          description="Fill in the form, then download as a professional PDF."
+                          position="top"
+                          delay={2000}
+                          autoDismiss={8000}
+                        />
                         <PDFErrorBoundary>
                           <PDFDownloadButton
                             ref={pdfButtonRef}
@@ -632,6 +668,11 @@ export default function Home() {
         invoice={invoiceData}
         totals={totals}
         onDownload={handlePDFSuccess}
+      />
+
+      <ShortcutHelpModal
+        isOpen={showShortcuts}
+        onClose={() => setShowShortcuts(false)}
       />
     </>
   );

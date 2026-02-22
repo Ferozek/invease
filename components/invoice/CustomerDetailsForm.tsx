@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useInvoiceStore } from '@/stores/invoiceStore';
 import { useHistoryStore, selectUniqueCustomers, type UniqueCustomer } from '@/stores/historyStore';
 import { toTitleCase } from '@/lib/textFormatters';
+import { analytics } from '@/lib/analytics';
 import {
   validateRequired,
   validatePostcode,
@@ -82,6 +83,7 @@ export default function CustomerDetailsForm() {
     });
     setShowSuggestions(false);
     setHighlightedIndex(-1);
+    analytics.customerAutocompleted();
     // Clear any name validation error since we just filled it
     setErrors((prev) => ({ ...prev, name: null }));
     setTouched((prev) => ({ ...prev, name: true }));

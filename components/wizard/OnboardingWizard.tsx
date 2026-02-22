@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { analytics } from '@/lib/analytics';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import StepIndicator from './StepIndicator';
@@ -67,7 +68,8 @@ export default function OnboardingWizard() {
 
   const handleComplete = useCallback(() => {
     completeOnboarding();
-  }, [completeOnboarding]);
+    analytics.wizardCompleted(selectedType || 'unknown');
+  }, [completeOnboarding, selectedType]);
 
   // Quick Start: Skip setup entirely with sensible defaults
   const handleQuickStart = useCallback(() => {

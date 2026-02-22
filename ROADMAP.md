@@ -2,7 +2,7 @@
 
 **Created:** 2026-02-21
 **Last Updated:** 2026-02-21
-**Status:** Phases 1-2 complete. Phase 2.5 next.
+**Status:** Phases 1-2.5 complete. v1.1 polish in progress. Phase 3 next.
 
 ---
 
@@ -12,18 +12,20 @@
 
 A single-page web app that creates professional UK invoices. Everything runs in the browser. No accounts, no backend, no server-side data. PWA-installable.
 
-| What works                     | Tech                         |
-| ------------------------------ | ---------------------------- |
-| Invoice + credit note creation | React 19, Next.js 16         |
-| UK VAT / CIS / Companies House | Client-side calculations     |
-| PDF generation + download      | @react-pdf/renderer          |
-| Invoice history (50 max)       | localStorage                 |
-| Mobile sharing (WhatsApp etc.) | Web Share API                |
-| Offline support                | Service worker PWA           |
-| Error tracking                 | Sentry                       |
-| Legal compliance               | GDPR, HMRC, Companies House  |
-| Feedback mechanism             | Footer mailto: link          |
-| Analytics                      | Vercel Analytics (free tier) |
+| What works                     | Tech                                   |
+| ------------------------------ | -------------------------------------- |
+| Invoice + credit note creation | React 19, Next.js 16                   |
+| UK VAT / CIS / Companies House | Client-side calculations               |
+| PDF generation + download      | @react-pdf/renderer                    |
+| Invoice history (50 max)       | localStorage                           |
+| Dashboard + payment tracking   | Zustand selectors + localStorage       |
+| Customer autocomplete + merge  | Fuzzy matching, Apple Contacts pattern |
+| Mobile sharing (WhatsApp etc.) | Web Share API                          |
+| Offline support                | Service worker PWA                     |
+| Error tracking                 | Sentry                                 |
+| Legal compliance               | GDPR, HMRC, Companies House            |
+| Feedback mechanism             | Footer mailto: link                    |
+| Analytics                      | Vercel Analytics (free tier)           |
 
 **Production Readiness: 10/10**
 
@@ -45,8 +47,8 @@ A single-page web app that creates professional UK invoices. Everything runs in 
 ## The Complete Journey
 
 ```
-Phase 2.5: Dashboard & Payment Tracking     <- still client-side       NEXT
-Phase 3:   Backend + Email + Recurring       <- backend enters          PLANNED
+Phase 2.5: Dashboard & Payment Tracking     <- still client-side       COMPLETE ✅
+Phase 3:   Backend + Email + Recurring       <- backend enters          NEXT
 Phase 3.5: Expo Mobile App                   <- native mobile           PLANNED
 Phase 4:   Expense Tracking                  <- camera, receipts        PLANNED
 Phase 5:   MTD / HMRC Integration            <- the business case       PLANNED
@@ -160,12 +162,13 @@ Invease can't out-feature Zoho or Xero. It wins on **simplicity, speed, and priv
 - Quick Start mode (Skip -> straight to invoice with sample data)
 - Dark Mode Support (system preference + manual toggle)
 - Responsive Design (18 device profiles tested)
-- E2E Test Coverage (54+ Playwright tests across 9 suites)
+- E2E Test Coverage (25 focused Playwright tests across 5 suites)
+- Apple HIG Accordion Layout (progressive disclosure, one section open at a time)
 - Auto-save with visual indicator
 - Undo/Redo functionality (Cmd+Z / Cmd+Shift+Z via Zundo)
 - Web Share API integration (mobile)
 - Email Invoice (Web Share on mobile, mailto: on desktop)
-- Swipe-to-delete gestures
+- Bidirectional swipe gestures (right=paid, left=delete) with peek animation
 - UK VAT/CIS calculations (0%, 5%, 20%, reverse charge, CIS 20%/30%)
 - PDF generation with A4 skeleton loading
 - Companies House integration with OGL v3.0 attribution
@@ -181,132 +184,66 @@ Invease can't out-feature Zoho or Xero. It wins on **simplicity, speed, and priv
 - Shared utilities (invoiceUtils, dateUtils, cisUtils, bankDetailsUtils, formatters)
 - Keyboard shortcuts (Cmd+Shift+D download, Cmd+Shift+N new, etc.)
 - Payment QR code component
-- Recent customers dropdown (last 5)
+- Customer autocomplete from invoice history (Apple Contacts pattern)
+- Customer merge panel with fuzzy duplicate detection (UK business suffix normalisation)
+- Dashboard with collection ring, period switcher, overdue alerts
+- Payment tracking (mark as paid/unpaid, overdue auto-detection)
 
-### Nice-to-Have for v1.1
+### v1.1: Polish & Discoverability (IN PROGRESS)
 
-- Open Graph image (`/public/og-image.png`)
-- Structured data (JSON-LD)
-- First-run hints and tooltips
-- Keyboard shortcut hints
-- Custom analytics events (invoice created, PDF downloaded)
-- Solicitor sign-off on legal docs (£200-400)
+| Item                            | Status                   | Notes                                                            |
+| ------------------------------- | ------------------------ | ---------------------------------------------------------------- |
+| Open Graph image (dynamic)      | Pending                  | `opengraph-image.tsx` + `twitter-image.tsx` (Next.js convention) |
+| JSON-LD structured data         | Pending                  | SoftwareApplication + Organization schema in layout              |
+| First-run hints                 | Pending                  | Wire up existing `FirstRunHint` component (currently unused)     |
+| Keyboard shortcut help modal    | Pending                  | Wire up existing `KeyboardHint` component + `?` key trigger      |
+| Custom analytics events         | Pending                  | Vercel Analytics `track()` for downloads, saves, wizard          |
+| AI discoverability (`llms.txt`) | Pending                  | Public description for AI crawlers                               |
+| Solicitor sign-off (£200-400)   | **Pre-launch, last job** | May need updates after HMRC MTD legal review                     |
 
----
+### Apple HIG Accordion Restructure (COMPLETE)
 
-## Phase 2.5: "Know Your Business" (Dashboard)
+| Area                    | Status | Key items                                                                                         |
+| ----------------------- | ------ | ------------------------------------------------------------------------------------------------- |
+| FormAccordion component | Done   | Progressive disclosure, one section open at a time, completion indicators, reduced-motion support |
+| useAccordion hook       | Done   | Platform-agnostic (Expo-reusable), manages active section, toggle, openNext                       |
+| useFormCompletion hook  | Done   | Derives completion state per section from Zustand stores                                          |
+| Section summaries       | Done   | CustomerSummary, InvoiceDetailsSummary, LineItemsSummary — compact views when collapsed           |
+| Color system fix        | Done   | Blue = action (primary CTA), red = destructive only (Apple HIG)                                   |
+| Visual hierarchy        | Done   | Required vs optional sections, green completion borders, active section ring                      |
+| Sidebar cleanup         | Done   | Pure preview + single CTA, "New Invoice" moved to toolbar                                         |
+| E2E test restructure    | Done   | 71 → 25 tests, 10 → 5 files, shared accordion-aware helpers                                       |
 
-**Status:** IN PROGRESS (~90% complete)
-**Apple principle:** _Surface intelligence from data you already have._
+### Phase 2.5: Dashboard & Payment Tracking (COMPLETE)
 
-We already have invoice history. Turn it into insights — no new data entry needed.
+| Area                  | Status | Key items                                                                                                              |
+| --------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------- |
+| Dashboard             | Done   | Collection ring (Apple Card pattern), stat cards (invoiced/outstanding), period switcher (month/quarter/year)          |
+| Payment tracking      | Done   | Mark as paid/unpaid, overdue auto-detection, binary status on SavedInvoice                                             |
+| Swipe gestures        | Done   | Bidirectional swipe (right=paid, left=delete), one-time peek animation, explicit button row fallback                   |
+| Customer autocomplete | Done   | Apple Contacts pattern: as-you-type from invoice history, fills all fields on selection, keyboard nav                  |
+| Customer merge        | Done   | Fuzzy duplicate detection (UK business suffixes: Ltd/Limited, &/and), manual merge panel, Apple Contacts merge pattern |
+| Component refactoring | Done   | InvoiceHistoryPanel 777→382 lines, extracted PaymentStatusRow, InvoiceHistoryItem, CollectionRing, PeriodSwitcher      |
+| Edge cases handled    | Done   | Negative outstanding (credit balance), CN without payment status, 0 invoices period, 100% ring green                   |
 
-### What to build
+**Remaining from Phase 2.5 (deferred to v1.1):**
 
-| Feature              | Why                                                                                                    |
-| -------------------- | ------------------------------------------------------------------------------------------------------ |
-| **Dashboard view**   | Total invoiced this month/quarter/year, outstanding amount                                             |
-| **Payment status**   | Toggle invoices paid/unpaid/overdue (simple field on SavedInvoice)                                     |
-| **Overdue alerts**   | Payment terms + invoice date = automatic overdue detection                                             |
-| **Client list**      | Auto-built from invoice history (recentCustomers already exists)                                       |
-| **Quick stats**      | "3 invoices overdue, £2,450 outstanding"                                                               |
-| **Bank transfer UX** | Prominent payment section on PDF, auto-generated payment reference, QR code with bank details + amount |
-
-### Why this phase matters
-
-- **No backend needed** — extends existing localStorage history
-- **Stickiness** — users come back to check their dashboard
-- **Natural evolution** — "you made invoices, here's what they tell you"
-- **Sets up Phase 3** — payment tracking needs "who owes me" before "remind them"
-
-### Technical approach
-
-- Add `status: 'draft' | 'sent' | 'paid' | 'overdue'` to `SavedInvoice` type
-- Add `paidDate?: string` and `sentDate?: string` fields
-- New `/dashboard` route (or dashboard tab on home page)
-- Reuse existing `historyStore.ts` — add selectors for filtering by status
-- Auto-detect overdue: `if (status !== 'paid' && dueDate < today)`
-
-### Bank transfer UX improvements (no backend needed)
-
-| Improvement                      | Detail                                                       |
-| -------------------------------- | ------------------------------------------------------------ |
-| Prominent payment section on PDF | Larger, clearer bank details area                            |
-| Auto-generated payment reference | Invoice number as reference so user can match bank transfers |
-| QR code on PDF                   | Encode sort code + account number + amount + reference       |
-| "Mark as paid" button            | Manual toggle on history panel                               |
-
-### Dashboard design direction (Apple pattern)
-
-Use Apple Card / Stocks / Health patterns — NOT Activity Rings. Finance = awareness, not behaviour change.
-
-| Component             | What                                                     | Apple inspiration         |
-| --------------------- | -------------------------------------------------------- | ------------------------- |
-| **Collection ring**   | Single ring: "£5,200 collected of £8,000 invoiced" (65%) | Apple Card spending wheel |
-| **Stat cards**        | "3 overdue · £2,450 outstanding" — glanceable cards      | Health app summary cards  |
-| **Monthly sparkline** | Income trend over last 6 months                          | Stocks app                |
-| **Status dots**       | Green (paid), amber (sent), red (overdue) per invoice    | Activity app daily view   |
-
-**Do NOT add:** streaks, badges, achievements, multiple rings, leaderboards, gamification. This is a business tool, not fitness.
+- Statement of Account PDF (spec written, client-side feasible via `selectUniqueCustomers()` + @react-pdf/renderer)
+- Bank transfer UX improvements (QR code on PDF, prominent payment section, auto-generated payment reference)
 
 ### Edge cases & Apple UX patterns (apply across all phases)
 
 Think "how would Apple handle this?" for every edge case. Clarity over cleverness.
 
-| Edge Case                                                  | How Apple Would Handle It                                                                                                                                                                                                                                                              | Phase                        |
-| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| **Negative outstanding (prepayment/overpayment)**          | Show "Credit Balance" in green with "Customer has prepaid" — don't show confusing negative numbers                                                                                                                                                                                     | 2.5                          |
-| **Credit note exceeds invoice total**                      | Allow it — partial refunds and prepayments are valid business scenarios                                                                                                                                                                                                                | 2.5                          |
-| **Credit note has no "payment status"**                    | Hide status filter tabs when viewing Credit Notes tab — CNs aren't paid/unpaid                                                                                                                                                                                                         | 2.5                          |
-| **Mark as Paid — discoverability**                         | Status indicator text always visible (not hidden on mobile). Circle = tap target. Apple Reminders pattern.                                                                                                                                                                             | 2.5                          |
-| **0 invoices this period**                                 | Show empty dashboard with "No invoices this month" — don't hide the dashboard entirely                                                                                                                                                                                                 | 2.5                          |
-| **All invoices paid (100% ring)**                          | Ring turns green. Celebrate subtly — just the colour change, no confetti                                                                                                                                                                                                               | 2.5                          |
-| **User marks paid then unpaid**                            | Allow freely — no confirmation needed (it's a toggle, not destructive)                                                                                                                                                                                                                 | 2.5                          |
-| **Customer pays different amount (£25 instead of £24.99)** | Phase 2.5: binary paid/unpaid only — user marks paid regardless of exact amount. Phase 3+: Stripe/GoCardless auto-reconciles exact amounts. Overpayment/underpayment tracking is Phase 3 backend territory. For now, "paid" means "I've been paid for this" not "exact amount matched" | 2.5 (simple) / 3 (exact)     |
-| **Overdue but partially paid**                             | Not supported yet (paid is binary). Phase 3 could add partial payments via Stripe                                                                                                                                                                                                      | 3                            |
-| **Multiple currencies**                                    | Not in scope. UK-first = GBP only. If needed later, add as Phase 6                                                                                                                                                                                                                     | 6                            |
-| **Invoice deleted after payment**                          | Payment status is on the SavedInvoice — deleting it removes the record. Warn in confirmation dialog                                                                                                                                                                                    | 2.5                          |
-| **Bank details not provided**                              | PDF shows "Contact us for payment details" — graceful fallback, no broken layout                                                                                                                                                                                                       | 2.5                          |
-| **CIS + bank transfer**                                    | Payment section shows Net Payable (after CIS deduction), not gross total                                                                                                                                                                                                               | 2.5                          |
-| **Customer name typos create duplicates**                  | Apple Contacts autocomplete: as-you-type suggestions from invoice history, selecting fills all fields. Prevents "ABC Ltd" vs "ABC LIMITED" drift. Proper customer IDs + merge/dedup in Phase 3                                                                                         | 2.5 (autocomplete) / 3 (IDs) |
-| **Swipe gestures undiscoverable**                          | Apple Mail pattern: first time user opens history, first unpaid invoice briefly peeks right to reveal green "Paid" button. One-time hint, stored in localStorage. Explicit button row always visible as fallback                                                                       | 2.5                          |
-
-### Customer autocomplete (Apple Contacts pattern)
-
-- As user types customer name, matching suggestions appear below the input
-- Suggestions built from ALL invoice history (deduped by lowercase name, most recent wins)
-- Selecting a suggestion fills name, email, address, postCode — no retyping
-- Shows invoice count per customer ("3 invs") for recognition
-- When field is empty + focused, shows top 5 most recent customers
-- Keyboard nav: arrow keys, enter to select, escape to dismiss
-- Solves 90% of the customer identification problem without a backend
-
-### Statement of Account (PDF download, no backend needed)
-
-A customer asks: "What do I owe you?" — the user needs to send them a single document.
-
-| Element               | Detail                                                                                                  |
-| --------------------- | ------------------------------------------------------------------------------------------------------- |
-| **Entry point**       | History panel → search/filter for customer → "Statement" button appears                                 |
-| **Data source**       | `selectUniqueCustomers()` selector groups invoices by customer name                                     |
-| **PDF content**       | Company header, customer details, date range, table of all invoices + credit notes with running balance |
-| **Running balance**   | Invoice = +amount, Credit note = -amount, sorted chronologically                                        |
-| **Status column**     | Paid/Unpaid/Overdue per line                                                                            |
-| **Summary footer**    | Total invoiced, total paid, total outstanding                                                           |
-| **File naming**       | `Statement-{CustomerName}-{Date}.pdf`                                                                   |
-| **No backend needed** | All data is in localStorage history, @react-pdf/renderer for PDF                                        |
-
-**Why Apple would include this:** It's the natural answer to "I invoiced this customer 5 times — show me the full picture." Apple Health does this with summary reports. Apple Card does this with monthly statements. It's expected in finance tools.
-
-### Swipe gestures (Apple Mail bidirectional pattern)
-
-- **Swipe right** → reveals green "Paid" button (or orange "Undo" if already paid)
-- **Swipe left** → reveals red "Delete" button (existing)
-- **Credit notes** → swipe left only (no payment status)
-- **First-time hint** → first unpaid invoice peeks right briefly to teach the gesture
-- **Explicit button row** → always visible below each invoice as fallback for non-gesture users
-
-### Effort: ~2-3 days
+| Edge Case                                                  | How Apple Would Handle It                                                         | Phase                       |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------- |
+| **Negative outstanding (prepayment/overpayment)**          | Show "Credit Balance" in green with "Customer has prepaid" — done                 | 2.5 ✅                      |
+| **Credit note has no "payment status"**                    | Hide payment status row for credit notes — done                                   | 2.5 ✅                      |
+| **Mark as Paid — discoverability**                         | Bidirectional swipe + peek animation + explicit button row fallback — done        | 2.5 ✅                      |
+| **Customer name typos create duplicates**                  | Autocomplete + merge panel — done. Proper customer IDs in Phase 3                 | 2.5 ✅ / 3 (IDs)            |
+| **Customer pays different amount (£25 instead of £24.99)** | Binary paid/unpaid for now. Stripe/GoCardless auto-reconciles in Phase 3          | 2.5 ✅ (simple) / 3 (exact) |
+| **Overdue but partially paid**                             | Not supported yet (paid is binary). Phase 3 could add partial payments via Stripe | 3                           |
+| **Multiple currencies**                                    | Not in scope. UK-first = GBP only. If needed later, add as Phase 6                | 6                           |
 
 ---
 
@@ -748,6 +685,10 @@ features: {
 | 2026-02-21 | Swipe right = mark as paid (Apple Mail pattern)         | Bidirectional swipe: right=paid (green), left=delete (red). One-time peek animation teaches the gesture. Explicit button row kept as fallback                                                       | UX                |
 | 2026-02-21 | Statement of Account: client-side PDF, no backend       | Group invoices by customer name from localStorage, render with @react-pdf/renderer. Running balance, status per line. Natural extension of history                                                  | Stakeholder + Dev |
 | 2026-02-21 | Customer identification: name-based now, IDs in Phase 3 | Autocomplete prevents most typo-based duplicates. Proper customer master list with merge/dedup needs Phase 3 backend                                                                                | Dev               |
+| 2026-02-21 | Apple HIG accordion restructure                         | Progressive disclosure for invoice form — one section open at a time, collapsed summaries, completion indicators. Blue=action, red=destructive color fix                                            | UX + Dev          |
+| 2026-02-21 | E2E tests restructured (71→25)                          | 10 files with heavy redundancy consolidated to 5 focused files + shared helpers. Accordion-aware selectors                                                                                          | Dev               |
+| 2026-02-21 | Solicitor sign-off: pre-launch, last job                | May need to add more legals after HMRC MTD review — do legal review once, at the end                                                                                                                | Stakeholder       |
+| 2026-02-21 | v1.1 polish before Phase 3                              | OG image, JSON-LD, analytics events, keyboard hints, first-run hints, AI discoverability — all client-side, no backend needed                                                                       | Stakeholder + Dev |
 
 ---
 
@@ -757,9 +698,10 @@ features: {
 2. When to start user testing with K&R clients?
 3. Budget for solicitor review (£200-400)?
 4. Budget for iOS developer account ($99/year) — when ready?
-5. Phase 2.5 prioritisation — dashboard first or payment tracking first?
+5. ~~Phase 2.5 prioritisation~~ — RESOLVED (complete)
 6. HMRC Questionnaire timeline — when to submit?
 7. Direct Debit mandate consultation outcome — impact on payment APIs?
+8. Should we add `llms-full.txt` with detailed technical docs for AI agents?
 
 ---
 
