@@ -34,14 +34,12 @@ interface InvoiceToolbarProps {
   onOpenPreview: () => void;
   onOpenHistory: () => void;
   onOpenSettings: () => void;
-  onNewInvoice?: () => void;
 }
 
 /**
  * InvoiceToolbar - Preview section header with action buttons
  *
  * Actions:
- * - New Invoice (Cmd+N)
  * - Full Preview (Cmd+Shift+P)
  * - Export Menu (CSV)
  * - History Panel
@@ -53,7 +51,6 @@ export default function InvoiceToolbar({
   onOpenPreview,
   onOpenHistory,
   onOpenSettings,
-  onNewInvoice,
 }: InvoiceToolbarProps) {
   const isCreditNote = invoice.details.documentType === 'credit_note';
 
@@ -66,17 +63,6 @@ export default function InvoiceToolbar({
         <AutoSaveIndicator />
       </div>
       <div className="flex items-center gap-1">
-        {onNewInvoice && (
-          <ToolbarButton
-            onClick={onNewInvoice}
-            title={`New ${isCreditNote ? 'Credit Note' : 'Invoice'} (⌘N)`}
-            ariaLabel={`Start new ${isCreditNote ? 'credit note' : 'invoice'}`}
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-          </ToolbarButton>
-        )}
         <ToolbarButton
           onClick={onOpenPreview}
           title="Full Preview (⌘⇧P)"

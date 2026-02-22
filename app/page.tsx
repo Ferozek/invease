@@ -26,7 +26,7 @@ import { useAccordion } from '@/hooks/useAccordion';
 import { useFormCompletion } from '@/hooks/useFormCompletion';
 import WelcomeSlides from '@/components/onboarding/WelcomeSlides';
 import OnboardingWizard from '@/components/wizard/OnboardingWizard';
-import { SAMPLE_COMPANY, SAMPLE_BANK_DETAILS, SAMPLE_CUSTOMER, SAMPLE_LINE_ITEM } from '@/config/sampleData';
+import { SAMPLE_COMPANY, SAMPLE_CUSTOMER, SAMPLE_LINE_ITEM } from '@/config/sampleData';
 import {
   CompanyDetailsSummary,
   CustomerDetailsForm,
@@ -95,7 +95,7 @@ export default function Home() {
   const companyName = useCompanyStore((state) => state.companyName);
   const markWelcomeSeen = useCompanyStore((state) => state.markWelcomeSeen);
   const setCompanyDetails = useCompanyStore((state) => state.setCompanyDetails);
-  const setBankDetails = useCompanyStore((state) => state.setBankDetails);
+
   const resetOnboarding = useCompanyStore((state) => state.resetOnboarding);
   const startOver = useCompanyStore((state) => state.startOver);
   const isCisSubcontractor = useCompanyStore((state) => state.isCisSubcontractor);
@@ -128,14 +128,13 @@ export default function Home() {
     // Set default business type
     useCompanyStore.getState().setBusinessType('sole_trader');
 
-    // Pre-fill sample company data if empty
+    // Pre-fill sample company data if empty (bank details intentionally excluded — optional)
     if (!companyName) {
       setCompanyDetails({
         companyName: SAMPLE_COMPANY.companyName,
         address: SAMPLE_COMPANY.address,
         postCode: SAMPLE_COMPANY.postCode,
       });
-      setBankDetails(SAMPLE_BANK_DETAILS);
     }
 
     // Pre-fill sample customer and line item if empty
@@ -160,7 +159,7 @@ export default function Home() {
 
     markWelcomeSeen();
     analytics.quickStartUsed();
-  }, [companyName, customer.name, setCompanyDetails, setBankDetails, setCustomerDetails, setInvoiceDetails, updateLineItem, consumeNextInvoiceNumber, markWelcomeSeen]);
+  }, [companyName, customer.name, setCompanyDetails, setCustomerDetails, setInvoiceDetails, updateLineItem, consumeNextInvoiceNumber, markWelcomeSeen]);
 
   // ===== Action Handlers =====
 
@@ -535,7 +534,6 @@ export default function Home() {
                   onOpenPreview={() => setShowPDFPreview(true)}
                   onOpenHistory={() => setShowHistoryPanel(true)}
                   onOpenSettings={() => setShowSettingsPanel(true)}
-                  onNewInvoice={handleNewInvoice}
                 />
 
                 <AnimatePresence mode="wait">
