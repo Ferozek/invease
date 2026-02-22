@@ -94,7 +94,7 @@ test.describe('Invoice Form', () => {
     await page.fill('#customerName', 'Test Customer');
 
     // Click the New Invoice toolbar button
-    await page.getByRole('button', { name: /start new invoice/i }).click();
+    await page.getByRole('button', { name: /new invoice/i }).click();
 
     // Confirmation dialog
     await expect(page.getByText('Start New Invoice?')).toBeVisible();
@@ -104,7 +104,7 @@ test.describe('Invoice Form', () => {
     await expect(page.locator('#customerName')).toHaveValue('Test Customer');
 
     // Try again and confirm
-    await page.getByRole('button', { name: /start new invoice/i }).click();
+    await page.getByRole('button', { name: /new invoice/i }).click();
     await page.getByRole('button', { name: 'Clear & Start New' }).click();
 
     // Form should be cleared
@@ -112,7 +112,7 @@ test.describe('Invoice Form', () => {
   });
 
   test('bank details NOT persisted in localStorage', async ({ page }) => {
-    // Set up state with bank details in localStorage (should be stripped)
+    // Set up state with bank details in localStorage (should be stripped by partialize)
     await page.evaluate(() => {
       localStorage.setItem('invease-company-details', JSON.stringify({
         state: {
@@ -122,12 +122,18 @@ test.describe('Invoice Form', () => {
           companyName: 'Security Test Co',
           address: '123 Secure St',
           postCode: 'SW1A 1AA',
+          companyNumber: '',
+          vatNumber: '',
+          eoriNumber: '',
+          cisStatus: 'not_applicable',
+          cisUtr: '',
           bankDetails: {
             bankName: 'Should Not Persist',
             accountNumber: '99999999',
             sortCode: '99-99-99',
           },
         },
+        version: 2,
       }));
     });
     await page.reload();

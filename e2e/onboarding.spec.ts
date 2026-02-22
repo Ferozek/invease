@@ -20,7 +20,7 @@ test.describe('Onboarding', () => {
     await page.evaluate(() => {
       localStorage.setItem('invease-company-details', JSON.stringify({
         state: { hasSeenWelcome: true, isOnboarded: false, businessType: null },
-        version: 0,
+        version: 2,
       }));
     });
     await page.reload({ waitUntil: 'domcontentloaded' });
@@ -37,7 +37,7 @@ test.describe('Onboarding', () => {
     await page.evaluate(() => {
       localStorage.setItem('invease-company-details', JSON.stringify({
         state: { hasSeenWelcome: true, isOnboarded: false, businessType: null },
-        version: 0,
+        version: 2,
       }));
     });
     await page.reload({ waitUntil: 'domcontentloaded' });
@@ -98,8 +98,9 @@ test.describe('Onboarding', () => {
     // Click Start Over
     await page.getByText('Start Over').click();
 
-    // Confirm dialog
+    // Confirm dialog with type-to-confirm
     await expect(page.getByText('Clear Everything')).toBeVisible();
+    await page.getByPlaceholder('DELETE').fill('DELETE');
     await page.getByRole('button', { name: 'Clear Everything' }).click();
 
     // Should return to welcome slides

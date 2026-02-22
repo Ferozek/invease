@@ -32,6 +32,7 @@ function ToolbarButton({ onClick, title, ariaLabel, children }: ToolbarButtonPro
 interface InvoiceToolbarProps {
   invoice: InvoiceData;
   totals: InvoiceTotals;
+  onNewInvoice: () => void;
   onOpenPreview: () => void;
   onOpenHistory: () => void;
   onOpenSettings: () => void;
@@ -41,6 +42,7 @@ interface InvoiceToolbarProps {
  * InvoiceToolbar - Preview section header with action buttons
  *
  * Actions:
+ * - New Invoice (Cmd+N)
  * - Full Preview (Cmd+Shift+P)
  * - Export Menu (CSV)
  * - History Panel
@@ -49,6 +51,7 @@ interface InvoiceToolbarProps {
 export default function InvoiceToolbar({
   invoice,
   totals,
+  onNewInvoice,
   onOpenPreview,
   onOpenHistory,
   onOpenSettings,
@@ -64,6 +67,15 @@ export default function InvoiceToolbar({
         <AutoSaveIndicator />
       </div>
       <div className="flex items-center gap-1">
+        <ToolbarButton
+          onClick={onNewInvoice}
+          title={`New ${isCreditNote ? 'Credit Note' : 'Invoice'} (⌘N)`}
+          ariaLabel={`New ${isCreditNote ? 'credit note' : 'invoice'}`}
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+          </svg>
+        </ToolbarButton>
         <ToolbarButton
           onClick={onOpenPreview}
           title="Full Preview (⌘⇧P)"

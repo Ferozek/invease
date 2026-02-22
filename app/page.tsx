@@ -548,6 +548,7 @@ export default function Home() {
                 <InvoiceToolbar
                   invoice={invoiceData}
                   totals={totals}
+                  onNewInvoice={handleNewInvoice}
                   onOpenPreview={() => setShowPDFPreview(true)}
                   onOpenHistory={() => setShowHistoryPanel(true)}
                   onOpenSettings={() => setShowSettingsPanel(true)}

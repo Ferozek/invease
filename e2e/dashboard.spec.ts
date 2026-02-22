@@ -71,15 +71,17 @@ test.describe('Dashboard', () => {
     await page.getByText('View All').click();
     await expect(page.getByRole('heading', { name: 'History' })).toBeVisible();
 
-    // Mark as paid
-    const statusBtn = page.getByTestId('status-indicator').first();
-    await expect(statusBtn).toBeVisible();
-    await statusBtn.click();
-    await expect(statusBtn).toContainText('Paid');
+    // Mark as paid — click the actual action button, not the status span
+    const paidBtn = page.getByTestId('mark-paid-button').first();
+    await expect(paidBtn).toBeVisible();
+    await paidBtn.click();
 
-    // Toggle back to unpaid
-    await statusBtn.click();
-    await expect(statusBtn).not.toContainText('Paid');
+    // Status indicator should now show "Paid"
+    await expect(page.getByTestId('status-indicator').first()).toContainText('Paid');
+
+    // Toggle back to unpaid via "Undo" button
+    await page.getByRole('button', { name: /mark as unpaid/i }).first().click();
+    await expect(page.getByTestId('status-indicator').first()).not.toContainText('Paid');
   });
 
   test('history filter tabs with counts', async ({ page }) => {

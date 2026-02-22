@@ -7,6 +7,8 @@ import { Page, expect } from '@playwright/test';
 /** Set up an onboarded user in localStorage (call page.reload() after) */
 export async function setupOnboardedUser(page: Page, overrides?: Record<string, unknown>) {
   await page.evaluate((opts) => {
+    // Clear accordion state to prevent bleed between tests
+    localStorage.removeItem('invease-accordion-active');
     localStorage.setItem('invease-company-details', JSON.stringify({
       state: {
         hasSeenWelcome: true,
@@ -22,7 +24,7 @@ export async function setupOnboardedUser(page: Page, overrides?: Record<string, 
         cisUtr: '',
         ...opts,
       },
-      version: 0,
+      version: 2,
     }));
   }, overrides || {});
 }
@@ -40,13 +42,14 @@ export async function openSection(page: Page, sectionTitle: string) {
 /** Navigate through Quick Start flow (sets wizard state, clicks skip) */
 export async function quickStart(page: Page) {
   await page.evaluate(() => {
+    localStorage.removeItem('invease-accordion-active');
     localStorage.setItem('invease-company-details', JSON.stringify({
       state: {
         hasSeenWelcome: true,
         isOnboarded: false,
         businessType: null,
       },
-      version: 0,
+      version: 2,
     }));
   });
   await page.reload({ waitUntil: 'domcontentloaded' });
