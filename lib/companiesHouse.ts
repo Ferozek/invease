@@ -69,7 +69,7 @@ export async function searchCompanies(q: string, limit = 5): Promise<CompanyLite
 
   const res = await fetch(url, { headers: { Authorization: auth } });
   if (!res.ok) {
-    console.warn(`[companiesHouse] Search failed (${res.status})`);
+    logger.warn(`[companiesHouse] Search failed (${res.status})`);
     return [];
   }
 
@@ -97,7 +97,7 @@ export async function getCompanyByNumber(number: string): Promise<CompanyLite | 
   );
 
   if (!res.ok) {
-    console.warn(`[companiesHouse] Company lookup failed (${res.status}) for ${number}`);
+    logger.warn(`[companiesHouse] Company lookup failed (${res.status}) for ${number}`);
     return null;
   }
 

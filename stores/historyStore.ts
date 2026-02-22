@@ -6,6 +6,7 @@
  * Persisted to localStorage with Zustand persist middleware
  */
 
+import { useMemo } from 'react';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { DocumentType, InvoiceData, InvoiceTotals } from '@/types/invoice';
@@ -88,12 +89,13 @@ export const useHistoryStore = create<HistoryState>()(
       saveInvoice: (invoice, totals) => {
         const docType = invoice.details.documentType || 'invoice';
         const id = generateId(docType);
+        const now = new Date().toISOString();
         const dueDate = calculateDueDate(invoice.details.date, invoice.details.paymentTerms);
         const savedInvoice: SavedInvoice = {
           id,
           invoice,
           totals,
-          savedAt: new Date().toISOString(),
+          savedAt: now,
           customerName: invoice.customer.name,
           invoiceNumber: invoice.details.invoiceNumber,
           total: totals.total,
@@ -102,18 +104,21 @@ export const useHistoryStore = create<HistoryState>()(
           dueDate,
         };
 
-        set((state) => {
-          // Add to front, limit to MAX_INVOICES
-          const updated = [savedInvoice, ...state.invoices].slice(0, MAX_INVOICES);
-          return { invoices: updated };
-        });
-
-        // Also save customer to recent
-        get().addRecentCustomer({
+        const recentCustomer: RecentCustomer = {
           name: invoice.customer.name,
           address: invoice.customer.address,
           postCode: invoice.customer.postCode,
-          lastUsed: new Date().toISOString(),
+          lastUsed: now,
+        };
+
+        // Single atomic state update — invoices + recent customer together
+        set((state) => {
+          const invoices = [savedInvoice, ...state.invoices].slice(0, MAX_INVOICES);
+          const filtered = state.recentCustomers.filter(
+            (c) => c.name.toLowerCase() !== recentCustomer.name.toLowerCase()
+          );
+          const recentCustomers = [recentCustomer, ...filtered].slice(0, MAX_RECENT_CUSTOMERS);
+          return { invoices, recentCustomers };
         });
 
         return id;
@@ -257,6 +262,20 @@ export const selectInvoicesOnly = (state: HistoryState) =>
 
 export const selectCreditNotesOnly = (state: HistoryState) =>
   state.invoices.filter((inv) => inv.documentType === 'credit_note');
+
+// ===== Hook-based Selectors (React 19 safe) =====
+// These wrap computed selectors so consumers don't need useMemo.
+// See: "Zustand + React 19: selectors that return new objects cause infinite loops"
+
+export function useDashboardStats(period: 'month' | 'quarter' | 'year' = 'month'): DashboardStats {
+  const invoices = useHistoryStore((state) => state.invoices);
+  return useMemo(() => selectDashboardStats({ invoices } as HistoryState, period), [invoices, period]);
+}
+
+export function useUniqueCustomers(): UniqueCustomer[] {
+  const invoices = useHistoryStore((state) => state.invoices);
+  return useMemo(() => selectUniqueCustomers({ invoices } as HistoryState), [invoices]);
+}
 
 // ===== Dashboard Selectors (Phase 2.5) =====
 

@@ -63,9 +63,14 @@ const LineItemRow = memo(function LineItemRow({
           aria-label="Quantity"
           value={item.quantity}
           min={1}
+          max={99999}
           onChange={(e) =>
             onUpdate(item.id, { quantity: parseInt(e.target.value) || 1 })
           }
+          onBlur={(e) => {
+            const clamped = Math.max(1, Math.min(99999, parseInt(e.target.value) || 1));
+            onUpdate(item.id, { quantity: clamped });
+          }}
         />
       </td>
       <td className="py-2 px-2" data-label="Net">
@@ -75,10 +80,17 @@ const LineItemRow = memo(function LineItemRow({
           aria-label="Net amount"
           placeholder="0.00"
           step="0.01"
+          min={0}
+          max={9999999.99}
           value={item.netAmount || ''}
           onChange={(e) =>
             onUpdate(item.id, { netAmount: parseFloat(e.target.value) || 0 })
           }
+          onBlur={(e) => {
+            const clamped = Math.max(0, Math.min(9999999.99, parseFloat(e.target.value) || 0));
+            const rounded = Math.round(clamped * 100) / 100;
+            onUpdate(item.id, { netAmount: rounded });
+          }}
         />
       </td>
       <td className="py-2 px-2" data-label="VAT">

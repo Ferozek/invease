@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useInvoiceStore } from '@/stores/invoiceStore';
-import { useHistoryStore, selectUniqueCustomers, type UniqueCustomer } from '@/stores/historyStore';
+import { useUniqueCustomers, type UniqueCustomer } from '@/stores/historyStore';
 import { toTitleCase } from '@/lib/textFormatters';
 import { analytics } from '@/lib/analytics';
 import {
@@ -44,11 +44,7 @@ export default function CustomerDetailsForm() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Get all unique customers from invoice history
-  const invoices = useHistoryStore((state) => state.invoices);
-  const allCustomers = useMemo(
-    () => selectUniqueCustomers({ invoices } as Parameters<typeof selectUniqueCustomers>[0]),
-    [invoices]
-  );
+  const allCustomers = useUniqueCustomers();
 
   // Filter suggestions based on current input
   const suggestions = useMemo(() => {

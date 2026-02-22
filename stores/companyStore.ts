@@ -139,6 +139,7 @@ export const useCompanyStore = create<CompanyState>()(
     }),
     {
       name: 'invease-company-details',
+      version: 2,
       // SECURITY: Bank details are intentionally excluded - never persisted
       partialize: (state) => ({
         hasSeenWelcome: state.hasSeenWelcome,
@@ -156,25 +157,14 @@ export const useCompanyStore = create<CompanyState>()(
         cisUtr: state.cisUtr,
         // Note: bankDetails intentionally omitted for security
       }),
-      // Migration: Remove any previously saved bank details
-      onRehydrateStorage: () => {
-        return (_state, error) => {
-          if (error) return;
-          // Clean up any bank details from old versions
-          try {
-            const stored = localStorage.getItem('invease-company-details');
-            if (stored) {
-              const parsed = JSON.parse(stored);
-              if (parsed.state?.bankDetails || parsed.state?.rememberBankDetails !== undefined) {
-                delete parsed.state.bankDetails;
-                delete parsed.state.rememberBankDetails;
-                localStorage.setItem('invease-company-details', JSON.stringify(parsed));
-              }
-            }
-          } catch {
-            // Ignore migration errors
-          }
-        };
+      migrate: (persistedState, version) => {
+        const state = persistedState as Record<string, unknown>;
+        if (version < 2) {
+          // v1 → v2: Strip bank details that may have been persisted in old versions
+          delete state.bankDetails;
+          delete state.rememberBankDetails;
+        }
+        return state as unknown as CompanyState;
       },
     }
   )

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useHistoryStore, selectUniqueCustomers, type HistoryState } from '@/stores/historyStore';
+import { useHistoryStore, useUniqueCustomers } from '@/stores/historyStore';
 import { findDuplicateCustomers, type MergeSuggestion } from '@/lib/customerMatching';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
@@ -27,10 +27,7 @@ export default function CustomerMergePanel({ isOpen, onClose }: CustomerMergePan
   const [manualFrom, setManualFrom] = useState<string | null>(null);
 
   // All unique customers
-  const customers = useMemo(
-    () => selectUniqueCustomers({ invoices } as HistoryState),
-    [invoices]
-  );
+  const customers = useUniqueCustomers();
 
   // Auto-detected duplicates
   const suggestions = useMemo(

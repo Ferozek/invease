@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useHistoryStore, selectDashboardStats, type HistoryState } from '@/stores/historyStore';
+import { useHistoryStore, useDashboardStats } from '@/stores/historyStore';
 import { formatCurrency } from '@/lib/formatters';
 import Card from '@/components/ui/Card';
 import CollectionRing from './CollectionRing';
@@ -20,14 +20,11 @@ export default function DashboardSummary({ onViewAll, onViewOverdue }: Dashboard
     return localStorage.getItem('invease-dashboard-collapsed') === 'true';
   });
 
-  const invoices = useHistoryStore((state) => state.invoices);
-  const stats = useMemo(
-    () => selectDashboardStats({ invoices } as HistoryState, period),
-    [invoices, period]
-  );
+  const hasHistory = useHistoryStore((state) => state.invoices.length > 0);
+  const stats = useDashboardStats(period);
 
   // Don't render if no history
-  if (invoices.length === 0) return null;
+  if (!hasHistory) return null;
 
   const toggleCollapsed = () => {
     const next = !isCollapsed;

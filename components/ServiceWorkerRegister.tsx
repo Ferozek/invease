@@ -17,6 +17,8 @@ export default function ServiceWorkerRegister() {
       'serviceWorker' in navigator &&
       process.env.NODE_ENV === 'production'
     ) {
+      let intervalId: ReturnType<typeof setInterval> | undefined;
+
       // Register service worker after page load
       window.addEventListener('load', () => {
         navigator.serviceWorker
@@ -25,7 +27,7 @@ export default function ServiceWorkerRegister() {
             logger.info('Service worker registered', { scope: registration.scope });
 
             // Check for updates periodically
-            setInterval(() => {
+            intervalId = setInterval(() => {
               registration.update();
             }, 60 * 60 * 1000); // Every hour
 
@@ -50,6 +52,10 @@ export default function ServiceWorkerRegister() {
             logger.error('Service worker registration failed', error);
           });
       });
+
+      return () => {
+        if (intervalId) clearInterval(intervalId);
+      };
     }
   }, []);
 
