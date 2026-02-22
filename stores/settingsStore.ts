@@ -16,6 +16,7 @@ import {
   generateInvoiceNumber,
 } from '@/lib/invoiceNumbering';
 import { DEFAULT_TEMPLATE_ID } from '@/lib/templates/pdfTemplates';
+import type { VatRate } from '@/types/invoice';
 
 // ===== Types =====
 
@@ -29,6 +30,11 @@ interface SettingsState {
 
   // Credit Note Numbering (separate sequence)
   cnNumbering: NumberingConfig;
+
+  // Invoice Defaults (applied when creating a new invoice)
+  defaultPaymentTerms: string;
+  defaultVatRate: VatRate;
+  defaultNotes: string;
 
   // Actions - Template
   setTemplateId: (id: string) => void;
@@ -45,6 +51,11 @@ interface SettingsState {
   getNextCreditNoteNumber: () => string;
   consumeNextCreditNoteNumber: () => string;
   resetCnNumberingSequence: () => void;
+
+  // Actions - Invoice Defaults
+  setDefaultPaymentTerms: (terms: string) => void;
+  setDefaultVatRate: (rate: VatRate) => void;
+  setDefaultNotes: (notes: string) => void;
 }
 
 // ===== Store =====
@@ -57,6 +68,9 @@ export const useSettingsStore = create<SettingsState>()(
       customPrimaryColor: null,
       numbering: DEFAULT_NUMBERING_CONFIG,
       cnNumbering: DEFAULT_CN_NUMBERING_CONFIG,
+      defaultPaymentTerms: '30',
+      defaultVatRate: '20' as VatRate,
+      defaultNotes: '',
 
       // Template Actions
       setTemplateId: (id) => set({ templateId: id }),
@@ -117,11 +131,26 @@ export const useSettingsStore = create<SettingsState>()(
             lastResetYear: new Date().getFullYear(),
           },
         })),
+
+      // Invoice Defaults Actions
+      setDefaultPaymentTerms: (terms) => set({ defaultPaymentTerms: terms }),
+      setDefaultVatRate: (rate) => set({ defaultVatRate: rate }),
+      setDefaultNotes: (notes) => set({ defaultNotes: notes }),
     }),
     {
       name: 'invease-settings',
       storage: createJSONStorage(() => localStorage),
-      version: 1,
+      version: 2,
+      migrate: (persisted, version) => {
+        const state = persisted as Record<string, unknown>;
+        if (version < 2) {
+          // Add invoice defaults for existing users
+          state.defaultPaymentTerms = state.defaultPaymentTerms ?? '30';
+          state.defaultVatRate = state.defaultVatRate ?? '20';
+          state.defaultNotes = state.defaultNotes ?? '';
+        }
+        return state as unknown as SettingsState;
+      },
     }
   )
 );
@@ -132,3 +161,6 @@ export const selectTemplateId = (state: SettingsState) => state.templateId;
 export const selectCustomColor = (state: SettingsState) => state.customPrimaryColor;
 export const selectNumberingConfig = (state: SettingsState) => state.numbering;
 export const selectCnNumberingConfig = (state: SettingsState) => state.cnNumbering;
+export const selectDefaultPaymentTerms = (state: SettingsState) => state.defaultPaymentTerms;
+export const selectDefaultVatRate = (state: SettingsState) => state.defaultVatRate;
+export const selectDefaultNotes = (state: SettingsState) => state.defaultNotes;
