@@ -63,6 +63,7 @@ export default function PDFPreviewModal({
   const [canShare, setCanShare] = useState(false);
   const [isSharePending, setIsSharePending] = useState(false);
   const brandColor = useSettingsStore((s) => s.customPrimaryColor);
+  const templateId = useSettingsStore((s) => s.templateId);
   const prefersReducedMotion = useReducedMotion();
 
   // Check if sharing is supported on mount
@@ -95,7 +96,7 @@ export default function PDFPreviewModal({
 
         // Generate PDF blob
         const blob = await pdf(
-          <InvoicePDF invoice={cleanedInvoice} totals={totals} brandColor={brandColor ?? undefined} watermark={watermark} />
+          <InvoicePDF invoice={cleanedInvoice} totals={totals} templateId={templateId} brandColor={brandColor ?? undefined} watermark={watermark} />
         ).toBlob();
 
         // Store blob for sharing
@@ -120,7 +121,7 @@ export default function PDFPreviewModal({
         URL.revokeObjectURL(pdfUrl);
       }
     };
-  }, [isOpen, invoice, totals, brandColor, watermark]);
+  }, [isOpen, invoice, totals, templateId, brandColor, watermark]);
 
   // Handle escape key
   useEffect(() => {

@@ -11,10 +11,9 @@ import { formatCurrency, calculateLineNet, calculateLineDiscount, getVatRateDisp
 import { formatDateUK, calculateDueDate } from '@/lib/dateUtils';
 import { getCisDeductionRate, getCisStatusLabel } from '@/lib/cisUtils';
 import { hasBankDetails as checkBankDetails } from '@/lib/bankDetailsUtils';
-import styles from './pdfStyles';
+import { createPdfStyles } from './pdfStyles';
+import { getTemplate } from '@/lib/templates/pdfTemplates';
 import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
-
-const DEFAULT_BRAND_COLOR = '#0b4f7a';
 
 export type WatermarkType = 'DRAFT' | 'PAID' | 'CANCELLED' | null;
 
@@ -27,12 +26,14 @@ const WATERMARK_COLORS: Record<string, string> = {
 interface InvoicePDFProps {
   invoice: InvoiceData;
   totals: InvoiceTotals;
+  templateId?: string;
   brandColor?: string;
   watermark?: WatermarkType;
 }
 
-export default function InvoicePDF({ invoice, totals, brandColor, watermark }: InvoicePDFProps) {
-  const color = brandColor || DEFAULT_BRAND_COLOR;
+export default function InvoicePDF({ invoice, totals, templateId, brandColor, watermark }: InvoicePDFProps) {
+  const template = getTemplate(templateId || 'modern');
+  const styles = createPdfStyles(template, brandColor || undefined);
   const isCreditNote = invoice.details.documentType === 'credit_note';
   const bankDetailsPresent = checkBankDetails(invoice.bankDetails);
   const isCis = invoice.invoicer.cisStatus !== 'not_applicable';
@@ -63,13 +64,13 @@ export default function InvoicePDF({ invoice, totals, brandColor, watermark }: I
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header */}
-        <View style={isCreditNote ? [styles.header, styles.creditNoteHeader] : [styles.header, { borderBottomColor: color }]}>
+        <View style={isCreditNote ? [styles.header, styles.creditNoteHeader] : styles.header}>
           <View style={styles.companySection}>
             {invoice.invoicer.logo && (
               // eslint-disable-next-line jsx-a11y/alt-text -- @react-pdf/renderer Image doesn't support alt
               <Image src={invoice.invoicer.logo} style={styles.logo} />
             )}
-            <Text style={[styles.companyName, { color }]}>{invoice.invoicer.companyName}</Text>
+            <Text style={styles.companyName}>{invoice.invoicer.companyName}</Text>
             <Text style={styles.companyDetails}>
               {invoice.invoicer.address}
               {'\n'}
@@ -81,7 +82,7 @@ export default function InvoicePDF({ invoice, totals, brandColor, watermark }: I
             </Text>
           </View>
           <View>
-            <Text style={isCreditNote ? [styles.invoiceTitle, styles.creditNoteTitle] : [styles.invoiceTitle, { color }]}>
+            <Text style={isCreditNote ? [styles.invoiceTitle, styles.creditNoteTitle] : styles.invoiceTitle}>
               {isCreditNote ? 'CREDIT NOTE' : 'INVOICE'}
             </Text>
             <Text style={styles.invoiceNumber}>#{invoice.details.invoiceNumber}</Text>
@@ -117,7 +118,7 @@ export default function InvoicePDF({ invoice, totals, brandColor, watermark }: I
         {/* Line Items Table */}
         <View style={styles.table}>
           {/* Header */}
-          <View style={[styles.tableHeader, { backgroundColor: color }]}>
+          <View style={styles.tableHeader}>
             <Text style={[styles.tableHeaderText, styles.colDescription]}>Description</Text>
             <Text style={[styles.tableHeaderText, styles.colQty]}>Qty</Text>
             <Text style={[styles.tableHeaderText, styles.colNet]}>Net</Text>
@@ -187,7 +188,7 @@ export default function InvoicePDF({ invoice, totals, brandColor, watermark }: I
         {/* Credit Note Reason */}
         {isCreditNote && invoice.details.creditNoteFields?.reason && (
           <View style={styles.creditNoteReason}>
-            <Text style={{ fontSize: 9, fontFamily: 'Helvetica-Bold', color: '#991b1b', marginBottom: 4 }}>
+            <Text style={{ fontSize: 9, fontFamily: template.typography.fontFamilyBold, color: '#991b1b', marginBottom: 4 }}>
               Reason for Credit Note
             </Text>
             <Text style={{ fontSize: 9, color: '#991b1b' }}>
@@ -215,12 +216,12 @@ export default function InvoicePDF({ invoice, totals, brandColor, watermark }: I
           {totals.vatBreakdown.map((vat) => (
             <View key={vat.rate} style={[styles.totalRow, styles.totalRowBorder]}>
               <Text style={styles.totalLabel}>
-                {vat.rate === 'reverse_charge' ? 'Reverse Charge (0%)' : `VAT (${vat.rate}%)`}
+                {vat.rate === 'reverse_charge' ? 'Reverse Charge (0%)' : vat.rate === 'exempt' ? 'VAT Exempt' : `VAT (${vat.rate}%)`}
               </Text>
               <Text style={styles.totalValue}>{formatCurrency(vat.amount)}</Text>
             </View>
           ))}
-          <View style={isCreditNote ? [styles.grandTotalRow, styles.creditNoteGrandTotalRow] : [styles.grandTotalRow, { backgroundColor: color }]}>
+          <View style={isCreditNote ? [styles.grandTotalRow, styles.creditNoteGrandTotalRow] : styles.grandTotalRow}>
             <Text style={styles.grandTotalLabel}>{isCreditNote ? 'Credit Total' : 'Total Due'}</Text>
             <Text style={styles.grandTotalValue}>{formatCurrency(totals.total)}</Text>
           </View>
@@ -236,8 +237,8 @@ export default function InvoicePDF({ invoice, totals, brandColor, watermark }: I
 
         {/* Payment Details - prominent section for bank transfers */}
         {bankDetailsPresent ? (
-          <View style={[styles.bankSection, { borderColor: color }]}>
-            <Text style={[styles.bankTitle, { color }]}>
+          <View style={styles.bankSection}>
+            <Text style={styles.bankTitle}>
               {isCreditNote ? 'Refund Details' : 'Payment Details — Bank Transfer'}
             </Text>
             <View style={styles.bankGrid}>
@@ -261,7 +262,7 @@ export default function InvoicePDF({ invoice, totals, brandColor, watermark }: I
             {/* Payment reference — auto-generated from invoice number */}
             <View style={styles.bankReferenceRow}>
               <Text style={styles.bankReferenceLabel}>Payment Reference</Text>
-              <Text style={[styles.bankReferenceValue, { color }]}>
+              <Text style={styles.bankReferenceValue}>
                 {invoice.bankDetails.reference || invoice.details.invoiceNumber}
               </Text>
             </View>
@@ -269,14 +270,14 @@ export default function InvoicePDF({ invoice, totals, brandColor, watermark }: I
             {!isCreditNote && (
               <View style={styles.bankAmountDue}>
                 <Text style={styles.bankAmountLabel}>Amount Due</Text>
-                <Text style={[styles.bankAmountValue, { color }]}>
+                <Text style={styles.bankAmountValue}>
                   {formatCurrency(isCis && cisDeduction > 0 ? netPayable : totals.total)}
                 </Text>
               </View>
             )}
           </View>
         ) : (
-          <View style={[styles.bankSection, { borderColor: '#e2e8f0', backgroundColor: '#f8fafc' }]}>
+          <View style={[styles.bankSection, { borderColor: template.colors.border, backgroundColor: template.colors.surface }]}>
             <Text style={styles.bankTitle}>Payment Information</Text>
             <Text style={styles.paymentNote}>
               {invoice.details.notes?.includes('payment')
