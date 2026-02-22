@@ -1,6 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
+import QRCode from 'qrcode';
 import type { BankDetails } from '@/types/invoice';
 
 interface PaymentQRCodeProps {
@@ -10,15 +12,33 @@ interface PaymentQRCodeProps {
   size?: number;
 }
 
+/** Build the payment text string from bank details */
+function buildPaymentText(
+  bankDetails: BankDetails,
+  amount: number,
+  reference?: string,
+): string {
+  const sortCode = bankDetails.sortCode.replace(/(\d{2})(\d{2})(\d{2})/, '$1-$2-$3');
+
+  return [
+    `PAY TO: ${bankDetails.accountName}`,
+    bankDetails.bankName ? `BANK: ${bankDetails.bankName}` : null,
+    `SORT CODE: ${sortCode}`,
+    `ACCOUNT: ${bankDetails.accountNumber}`,
+    amount > 0 ? `AMOUNT: £${amount.toFixed(2)}` : null,
+    reference ? `REF: ${reference}` : null,
+  ].filter(Boolean).join('\n');
+}
+
 /**
  * Payment QR Code
- * Generates a QR code for UK bank payments
+ * Generates a real QR code encoding UK bank payment details.
  *
- * Uses UK Open Banking payment request format
- * Compatible with most UK banking apps
+ * When scanned by a phone camera, displays the payment details
+ * so the payer can quickly enter them into their banking app.
  *
- * Note: Uses a simple SVG-based QR code for lightweight implementation
- * For production, consider qrcode library for more reliable encoding
+ * UK doesn't have a single standard QR payment format like EPC (Europe),
+ * so we encode as structured plaintext that any QR scanner can read.
  */
 export default function PaymentQRCode({
   bankDetails,
@@ -26,160 +46,78 @@ export default function PaymentQRCode({
   reference,
   size = 150,
 }: PaymentQRCodeProps) {
-  // Generate payment data string
-  const paymentData = useMemo(() => {
-    // UK Faster Payments format (simplified)
-    // Format: account holder, sort code, account number, amount, reference
-    return [
-      bankDetails.accountName,
-      bankDetails.sortCode.replace(/-/g, ''),
-      bankDetails.accountNumber,
-      amount.toFixed(2),
-      reference || '',
-    ].join('|');
-  }, [bankDetails, amount, reference]);
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 
-  // Generate simple QR code pattern (placeholder - real QR encoding needed)
-  // This creates a visual representation for demo purposes
-  const qrPattern = useMemo(() => {
-    return generateSimpleQRPattern(paymentData);
-  }, [paymentData]);
+  const hasRequiredDetails = !!(bankDetails.sortCode && bankDetails.accountNumber && bankDetails.accountName);
+
+  const paymentText = useMemo(
+    () => hasRequiredDetails ? buildPaymentText(bankDetails, amount, reference) : null,
+    [bankDetails, amount, reference, hasRequiredDetails]
+  );
+
+  useEffect(() => {
+    if (!paymentText) return;
+
+    let cancelled = false;
+
+    QRCode.toDataURL(paymentText, {
+      width: size,
+      margin: 2,
+      color: { dark: '#000000', light: '#ffffff' },
+      errorCorrectionLevel: 'M',
+    }).then((url) => {
+      if (!cancelled) setQrDataUrl(url);
+    }).catch(() => {
+      if (!cancelled) setQrDataUrl(null);
+    });
+
+    return () => { cancelled = true; };
+  }, [paymentText, size]);
+
+  if (!hasRequiredDetails || !qrDataUrl) return null;
 
   return (
-    <div className="flex flex-col items-center gap-3">
-      {/* QR Code */}
-      <div
-        className="bg-white p-3 rounded-xl shadow-sm border border-[var(--surface-border)]"
-        style={{ width: size + 24, height: size + 24 }}
-      >
-        <svg
-          viewBox="0 0 25 25"
+    <div className="flex flex-col items-center gap-2">
+      <div className="bg-white p-2 rounded-xl shadow-sm border border-[var(--surface-border)]">
+        <Image
+          src={qrDataUrl}
+          alt="QR code with payment details"
           width={size}
           height={size}
           className="block"
-        >
-          {/* QR Code pattern */}
-          {qrPattern.map((row, y) =>
-            row.map((cell, x) =>
-              cell ? (
-                <rect
-                  key={`${x}-${y}`}
-                  x={x}
-                  y={y}
-                  width={1}
-                  height={1}
-                  fill="#000"
-                />
-              ) : null
-            )
-          )}
-
-          {/* Position markers (corners) */}
-          <PositionMarker x={0} y={0} />
-          <PositionMarker x={18} y={0} />
-          <PositionMarker x={0} y={18} />
-        </svg>
+          unoptimized
+        />
       </div>
-
-      {/* Label */}
       <p className="text-xs text-[var(--text-muted)] text-center">
-        Scan to copy payment details
+        Scan to view payment details
       </p>
     </div>
   );
 }
 
-// ===== QR Position Marker Component =====
-
-function PositionMarker({ x, y }: { x: number; y: number }) {
-  return (
-    <g>
-      {/* Outer */}
-      <rect x={x} y={y} width={7} height={7} fill="#000" />
-      {/* Inner white */}
-      <rect x={x + 1} y={y + 1} width={5} height={5} fill="#fff" />
-      {/* Center */}
-      <rect x={x + 2} y={y + 2} width={3} height={3} fill="#000" />
-    </g>
-  );
-}
-
-// ===== Simple QR Pattern Generator =====
-// Note: This is a simplified visual representation
-// For production, use a proper QR code library
-
-function generateSimpleQRPattern(data: string): boolean[][] {
-  const size = 25;
-  const pattern: boolean[][] = Array(size)
-    .fill(null)
-    .map(() => Array(size).fill(false));
-
-  // Generate pseudo-random pattern based on data hash
-  let hash = 0;
-  for (let i = 0; i < data.length; i++) {
-    hash = (hash * 31 + data.charCodeAt(i)) & 0xffffffff;
+/**
+ * Generate a QR code data URL for use in PDF rendering.
+ * Returns a promise that resolves to a base64 data URL string.
+ */
+export async function generatePaymentQRDataUrl(
+  bankDetails: BankDetails,
+  amount: number,
+  reference?: string,
+): Promise<string | null> {
+  if (!bankDetails.sortCode || !bankDetails.accountNumber || !bankDetails.accountName) {
+    return null;
   }
 
-  // Fill data area (avoiding position markers)
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      // Skip position marker areas
-      if (
-        (x < 8 && y < 8) || // Top-left
-        (x >= 17 && y < 8) || // Top-right
-        (x < 8 && y >= 17) // Bottom-left
-      ) {
-        continue;
-      }
+  const paymentText = buildPaymentText(bankDetails, amount, reference);
 
-      // Generate pattern based on position and hash
-      const bit = ((hash >> ((x * 3 + y * 7) % 32)) & 1) === 1;
-      pattern[y][x] = bit;
-    }
+  try {
+    return await QRCode.toDataURL(paymentText, {
+      width: 80,
+      margin: 1,
+      color: { dark: '#000000', light: '#ffffff' },
+      errorCorrectionLevel: 'M',
+    });
+  } catch {
+    return null;
   }
-
-  // Add timing patterns
-  for (let i = 8; i < 17; i++) {
-    pattern[6][i] = i % 2 === 0;
-    pattern[i][6] = i % 2 === 0;
-  }
-
-  return pattern;
-}
-
-// ===== Alternative: Link to Banking App =====
-
-export function PaymentLink({
-  bankDetails,
-  amount,
-  reference,
-}: Omit<PaymentQRCodeProps, 'size'>) {
-  // Generate payment URL (works with some banking apps)
-  const paymentUrl = `https://pay.uk/transfer?sortcode=${bankDetails.sortCode.replace(/-/g, '')}&account=${bankDetails.accountNumber}&name=${encodeURIComponent(bankDetails.accountName)}&amount=${amount}&ref=${encodeURIComponent(reference || '')}`;
-
-  return (
-    <a
-      href={paymentUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg
-        bg-[var(--brand-blue)] text-white font-medium text-sm
-        hover:bg-[var(--brand-blue)]/90 transition-colors"
-    >
-      <svg
-        className="w-4 h-4"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={2}
-        stroke="currentColor"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"
-        />
-      </svg>
-      Pay Now
-    </a>
-  );
 }

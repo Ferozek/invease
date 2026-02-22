@@ -1,10 +1,14 @@
 'use client';
 
 import { useCompanyStore } from '@/stores/companyStore';
+import { useInvoiceStore } from '@/stores/invoiceStore';
 import { toTitleCase } from '@/lib/textFormatters';
+import PaymentQRCode from './PaymentQRCode';
 
 export default function BankDetailsForm() {
   const { bankDetails, setBankDetails } = useCompanyStore();
+  const totals = useInvoiceStore((s) => s.getTotals());
+  const reference = useInvoiceStore((s) => s.details.invoiceNumber);
 
   return (
     <div className="space-y-4">
@@ -70,6 +74,14 @@ export default function BankDetailsForm() {
         />
       </div>
     </div>
+
+      {/* QR Code preview — shows when bank details are filled */}
+      <PaymentQRCode
+        bankDetails={bankDetails}
+        amount={totals.total}
+        reference={reference}
+        size={120}
+      />
     </div>
   );
 }
