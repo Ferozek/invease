@@ -400,6 +400,7 @@ export default function Home() {
           description={siteConfig.tagline}
           icon={<InvoiceIcon />}
           actions={<ThemeToggle />}
+          onTitleClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         />
       </header>
 

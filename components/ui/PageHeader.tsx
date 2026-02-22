@@ -14,6 +14,7 @@ export interface PageHeaderProps {
   actions?: ReactNode;
   gradient?: boolean;
   className?: string;
+  onTitleClick?: () => void;
 }
 
 export default function PageHeader({
@@ -23,6 +24,7 @@ export default function PageHeader({
   actions,
   gradient = false,
   className = '',
+  onTitleClick,
 }: PageHeaderProps) {
   const backgroundStyle = gradient
     ? 'bg-[var(--brand-blue)]'
@@ -35,25 +37,52 @@ export default function PageHeader({
     <div className={`${backgroundStyle} ${gradient ? 'py-12' : 'mb-8'} ${className}`}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-start justify-between">
-          <div className="flex items-start gap-4">
-            {icon && (
-              <div className={`flex-shrink-0 ${gradient ? 'bg-white/20' : 'bg-[var(--brand-blue-50)]'} rounded-xl p-3`}>
-                <div className={`w-8 h-8 flex items-center justify-center ${gradient ? 'text-white' : 'text-[var(--brand-blue)]'}`}>
-                  {icon}
+          {onTitleClick ? (
+            <button
+              type="button"
+              onClick={onTitleClick}
+              className="cursor-pointer flex items-start gap-4 text-left active:opacity-80 transition-opacity"
+              aria-label="Scroll to top"
+            >
+              {icon && (
+                <div className={`flex-shrink-0 ${gradient ? 'bg-white/20' : 'bg-[var(--brand-blue-50)]'} rounded-xl p-3`}>
+                  <div className={`w-8 h-8 flex items-center justify-center ${gradient ? 'text-white' : 'text-[var(--brand-blue)]'}`}>
+                    {icon}
+                  </div>
                 </div>
-              </div>
-            )}
-            <div>
-              <h1 className={`text-3xl font-bold ${textColor} mb-2`}>
-                {title}
-              </h1>
-              {description && (
-                <p className={`${descriptionColor} max-w-2xl`}>
-                  {description}
-                </p>
               )}
+              <div>
+                <h1 className={`text-3xl font-bold ${textColor} mb-2`}>
+                  {title}
+                </h1>
+                {description && (
+                  <p className={`${descriptionColor} max-w-2xl`}>
+                    {description}
+                  </p>
+                )}
+              </div>
+            </button>
+          ) : (
+            <div className="flex items-start gap-4">
+              {icon && (
+                <div className={`flex-shrink-0 ${gradient ? 'bg-white/20' : 'bg-[var(--brand-blue-50)]'} rounded-xl p-3`}>
+                  <div className={`w-8 h-8 flex items-center justify-center ${gradient ? 'text-white' : 'text-[var(--brand-blue)]'}`}>
+                    {icon}
+                  </div>
+                </div>
+              )}
+              <div>
+                <h1 className={`text-3xl font-bold ${textColor} mb-2`}>
+                  {title}
+                </h1>
+                {description && (
+                  <p className={`${descriptionColor} max-w-2xl`}>
+                    {description}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
+          )}
           {actions && (
             <div className="flex-shrink-0">
               {actions}
