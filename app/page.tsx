@@ -605,7 +605,23 @@ export default function Home() {
         </div>
       </main>
 
-      {/* Footer */}
+      {/* Sticky mobile CTA — Apple: primary action always within reach */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40
+        bg-[var(--surface-card)]/95 backdrop-blur-md
+        border-t border-[var(--surface-border)]
+        px-4 py-3 safe-area-bottom"
+      >
+        <PDFErrorBoundary>
+          <PDFDownloadButton
+            invoice={invoiceData}
+            totals={totals}
+            onSuccess={handlePDFSuccess}
+          />
+        </PDFErrorBoundary>
+      </div>
+
+      {/* Footer — add bottom padding on mobile to clear sticky CTA */}
+      <div className="lg:hidden h-20" aria-hidden="true" />
       <Footer />
 
       {/* Modals & Panels */}

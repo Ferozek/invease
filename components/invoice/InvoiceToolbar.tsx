@@ -18,7 +18,8 @@ function ToolbarButton({ onClick, title, ariaLabel, children }: ToolbarButtonPro
     <button
       type="button"
       onClick={onClick}
-      className="cursor-pointer p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)]
+      className="cursor-pointer p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center
+        rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)]
         hover:bg-[var(--surface-elevated)] transition-colors"
       title={title}
       aria-label={ariaLabel}

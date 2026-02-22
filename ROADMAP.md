@@ -1,8 +1,8 @@
 # Invease: Complete Product Roadmap
 
 **Created:** 2026-02-21
-**Last Updated:** 2026-02-21
-**Status:** Phases 1-2.5 complete. v1.1 polish in progress. Phase 3 next.
+**Last Updated:** 2026-02-22
+**Status:** Phases 1-2.5 + v1.1 complete. Phase 3 (backend) next.
 
 ---
 
@@ -189,17 +189,17 @@ Invease can't out-feature Zoho or Xero. It wins on **simplicity, speed, and priv
 - Dashboard with collection ring, period switcher, overdue alerts
 - Payment tracking (mark as paid/unpaid, overdue auto-detection)
 
-### v1.1: Polish & Discoverability (IN PROGRESS)
+### v1.1: Polish & Discoverability (COMPLETE)
 
-| Item                            | Status                   | Notes                                                            |
-| ------------------------------- | ------------------------ | ---------------------------------------------------------------- |
-| Open Graph image (dynamic)      | Pending                  | `opengraph-image.tsx` + `twitter-image.tsx` (Next.js convention) |
-| JSON-LD structured data         | Pending                  | SoftwareApplication + Organization schema in layout              |
-| First-run hints                 | Pending                  | Wire up existing `FirstRunHint` component (currently unused)     |
-| Keyboard shortcut help modal    | Pending                  | Wire up existing `KeyboardHint` component + `?` key trigger      |
-| Custom analytics events         | Pending                  | Vercel Analytics `track()` for downloads, saves, wizard          |
-| AI discoverability (`llms.txt`) | Pending                  | Public description for AI crawlers                               |
-| Solicitor sign-off (£200-400)   | **Pre-launch, last job** | May need updates after HMRC MTD legal review                     |
+| Item                            | Status                   | Notes                                                                          |
+| ------------------------------- | ------------------------ | ------------------------------------------------------------------------------ |
+| Open Graph image (dynamic)      | Done                     | `opengraph-image.tsx` + `twitter-image.tsx` (Next.js convention)               |
+| JSON-LD structured data         | Done                     | SoftwareApplication + Organization schema in `layout.tsx`                      |
+| First-run hints                 | Done                     | 3 instances: accordion sections, download CTA, shortcuts discovery             |
+| Keyboard shortcut help modal    | Done                     | `ShortcutHelpModal` component, `?` key trigger                                 |
+| Custom analytics events         | Done                     | 6 events: quickStart, creditNote, invoiceSaved, autocomplete, wizard, download |
+| AI discoverability (`llms.txt`) | Done                     | `public/llms.txt` — public description for AI crawlers                         |
+| Solicitor sign-off (£200-400)   | **Pre-launch, last job** | May need updates after HMRC MTD legal review                                   |
 
 ### Apple HIG Accordion Restructure (COMPLETE)
 
@@ -689,6 +689,9 @@ features: {
 | 2026-02-21 | E2E tests restructured (71→25)                          | 10 files with heavy redundancy consolidated to 5 focused files + shared helpers. Accordion-aware selectors                                                                                          | Dev               |
 | 2026-02-21 | Solicitor sign-off: pre-launch, last job                | May need to add more legals after HMRC MTD review — do legal review once, at the end                                                                                                                | Stakeholder       |
 | 2026-02-21 | v1.1 polish before Phase 3                              | OG image, JSON-LD, analytics events, keyboard hints, first-run hints, AI discoverability — all client-side, no backend needed                                                                       | Stakeholder + Dev |
+| 2026-02-22 | v1.1 verified complete                                  | All 6 items confirmed wired up and functional. Roadmap updated                                                                                                                                      | Dev               |
+| 2026-02-22 | Remove + button from preview toolbar                    | Apple HIG: preview toolbar = document actions only (expand, export, share, history, settings). New Invoice is app-level — ⌘N and top button are sufficient                                          | UX                |
+| 2026-02-22 | Remove sample bank details from Quick Start             | Bank details are optional and security-sensitive — shouldn't be pre-filled even as sample data                                                                                                      | Dev               |
 
 ---
 
