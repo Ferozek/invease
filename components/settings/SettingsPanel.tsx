@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import TemplateSelector from './TemplateSelector';
 import ColorPicker from './ColorPicker';
 import NumberingSettings from './NumberingSettings';
+import InvoiceDefaults from './InvoiceDefaults';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -76,6 +77,16 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                 <div className="bg-[var(--surface-elevated)] rounded-xl p-4 space-y-6">
                   <TemplateSelector />
                   <ColorPicker />
+                </div>
+              </section>
+
+              {/* Invoice Defaults */}
+              <section>
+                <h3 className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2 px-1">
+                  Invoice Defaults
+                </h3>
+                <div className="bg-[var(--surface-elevated)] rounded-xl p-4">
+                  <InvoiceDefaults />
                 </div>
               </section>
 
