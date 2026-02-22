@@ -58,6 +58,9 @@ export interface HistoryState {
   // Recent customers (last 5)
   recentCustomers: RecentCustomer[];
 
+  // Customer notes (keyed by normalised lowercase name)
+  customerNotes: Record<string, string>;
+
   // Actions
   saveInvoice: (invoice: InvoiceData, totals: InvoiceTotals) => string;
   deleteInvoice: (id: string) => void;
@@ -77,6 +80,8 @@ export interface HistoryState {
   addRecentCustomer: (customer: RecentCustomer) => void;
   getRecentCustomers: () => RecentCustomer[];
   mergeCustomers: (fromName: string, toName: string) => void;
+  setCustomerNote: (customerName: string, note: string) => void;
+  getCustomerNote: (customerName: string) => string;
 }
 
 // ===== Constants =====
@@ -91,6 +96,7 @@ export const useHistoryStore = create<HistoryState>()(
     (set, get) => ({
       invoices: [],
       recentCustomers: [],
+      customerNotes: {},
 
       saveInvoice: (invoice, totals) => {
         const docType = invoice.details.documentType || 'invoice';
@@ -142,7 +148,7 @@ export const useHistoryStore = create<HistoryState>()(
       },
 
       clearHistory: () => {
-        set({ invoices: [], recentCustomers: [] });
+        set({ invoices: [], recentCustomers: [], customerNotes: {} });
       },
 
       markAsPaid: (id) => {
@@ -240,13 +246,26 @@ export const useHistoryStore = create<HistoryState>()(
           return { invoices, recentCustomers };
         });
       },
+
+      setCustomerNote: (customerName, note) => {
+        const key = customerName.toLowerCase().trim();
+        if (!key) return;
+        set((state) => ({
+          customerNotes: { ...state.customerNotes, [key]: note },
+        }));
+      },
+
+      getCustomerNote: (customerName) => {
+        const key = customerName.toLowerCase().trim();
+        return get().customerNotes[key] || '';
+      },
     }),
     {
       name: 'invease-history',
       storage: createJSONStorage(() => localStorage),
-      version: 4,
+      version: 5,
       migrate: (persistedState, version) => {
-        const state = persistedState as { invoices?: SavedInvoice[] };
+        const state = persistedState as { invoices?: SavedInvoice[]; customerNotes?: Record<string, string> };
         if (version < 2 && state.invoices) {
           // v1 → v2: Add documentType to existing entries
           state.invoices = state.invoices.map((inv) => ({
@@ -271,6 +290,10 @@ export const useHistoryStore = create<HistoryState>()(
             ...inv,
             amountPaid: inv.status === 'paid' ? inv.total : 0,
           }));
+        }
+        if (version < 5) {
+          // v4 → v5: Add customerNotes
+          state.customerNotes = state.customerNotes || {};
         }
         return state as HistoryState;
       },

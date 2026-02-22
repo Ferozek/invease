@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHistoryStore, type SavedInvoice } from '@/stores/historyStore';
 import { formatCurrency } from '@/lib/formatters';
@@ -24,6 +24,16 @@ export default function CustomerProfileDrawer({
   onDuplicate,
 }: CustomerProfileDrawerProps) {
   const invoices = useHistoryStore((state) => state.invoices);
+  const getCustomerNote = useHistoryStore((state) => state.getCustomerNote);
+  const setCustomerNote = useHistoryStore((state) => state.setCustomerNote);
+
+  // Sync note text when customer changes (React "derive state from props" pattern)
+  const [noteText, setNoteText] = useState('');
+  const [prevCustomer, setPrevCustomer] = useState(customerName);
+  if (customerName !== prevCustomer) {
+    setPrevCustomer(customerName);
+    setNoteText(customerName ? getCustomerNote(customerName) : '');
+  }
 
   // All invoices for this customer (case-insensitive match)
   const customerInvoices = useMemo(() => {
@@ -155,6 +165,29 @@ export default function CustomerProfileDrawer({
                   )}
                 </p>
               </div>
+            </div>
+
+            {/* Notes */}
+            <div className="px-4 py-3 border-b border-[var(--surface-border)]">
+              <label className="text-xs font-medium text-[var(--text-muted)] block mb-1.5">
+                Notes
+              </label>
+              <textarea
+                value={noteText}
+                onChange={(e) => {
+                  const val = e.target.value.slice(0, 500);
+                  setNoteText(val);
+                  setCustomerNote(customerName, val);
+                }}
+                placeholder="Add a note about this customer..."
+                rows={2}
+                className="w-full px-3 py-2 rounded-lg text-sm
+                  bg-[var(--surface-elevated)] border border-[var(--surface-border)]
+                  text-[var(--text-primary)] placeholder:text-[var(--text-muted)]
+                  focus:outline-none focus:border-[var(--brand-blue)]
+                  focus:ring-2 focus:ring-[var(--brand-blue)]/40
+                  resize-none"
+              />
             </div>
 
             {/* Invoice List */}
