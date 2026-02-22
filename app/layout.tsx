@@ -5,6 +5,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 import { siteConfig } from '@/config/site';
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
+import CookieConsent from '@/components/shared/CookieConsent';
 
 export const metadata: Metadata = {
   title: siteConfig.name,
@@ -150,6 +151,7 @@ export default function RootLayout({
         <Analytics />
         <SpeedInsights />
         <ServiceWorkerRegister />
+        <CookieConsent />
       </body>
     </html>
   );
