@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { setupOnboardedUser } from './helpers';
 
 /**
- * Onboarding Tests — welcome slides, wizard, edit details, start over
+ * Onboarding Tests — welcome slides, wizard, edit details, erase all data
  * 5 tests
  */
 test.describe('Onboarding', () => {
@@ -88,20 +88,23 @@ test.describe('Onboarding', () => {
     await expect(page.locator('#companyName')).toHaveValue('Original Co', { timeout: 5000 });
   });
 
-  test('Start Over resets everything', async ({ page }) => {
+  test('Erase All Data resets everything via Settings', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await setupOnboardedUser(page);
     await page.reload({ waitUntil: 'domcontentloaded' });
 
     await expect(page.getByLabel('Invoice form').getByText('Test Co')).toBeVisible({ timeout: 10000 });
 
-    // Click Start Over
-    await page.getByText('Start Over').click();
+    // Open Settings panel
+    await page.getByRole('button', { name: 'Open settings' }).click();
+
+    // Click Erase All Data in Data Management section
+    await page.getByRole('button', { name: 'Erase All Data' }).click();
 
     // Confirm dialog with type-to-confirm
-    await expect(page.getByText('Clear Everything')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Erase Everything' })).toBeVisible();
     await page.getByPlaceholder('DELETE').fill('DELETE');
-    await page.getByRole('button', { name: 'Clear Everything' }).click();
+    await page.getByRole('button', { name: 'Erase Everything' }).click();
 
     // Should return to welcome slides
     await expect(page.getByText('Create professional invoices')).toBeVisible({ timeout: 5000 });

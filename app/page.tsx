@@ -75,7 +75,6 @@ export default function Home() {
   const [successContext, setSuccessContext] = useState<SuccessContext | null>(null);
   const showSuccess = successContext !== null;
   const [showNewInvoiceConfirm, setShowNewInvoiceConfirm] = useState(false);
-  const [showResetAllConfirm, setShowResetAllConfirm] = useState(false);
   const [pendingDocType, setPendingDocType] = useState<DocumentType | null>(null);
   const [showHistoryPanel, setShowHistoryPanel] = useState(false);
   const [historyStatusFilter, setHistoryStatusFilter] = useState<StatusFilter | undefined>(undefined);
@@ -99,7 +98,6 @@ export default function Home() {
   const setCompanyDetails = useCompanyStore((state) => state.setCompanyDetails);
 
   const resetOnboarding = useCompanyStore((state) => state.resetOnboarding);
-  const startOver = useCompanyStore((state) => state.startOver);
   const isCisSubcontractor = useCompanyStore((state) => state.isCisSubcontractor);
 
   // Invoice store - actions only
@@ -111,12 +109,10 @@ export default function Home() {
 
   // History store
   const saveInvoice = useHistoryStore((state) => state.saveInvoice);
-  const clearHistory = useHistoryStore((state) => state.clearHistory);
 
   // Settings store
   const consumeNextInvoiceNumber = useSettingsStore((state) => state.consumeNextInvoiceNumber);
   const consumeNextCreditNoteNumber = useSettingsStore((state) => state.consumeNextCreditNoteNumber);
-  const resetSettings = useSettingsStore((state) => state.resetSettings);
 
   // Auto-fill invoice number on initial load (when empty and onboarded)
   useEffect(() => {
@@ -311,15 +307,6 @@ export default function Home() {
     setShowNewInvoiceConfirm(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [resetWithNewNumber]);
-
-  const handleResetAllData = useCallback(() => {
-    resetInvoice(false);
-    sessionStorage.removeItem('invease-invoice-draft');
-    clearHistory();
-    resetSettings();
-    startOver();
-    setShowResetAllConfirm(false);
-  }, [resetInvoice, clearHistory, resetSettings, startOver]);
 
   const handleDuplicateInvoice = useCallback(
     (saved: SavedInvoice) => {
@@ -619,16 +606,6 @@ export default function Home() {
                 </AnimatePresence>
               </Card>
 
-              {/* Start Over — destructive, kept subtle */}
-              <div className="mt-3 text-center">
-                <button
-                  type="button"
-                  onClick={() => setShowResetAllConfirm(true)}
-                  className="text-xs text-[var(--text-muted)] hover:text-[var(--brand-red)] transition-colors cursor-pointer"
-                >
-                  Start Over
-                </button>
-              </div>
             </div>
             </aside>
           </div>
@@ -677,18 +654,6 @@ export default function Home() {
         message="Your customer details and line items will be preserved, but the document number will change."
         confirmText="Switch"
         cancelText="Stay"
-      />
-
-      <ConfirmDialog
-        isOpen={showResetAllConfirm}
-        onClose={() => setShowResetAllConfirm(false)}
-        onConfirm={handleResetAllData}
-        title="Start Over?"
-        message="This will clear ALL saved data including your company details, bank details, and current invoice. You'll need to complete setup again."
-        confirmText="Clear Everything"
-        cancelText="Cancel"
-        isDestructive
-        typeToConfirm="DELETE"
       />
 
       <InvoiceHistoryPanel
