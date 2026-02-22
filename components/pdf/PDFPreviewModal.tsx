@@ -334,7 +334,7 @@ ${companyName}`;
                 <button
                   type="button"
                   onClick={onClose}
-                  className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
+                  className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                   aria-label="Close preview"
                 >
                   <svg

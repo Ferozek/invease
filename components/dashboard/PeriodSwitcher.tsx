@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 export type Period = 'month' | 'quarter' | 'year';
 
@@ -17,6 +17,7 @@ export const PERIOD_LABELS: Record<Period, string> = {
  */
 export default function PeriodSwitcher({ period, onChange }: { period: Period; onChange: (p: Period) => void }) {
   const [isOpen, setIsOpen] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
 
   const handleSelect = useCallback((p: Period) => {
     onChange(p);
@@ -28,7 +29,7 @@ export default function PeriodSwitcher({ period, onChange }: { period: Period; o
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="cursor-pointer flex items-center gap-1 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors px-2 py-1 rounded-lg hover:bg-[var(--surface-elevated)]"
+        className="cursor-pointer flex items-center gap-1 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors px-3 py-2 rounded-lg hover:bg-[var(--surface-elevated)] min-h-[44px]"
         aria-haspopup="listbox"
         aria-expanded={isOpen}
       >
@@ -43,10 +44,10 @@ export default function PeriodSwitcher({ period, onChange }: { period: Period; o
           <>
             <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
             <motion.div
-              initial={{ opacity: 0, y: -4, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -4, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
+              initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -4, scale: 0.95 }}
+              animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
+              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -4, scale: 0.95 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.15 }}
               className="absolute right-0 top-full mt-1 z-50 bg-[var(--surface-card)] border border-[var(--surface-border)] rounded-xl shadow-lg overflow-hidden min-w-[140px] max-w-[calc(100vw-2rem)]"
               role="listbox"
             >
@@ -57,7 +58,7 @@ export default function PeriodSwitcher({ period, onChange }: { period: Period; o
                   role="option"
                   aria-selected={period === p}
                   onClick={() => handleSelect(p)}
-                  className={`cursor-pointer w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                  className={`cursor-pointer w-full text-left px-4 py-2.5 text-sm transition-colors min-h-[44px] ${
                     period === p
                       ? 'bg-[var(--brand-blue)]/10 text-[var(--brand-blue)] font-medium'
                       : 'text-[var(--text-primary)] hover:bg-[var(--surface-elevated)]'

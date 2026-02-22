@@ -607,6 +607,15 @@
     animation: none;
     background: var(--surface-border);
   }
+
+  /* Tailwind animation utilities generate their own @keyframes that bypass
+     the universal selector above. Explicitly disable them for reduced motion. */
+  [class*="animate-spin"],
+  [class*="animate-pulse"],
+  [class*="animate-ping"],
+  [class*="animate-bounce"] {
+    animation: none !important;
+  }
 }
 
 /* ========== Mobile Touch Target Rules (Apple HIG / Google Material) ========== */

@@ -103,6 +103,10 @@ export default function CompanySearch({ onCompanySelected }: CompanySearchProps)
           onChange={(e) => handleNameChange(e.target.value)}
           onBlur={() => setTimeout(() => setCompanyOpen(false), 200)}
           onFocus={() => companyHits.length > 0 && setCompanyOpen(true)}
+          role="combobox"
+          aria-expanded={companyOpen && companyHits.length > 0}
+          aria-controls="company-search-results"
+          aria-autocomplete="list"
         />
         {isLoading && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -146,6 +150,7 @@ export default function CompanySearch({ onCompanySelected }: CompanySearchProps)
       {/* Search results dropdown */}
       {companyOpen && companyHits.length > 0 && (
         <ul
+          id="company-search-results"
           className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border border-[var(--surface-border)] bg-[var(--surface-card)] shadow-lg"
           role="listbox"
           aria-label="Company search results"

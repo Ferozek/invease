@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 interface StepIndicatorProps {
   currentStep: number;
@@ -12,6 +12,7 @@ interface StepIndicatorProps {
  * Subtle, minimal, and non-intrusive
  */
 export default function StepIndicator({ currentStep, totalSteps }: StepIndicatorProps) {
+  const prefersReducedMotion = useReducedMotion();
   return (
     <div className="flex items-center justify-center gap-2" role="progressbar" aria-valuenow={currentStep} aria-valuemin={1} aria-valuemax={totalSteps}>
       {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
@@ -28,7 +29,7 @@ export default function StepIndicator({ currentStep, totalSteps }: StepIndicator
           animate={{
             scale: step === currentStep ? 1 : 0.8,
           }}
-          transition={{
+          transition={prefersReducedMotion ? { duration: 0 } : {
             type: 'spring',
             stiffness: 500,
             damping: 30,

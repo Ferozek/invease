@@ -133,25 +133,25 @@ const LineItemRow = memo(function LineItemRow({
             <div className="flex flex-col">
               <button
                 type="button"
-                className="cursor-pointer text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded transition-colors disabled:opacity-20 disabled:cursor-default"
+                className="cursor-pointer text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded transition-colors disabled:opacity-20 disabled:cursor-default min-w-[44px] min-h-[44px] flex items-center justify-center"
                 onClick={() => onMove(index, 'up')}
                 disabled={!canMoveUp}
                 aria-label="Move item up"
                 title="Move up"
               >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
                 </svg>
               </button>
               <button
                 type="button"
-                className="cursor-pointer text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded transition-colors disabled:opacity-20 disabled:cursor-default"
+                className="cursor-pointer text-[var(--text-muted)] hover:text-[var(--text-primary)] p-1 rounded transition-colors disabled:opacity-20 disabled:cursor-default min-w-[44px] min-h-[44px] flex items-center justify-center"
                 onClick={() => onMove(index, 'down')}
                 disabled={!canMoveDown}
                 aria-label="Move item down"
                 title="Move down"
               >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                 </svg>
               </button>

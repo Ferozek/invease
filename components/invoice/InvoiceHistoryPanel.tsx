@@ -235,7 +235,7 @@ export default function InvoiceHistoryPanel({
                   <button
                     type="button"
                     onClick={toggleSelectionMode}
-                    className={`cursor-pointer px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    className={`cursor-pointer px-3 py-1.5 rounded-lg text-xs font-medium transition-colors min-h-[44px] flex items-center ${
                       selectionMode
                         ? 'bg-[var(--brand-blue)] text-white'
                         : 'hover:bg-[var(--surface-elevated)] text-[var(--text-muted)]'
@@ -256,7 +256,7 @@ export default function InvoiceHistoryPanel({
                         setSelectedIds(new Set(filteredInvoices.map((inv) => inv.id)));
                       }
                     }}
-                    className="cursor-pointer px-2 py-1.5 rounded-lg text-xs font-medium text-[var(--brand-blue)] hover:bg-[var(--surface-elevated)] transition-colors"
+                    className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-medium text-[var(--brand-blue)] hover:bg-[var(--surface-elevated)] transition-colors min-h-[44px] flex items-center"
                   >
                     {selectedIds.size === filteredInvoices.length ? 'Deselect All' : 'Select All'}
                   </button>
@@ -266,7 +266,7 @@ export default function InvoiceHistoryPanel({
                   <button
                     type="button"
                     onClick={handleExportCsv}
-                    className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
+                    className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                     aria-label="Export to CSV"
                     title="Export CSV"
                   >
@@ -280,7 +280,7 @@ export default function InvoiceHistoryPanel({
                   <button
                     type="button"
                     onClick={() => setShowMergePanel(true)}
-                    className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
+                    className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                     aria-label="Manage customers"
                     title="Customers"
                   >
@@ -293,7 +293,7 @@ export default function InvoiceHistoryPanel({
                   <button
                     type="button"
                     onClick={onClose}
-                    className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
+                    className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
                     aria-label="Close"
                   >
                     <svg className="w-5 h-5 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">

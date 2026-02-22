@@ -118,7 +118,7 @@ export default function ShareButton({ invoice, totals }: ShareButtonProps) {
       onClick={handleShare}
       disabled={isSharing}
       className="cursor-pointer p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)]
-        hover:bg-[var(--surface-elevated)] transition-colors disabled:opacity-50"
+        hover:bg-[var(--surface-elevated)] transition-colors disabled:opacity-50 min-w-[44px] min-h-[44px] flex items-center justify-center"
       title="Share Invoice"
       aria-label="Share invoice"
     >

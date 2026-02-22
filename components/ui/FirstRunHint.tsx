@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 interface FirstRunHintProps {
   /** Unique key for this hint (stored in localStorage) */
@@ -34,6 +34,7 @@ export default function FirstRunHint({
   autoDismiss = 0,
 }: FirstRunHintProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
   const storageKey = `invease-hint-${id}`;
 
   // Define handleDismiss before it's used in useEffect
@@ -90,7 +91,7 @@ export default function FirstRunHint({
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.2 }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2 }}
           className={`absolute z-50 ${positionClasses[position]}`}
         >
           <div
@@ -98,10 +99,13 @@ export default function FirstRunHint({
             onClick={handleDismiss}
             role="button"
             tabIndex={0}
+            aria-label={`${title}. ${description}. Click to dismiss.`}
             onKeyDown={(e) => e.key === 'Enter' && handleDismiss()}
           >
-            {/* Pulse ring */}
-            <div className="absolute inset-0 rounded-xl bg-[var(--brand-blue)] animate-ping opacity-20" />
+            {/* Pulse ring — hidden when reduced motion preferred */}
+            {!prefersReducedMotion && (
+              <div className="absolute inset-0 rounded-xl bg-[var(--brand-blue)] animate-ping opacity-20" />
+            )}
 
             <p className="font-medium text-sm relative z-10">{title}</p>
             <p className="text-xs text-white/80 mt-1 relative z-10">{description}</p>

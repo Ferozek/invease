@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useInvoiceStore } from '@/stores/invoiceStore';
 
 type SaveStatus = 'idle' | 'saving' | 'saved';
@@ -24,6 +24,7 @@ export default function AutoSaveIndicator() {
   const [visible, setVisible] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   // Track when invoice data changes
   const handleStateChange = useCallback(() => {
@@ -66,7 +67,7 @@ export default function AutoSaveIndicator() {
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -4 }}
-          transition={{ duration: 0.2, ease: 'easeOut' }}
+          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2, ease: 'easeOut' }}
           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
           role="status"
           aria-live="polite"
@@ -78,8 +79,8 @@ export default function AutoSaveIndicator() {
                 className="w-3.5 h-3.5 text-[var(--text-muted)]"
                 viewBox="0 0 24 24"
                 fill="none"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                animate={prefersReducedMotion ? {} : { rotate: 360 }}
+                transition={prefersReducedMotion ? { duration: 0 } : { duration: 1, repeat: Infinity, ease: 'linear' }}
               >
                 <circle
                   cx="12"
@@ -101,9 +102,9 @@ export default function AutoSaveIndicator() {
                 className="w-3.5 h-3.5 text-green-600 dark:text-green-400"
                 viewBox="0 0 24 24"
                 fill="none"
-                initial={{ scale: 0 }}
+                initial={prefersReducedMotion ? false : { scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 500, damping: 25 }}
               >
                 <motion.path
                   d="M5 13l4 4L19 7"
@@ -111,9 +112,9 @@ export default function AutoSaveIndicator() {
                   strokeWidth="2.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  initial={{ pathLength: 0 }}
+                  initial={prefersReducedMotion ? false : { pathLength: 0 }}
                   animate={{ pathLength: 1 }}
-                  transition={{ duration: 0.3, delay: 0.1 }}
+                  transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, delay: 0.1 }}
                 />
               </motion.svg>
               <span className="text-green-600 dark:text-green-400">Saved</span>

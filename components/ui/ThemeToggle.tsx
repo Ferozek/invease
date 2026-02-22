@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -73,6 +73,8 @@ export default function ThemeToggle() {
     }
   }, [theme, mounted, applyTheme]);
 
+  const prefersReducedMotion = useReducedMotion();
+
   const toggleTheme = () => {
     const newTheme = resolvedTheme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
@@ -108,10 +110,10 @@ export default function ThemeToggle() {
         {resolvedTheme === 'light' ? (
           <motion.svg
             key="sun"
-            initial={{ rotate: -90, opacity: 0 }}
+            initial={prefersReducedMotion ? false : { rotate: -90, opacity: 0 }}
             animate={{ rotate: 0, opacity: 1 }}
-            exit={{ rotate: 90, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { rotate: 90, opacity: 0 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2 }}
             className="w-5 h-5"
             fill="none"
             viewBox="0 0 24 24"
@@ -128,10 +130,10 @@ export default function ThemeToggle() {
         ) : (
           <motion.svg
             key="moon"
-            initial={{ rotate: 90, opacity: 0 }}
+            initial={prefersReducedMotion ? false : { rotate: 90, opacity: 0 }}
             animate={{ rotate: 0, opacity: 1 }}
-            exit={{ rotate: -90, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { rotate: -90, opacity: 0 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.2 }}
             className="w-5 h-5"
             fill="none"
             viewBox="0 0 24 24"

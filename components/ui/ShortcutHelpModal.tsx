@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import KeyboardHint from './KeyboardHint';
 
 interface ShortcutHelpModalProps {
@@ -50,6 +50,7 @@ export default function ShortcutHelpModal({ isOpen, onClose }: ShortcutHelpModal
   }, [isOpen, onClose]);
 
   // Trap focus when open
+  const prefersReducedMotion = useReducedMotion();
   const [isMac, setIsMac] = useState(true);
   // Detect platform - setState is intentional for client detection
   useEffect(() => {
@@ -76,10 +77,10 @@ export default function ShortcutHelpModal({ isOpen, onClose }: ShortcutHelpModal
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 8 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            initial={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: 8 }}
+            animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+            exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: 8 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 400, damping: 30 }}
             className="relative bg-[var(--surface-card)] border border-[var(--surface-border)]
               rounded-2xl shadow-xl w-full max-w-sm overflow-hidden"
             onClick={(e) => e.stopPropagation()}

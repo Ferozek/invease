@@ -88,7 +88,7 @@ export default function PaymentStatusRow({
         <button
           type="button"
           onClick={handleToggle}
-          className="cursor-pointer text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors px-2 py-1 rounded-md hover:bg-[var(--surface-elevated)]"
+          className="cursor-pointer text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors px-3 py-2 rounded-md hover:bg-[var(--surface-elevated)] min-h-[44px] flex items-center"
           aria-label="Mark as unpaid"
         >
           Undo
@@ -113,7 +113,7 @@ export default function PaymentStatusRow({
               value={paymentAmount}
               onChange={(e) => setPaymentAmount(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') handleRecordPayment(e); if (e.key === 'Escape') handleCancelInput(e); }}
-              className="form-input w-full pl-5 py-1.5 text-sm"
+              className="form-input w-full pl-5 py-1.5 text-sm min-h-[44px]"
               placeholder="0.00"
               autoFocus
             />
@@ -129,7 +129,7 @@ export default function PaymentStatusRow({
           <button
             type="button"
             onClick={handleCancelInput}
-            className="cursor-pointer text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] px-2 py-1"
+            className="cursor-pointer text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] px-3 py-2 rounded-md min-h-[44px] flex items-center"
           >
             Cancel
           </button>
