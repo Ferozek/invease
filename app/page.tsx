@@ -50,6 +50,7 @@ import ThemeToggle from '@/components/ui/ThemeToggle';
 import Footer from '@/components/shared/Footer';
 import ShortcutHelpModal from '@/components/ui/ShortcutHelpModal';
 import FirstRunHint from '@/components/ui/FirstRunHint';
+import AccessibleInvoiceView from '@/components/invoice/AccessibleInvoiceView';
 
 // Dynamically import PDF components to avoid SSR issues
 const PDFDownloadButton = dynamic(
@@ -81,6 +82,7 @@ export default function Home() {
   const [showSettingsPanel, setShowSettingsPanel] = useState(false);
   const [showPDFPreview, setShowPDFPreview] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showAccessibleView, setShowAccessibleView] = useState(false);
 
   // Ref for triggering PDF download via keyboard shortcut
   const pdfButtonRef = useRef<HTMLButtonElement>(null);
@@ -601,6 +603,13 @@ export default function Home() {
                             onSuccess={handlePDFSuccess}
                           />
                         </PDFErrorBoundary>
+                        <button
+                          type="button"
+                          onClick={() => setShowAccessibleView(true)}
+                          className="mt-2 w-full text-center text-xs text-[var(--text-muted)] hover:text-[var(--brand-blue)] transition-colors cursor-pointer sr-only focus:not-sr-only focus:py-2"
+                        >
+                          Open screen reader view
+                        </button>
                       </div>
                     </motion.div>
                   )}
@@ -706,6 +715,13 @@ export default function Home() {
       <ShortcutHelpModal
         isOpen={showShortcuts}
         onClose={() => setShowShortcuts(false)}
+      />
+
+      <AccessibleInvoiceView
+        isOpen={showAccessibleView}
+        onClose={() => setShowAccessibleView(false)}
+        invoice={invoiceData}
+        totals={totals}
       />
     </>
   );
