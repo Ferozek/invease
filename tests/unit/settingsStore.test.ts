@@ -17,6 +17,9 @@ describe('settingsStore', () => {
       customPrimaryColor: null,
       numbering: { ...DEFAULT_NUMBERING_CONFIG },
       cnNumbering: { ...DEFAULT_CN_NUMBERING_CONFIG },
+      defaultPaymentTerms: '30',
+      defaultVatRate: '20',
+      defaultNotes: '',
     });
     localStorage.clear();
   });
@@ -114,6 +117,43 @@ describe('settingsStore', () => {
       useSettingsStore.getState().setCustomPrimaryColor('#FF5733');
       useSettingsStore.getState().setCustomPrimaryColor(null);
       expect(useSettingsStore.getState().customPrimaryColor).toBeNull();
+    });
+  });
+
+  // ----- Invoice Defaults -----
+
+  describe('invoice defaults', () => {
+    it('has sensible initial defaults', () => {
+      const state = useSettingsStore.getState();
+      expect(state.defaultPaymentTerms).toBe('30');
+      expect(state.defaultVatRate).toBe('20');
+      expect(state.defaultNotes).toBe('');
+    });
+
+    it('setDefaultPaymentTerms updates value', () => {
+      useSettingsStore.getState().setDefaultPaymentTerms('60');
+      expect(useSettingsStore.getState().defaultPaymentTerms).toBe('60');
+    });
+
+    it('setDefaultVatRate updates value', () => {
+      useSettingsStore.getState().setDefaultVatRate('5');
+      expect(useSettingsStore.getState().defaultVatRate).toBe('5');
+    });
+
+    it('setDefaultVatRate accepts reverse_charge', () => {
+      useSettingsStore.getState().setDefaultVatRate('reverse_charge');
+      expect(useSettingsStore.getState().defaultVatRate).toBe('reverse_charge');
+    });
+
+    it('setDefaultNotes updates value', () => {
+      useSettingsStore.getState().setDefaultNotes('Thank you for your business');
+      expect(useSettingsStore.getState().defaultNotes).toBe('Thank you for your business');
+    });
+
+    it('setDefaultNotes can be cleared', () => {
+      useSettingsStore.getState().setDefaultNotes('Some note');
+      useSettingsStore.getState().setDefaultNotes('');
+      expect(useSettingsStore.getState().defaultNotes).toBe('');
     });
   });
 });
