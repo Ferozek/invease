@@ -465,8 +465,8 @@ export default function InvoiceHistoryPanel({
                     setSelectedIds(new Set());
                     setSelectionMode(false);
                   }}
-                  className="cursor-pointer flex-1 py-2.5 rounded-xl bg-[#34C759] text-white text-sm font-semibold
-                    hover:bg-[#2DB84E] transition-colors min-h-[44px]"
+                  className="cursor-pointer flex-1 py-2.5 rounded-xl bg-[var(--success-text)] text-white text-sm font-semibold
+                    hover:brightness-90 transition-colors min-h-[44px]"
                 >
                   Mark as Paid
                 </button>

@@ -50,7 +50,7 @@ export interface InvoiceDetails {
   creditNoteFields?: CreditNoteFields; // Only when documentType === 'credit_note'
 }
 
-export type VatRate = '0' | '5' | '20' | 'reverse_charge';
+export type VatRate = '0' | '5' | '20' | 'exempt' | 'reverse_charge';
 
 export type DiscountType = 'percentage' | 'fixed';
 

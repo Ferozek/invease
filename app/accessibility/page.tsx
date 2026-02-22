@@ -165,6 +165,9 @@ export default function AccessibilityPage() {
 
         <p className="text-sm text-[var(--text-tertiary)]">
           This statement was prepared based on a self-assessment by K&R Accountants Ltd.
+          It has not been verified by an independent third party. We plan to commission a
+          professional accessibility audit before public launch and will update this
+          statement accordingly.
         </p>
       </article>
     </main>

@@ -83,22 +83,22 @@ const calculateTotals = (lineItems: LineItem[], cisStatus: CisStatus = 'not_appl
   const subtotal = lineItems.reduce((sum, item) => sum + getLineNet(item), 0);
 
   const vatBreakdown: { rate: VatRate; amount: number }[] = [];
-  const vatRates: VatRate[] = ['0', '5', '20', 'reverse_charge'];
+  const vatRates: VatRate[] = ['0', '5', '20', 'exempt', 'reverse_charge'];
 
   vatRates.forEach((rate) => {
     const itemsWithRate = lineItems.filter((item) => item.vatRate === rate);
     if (itemsWithRate.length === 0) return;
 
-    // Reverse charge = 0% VAT (buyer accounts for VAT, not seller)
-    const vatPercent = rate === 'reverse_charge' ? 0 : parseInt(rate);
+    // Reverse charge & exempt = 0% VAT
+    const vatPercent = (rate === 'reverse_charge' || rate === 'exempt') ? 0 : parseInt(rate);
 
     const vatAmount = itemsWithRate.reduce((sum, item) => {
       const lineNet = getLineNet(item);
       return sum + (lineNet * (vatPercent / 100));
     }, 0);
 
-    // Always include reverse_charge in breakdown to show on invoice (even with 0 amount)
-    if (rate === 'reverse_charge' || vatAmount > 0) {
+    // Always include reverse_charge/exempt in breakdown to show on invoice (even with 0 amount)
+    if (rate === 'reverse_charge' || rate === 'exempt' || vatAmount > 0) {
       vatBreakdown.push({ rate, amount: vatAmount });
     }
   });

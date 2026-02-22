@@ -5,6 +5,8 @@ import {
   calculateLineDiscount,
   calculateLineGross,
   getVatPercent,
+  formatDateUK,
+  calculateDueDate,
   getPaymentTermsText,
   getVatRateDisplay,
   getVatRateLabel,
@@ -121,6 +123,10 @@ describe('calculateLineGross', () => {
     expect(calculateLineGross(1, 100, 'reverse_charge')).toBe(100);
   });
 
+  it('calculates gross with exempt (0% VAT)', () => {
+    expect(calculateLineGross(1, 100, 'exempt')).toBe(100);
+  });
+
   it('handles multiple quantity', () => {
     expect(calculateLineGross(3, 100, '20')).toBe(360); // 300 + 60
   });
@@ -135,6 +141,29 @@ describe('getVatPercent', () => {
 
   it('returns 0 for reverse charge', () => {
     expect(getVatPercent('reverse_charge')).toBe(0);
+  });
+
+  it('returns 0 for exempt', () => {
+    expect(getVatPercent('exempt')).toBe(0);
+  });
+});
+
+describe('formatDateUK', () => {
+  it('formats ISO date to DD/MM/YYYY', () => {
+    const result = formatDateUK('2026-02-15');
+    expect(result).toBe('15/02/2026');
+  });
+});
+
+describe('calculateDueDate', () => {
+  it('adds payment terms days to invoice date', () => {
+    const result = calculateDueDate('2026-02-01', '30');
+    expect(result.toISOString().startsWith('2026-03-03')).toBe(true);
+  });
+
+  it('handles 0 days (due on receipt)', () => {
+    const result = calculateDueDate('2026-02-15', '0');
+    expect(result.toISOString().startsWith('2026-02-15')).toBe(true);
   });
 });
 
@@ -159,6 +188,10 @@ describe('getVatRateDisplay', () => {
   it('returns RC for reverse charge', () => {
     expect(getVatRateDisplay('reverse_charge')).toBe('RC');
   });
+
+  it('returns Exempt for exempt rate', () => {
+    expect(getVatRateDisplay('exempt')).toBe('Exempt');
+  });
 });
 
 describe('getVatRateLabel', () => {
@@ -169,5 +202,9 @@ describe('getVatRateLabel', () => {
 
   it('returns Reverse Charge label', () => {
     expect(getVatRateLabel('reverse_charge')).toBe('Reverse Charge (0%)');
+  });
+
+  it('returns VAT Exempt label', () => {
+    expect(getVatRateLabel('exempt')).toBe('VAT Exempt');
   });
 });

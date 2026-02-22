@@ -41,6 +41,7 @@ export const VAT_RATES: { value: VatRate; label: string }[] = [
   { value: '20', label: '20%' },
   { value: '5', label: '5%' },
   { value: '0', label: '0%' },
+  { value: 'exempt', label: 'Exempt' },
   { value: 'reverse_charge', label: 'Reverse Charge' },
 ];
 
@@ -48,6 +49,7 @@ export const VAT_RATE_LABELS: Record<VatRate, string> = {
   '20': '20%',
   '5': '5%',
   '0': '0%',
+  exempt: 'VAT Exempt',
   reverse_charge: 'Reverse Charge (0%)',
 };
 

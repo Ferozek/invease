@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import { Toaster } from 'sonner';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import './globals.css';
 import { siteConfig } from '@/config/site';
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
 import CookieConsent from '@/components/shared/CookieConsent';
+import ConditionalAnalytics from '@/components/shared/ConditionalAnalytics';
 
 export const metadata: Metadata = {
   title: siteConfig.name,
@@ -148,8 +147,7 @@ export default function RootLayout({
           aria-atomic="true"
           className="sr-only"
         />
-        <Analytics />
-        <SpeedInsights />
+        <ConditionalAnalytics />
         <ServiceWorkerRegister />
         <CookieConsent />
       </body>

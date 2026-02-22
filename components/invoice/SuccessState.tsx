@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Button from '@/components/ui/Button';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import type { DocumentType } from '@/types/invoice';
 
 export interface SuccessContext {
@@ -34,6 +35,13 @@ export default function SuccessState({
 }: SuccessStateProps) {
   const isCreditNote = successContext.documentType === 'credit_note';
   const docLabel = isCreditNote ? 'Credit Note' : 'Invoice';
+  const prefersReducedMotion = useReducedMotion();
+  const springTransition = prefersReducedMotion
+    ? { duration: 0 }
+    : { type: 'spring' as const, stiffness: 300, damping: 20, delay: 0.1 };
+  const pathTransition = prefersReducedMotion
+    ? { duration: 0 }
+    : { duration: 0.4, delay: 0.2 };
 
   return (
     <div className="text-center py-8">
@@ -41,11 +49,11 @@ export default function SuccessState({
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.1 }}
-        className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 mb-6"
+        transition={springTransition}
+        className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[var(--badge-success-bg)] mb-6"
       >
         <svg
-          className="w-10 h-10 text-green-600 dark:text-green-400"
+          className="w-10 h-10 text-[var(--success-text)]"
           fill="none"
           viewBox="0 0 24 24"
           strokeWidth={2.5}
@@ -54,7 +62,7 @@ export default function SuccessState({
           <motion.path
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
+            transition={pathTransition}
             strokeLinecap="round"
             strokeLinejoin="round"
             d="M4.5 12.75l6 6 9-13.5"

@@ -6,6 +6,7 @@ import ColorPicker from './ColorPicker';
 import NumberingSettings from './NumberingSettings';
 import InvoiceDefaults from './InvoiceDefaults';
 import DataManagement from './DataManagement';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -22,6 +23,11 @@ interface SettingsPanelProps {
  * - Invoice numbering
  */
 export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
+  const prefersReducedMotion = useReducedMotion();
+  const slideTransition = prefersReducedMotion
+    ? { duration: 0 }
+    : { type: 'spring' as const, damping: 25, stiffness: 300 };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -40,7 +46,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            transition={slideTransition}
             className="fixed top-0 right-0 h-full w-full max-w-md
               bg-[var(--surface-card)] shadow-2xl z-50
               flex flex-col"

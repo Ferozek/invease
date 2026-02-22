@@ -60,7 +60,7 @@ export function calculateLineGross(
   vatRate: VatRate
 ): number {
   const net = quantity * netAmount;
-  const vatPercent = vatRate === 'reverse_charge' ? 0 : parseInt(vatRate);
+  const vatPercent = (vatRate === 'reverse_charge' || vatRate === 'exempt') ? 0 : parseInt(vatRate);
   const vat = net * (vatPercent / 100);
   return net + vat;
 }
@@ -69,7 +69,7 @@ export function calculateLineGross(
  * Get VAT percentage from rate
  */
 export function getVatPercent(vatRate: VatRate): number {
-  return vatRate === 'reverse_charge' ? 0 : parseInt(vatRate);
+  return (vatRate === 'reverse_charge' || vatRate === 'exempt') ? 0 : parseInt(vatRate);
 }
 
 /**
@@ -103,6 +103,7 @@ export function getPaymentTermsText(paymentTerms: string): string {
  */
 export function getVatRateDisplay(vatRate: VatRate): string {
   if (vatRate === 'reverse_charge') return 'RC';
+  if (vatRate === 'exempt') return 'Exempt';
   return `${vatRate}%`;
 }
 
@@ -111,5 +112,6 @@ export function getVatRateDisplay(vatRate: VatRate): string {
  */
 export function getVatRateLabel(vatRate: VatRate): string {
   if (vatRate === 'reverse_charge') return 'Reverse Charge (0%)';
+  if (vatRate === 'exempt') return 'VAT Exempt';
   return `VAT (${vatRate}%)`;
 }

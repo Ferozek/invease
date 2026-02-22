@@ -23,6 +23,7 @@ export default function CookieConsent() {
 
   const handleAccept = useCallback(() => {
     localStorage.setItem(CONSENT_KEY, 'accepted');
+    window.dispatchEvent(new Event('invease-consent'));
     setVisible(false);
   }, []);
 

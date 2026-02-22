@@ -8,6 +8,7 @@ import Button from '@/components/ui/Button';
 import InvoicePDF from './InvoicePDF';
 import type { WatermarkType } from './InvoicePDF';
 import { useSettingsStore } from '@/stores/settingsStore';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 import logger from '@/lib/logger';
 import { getValidLineItems } from '@/lib/invoiceUtils';
 import { hasBankDetails } from '@/lib/bankDetailsUtils';
@@ -62,6 +63,7 @@ export default function PDFPreviewModal({
   const [canShare, setCanShare] = useState(false);
   const [isSharePending, setIsSharePending] = useState(false);
   const brandColor = useSettingsStore((s) => s.customPrimaryColor);
+  const prefersReducedMotion = useReducedMotion();
 
   // Check if sharing is supported on mount
   useEffect(() => {
@@ -277,7 +279,7 @@ ${companyName}`;
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', damping: 25, stiffness: 300 }}
             className="fixed inset-4 md:inset-8 lg:inset-12 z-50 flex flex-col
               bg-[var(--surface-card)] rounded-xl lg:rounded-2xl shadow-2xl overflow-hidden max-w-4xl mx-auto"
           >
@@ -416,6 +418,7 @@ ${companyName}`;
               {pdfUrl && !isLoading && !error && (
                 <iframe
                   src={pdfUrl}
+                  sandbox="allow-same-origin"
                   className="w-full h-full max-w-[800px] bg-white rounded shadow-lg"
                   title="Invoice PDF Preview"
                 />

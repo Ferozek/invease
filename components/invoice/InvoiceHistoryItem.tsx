@@ -104,7 +104,7 @@ export default function InvoiceHistoryItem({
             className={`cursor-pointer flex-1 flex flex-col items-center justify-center text-white transition-colors ${
               isPaid
                 ? 'bg-[#FF9500] hover:bg-[#E68900]'
-                : 'bg-[#34C759] hover:bg-[#2DB84E]'
+                : 'bg-[var(--success-text)] hover:brightness-90'
             }`}
             aria-label={isPaid ? 'Mark as unpaid' : 'Mark as paid'}
           >

@@ -135,6 +135,13 @@ export default function PrivacyPage() {
           </a>.
         </p>
 
+        <h3>Data Processing Agreements</h3>
+        <p>
+          Our third-party service providers (Vercel, Sentry) process limited technical
+          data under Data Processing Agreements (DPAs) that comply with UK GDPR requirements,
+          including appropriate safeguards for any international data transfers.
+        </p>
+
         <h2>Lawful Basis for Processing</h2>
         <p>
           Under UK GDPR, we process your data on the basis of <strong>legitimate interests</strong>.

@@ -156,7 +156,7 @@ export default function CustomerProfileDrawer({
               </div>
               <div className="bg-[var(--surface-elevated)] rounded-xl p-3">
                 <p className="text-xs text-[var(--text-muted)]">Total Paid</p>
-                <p className="text-lg font-semibold text-[#34C759]">
+                <p className="text-lg font-semibold text-[var(--success-text)]">
                   {formatCurrency(stats.totalPaid)}
                 </p>
               </div>
@@ -164,7 +164,7 @@ export default function CustomerProfileDrawer({
                 <p className="text-xs text-[var(--text-muted)]">Outstanding</p>
                 <p className={`text-lg font-semibold ${
                   stats.outstanding < 0
-                    ? 'text-[#34C759]'
+                    ? 'text-[var(--success-text)]'
                     : stats.outstanding > 0
                       ? 'text-[var(--text-primary)]'
                       : 'text-[var(--text-muted)]'

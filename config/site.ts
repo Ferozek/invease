@@ -34,6 +34,7 @@ export const siteConfig = {
     { value: '0', label: '0% (Zero-rated)' },
     { value: '5', label: '5% (Reduced)' },
     { value: '20', label: '20% (Standard)' },
+    { value: 'exempt', label: 'Exempt' },
   ],
 
   // Validation limits

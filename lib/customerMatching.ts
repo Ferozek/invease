@@ -16,7 +16,7 @@ const SUFFIX_PAIRS: [RegExp, string][] = [
   [/\bplc\b\.?/i, 'plc'],
   [/\bllp\b\.?/i, 'llp'],
   [/\binc\b\.?/i, 'inc'],
-  [/\b&\b/g, 'and'],
+  [/\s&\s/g, ' and '],
 ];
 
 /** Normalise a customer name for comparison */

@@ -80,10 +80,10 @@ export default function PaymentStatusRow({
     return (
       <div className="flex items-center justify-between mt-2 pt-2 border-t border-[var(--surface-border)]">
         <div className="flex items-center gap-1.5">
-          <svg className="w-4 h-4 text-[#34C759] dark:text-[#30D158]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <svg className="w-4 h-4 text-[var(--success-text)]" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
           </svg>
-          <span className="text-xs font-medium text-[#34C759] dark:text-[#30D158]" data-testid="status-indicator">Paid</span>
+          <span className="text-xs font-medium text-[var(--success-text)]" data-testid="status-indicator">Paid</span>
         </div>
         <button
           type="button"
@@ -122,7 +122,7 @@ export default function PaymentStatusRow({
             type="button"
             onClick={handleRecordPayment}
             disabled={!paymentAmount || parseFloat(paymentAmount) <= 0}
-            className="cursor-pointer min-h-[44px] text-xs font-semibold text-white bg-[#34C759] dark:bg-[#30D158] hover:bg-[#2DB84E] dark:hover:bg-[#28C950] px-3 py-2 rounded-lg transition-colors disabled:opacity-40"
+            className="cursor-pointer min-h-[44px] text-xs font-semibold text-white bg-[var(--success-text)] hover:brightness-90 px-3 py-2 rounded-lg transition-colors disabled:opacity-40"
           >
             Save
           </button>
@@ -198,8 +198,8 @@ export default function PaymentStatusRow({
           onClick={handleToggle}
           className={`cursor-pointer min-h-[44px] text-xs font-semibold px-4 py-2 rounded-lg transition-colors ${
             isOverdueNow
-              ? 'text-white bg-[#34C759] dark:bg-[#30D158] hover:bg-[#2DB84E] dark:hover:bg-[#28C950]'
-              : 'text-[#34C759] dark:text-[#30D158] border border-[#34C759] dark:border-[#30D158] hover:bg-[#34C759] hover:text-white dark:hover:bg-[#30D158] dark:hover:text-white'
+              ? 'text-white bg-[var(--success-text)] hover:brightness-90'
+              : 'text-[var(--success-text)] border border-[var(--success-text)] hover:bg-[var(--success-text)] hover:text-white'
           }`}
           aria-label="Mark as paid"
           data-testid="mark-paid-button"

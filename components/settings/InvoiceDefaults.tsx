@@ -7,6 +7,7 @@ const VAT_OPTIONS: { value: VatRate; label: string }[] = [
   { value: '0', label: '0%' },
   { value: '5', label: '5%' },
   { value: '20', label: '20%' },
+  { value: 'exempt', label: 'Exempt' },
   { value: 'reverse_charge', label: 'RC' },
 ];
 

@@ -16,7 +16,9 @@ export default function CollectionRing({ collected, invoiced }: { collected: num
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
-  const ringColor = percentage >= 100 ? '#34C759' : '#007AFF';
+  // Apple HIG: green when fully collected, blue when in progress
+  // Uses CSS custom properties for theme awareness
+  const ringColor = percentage >= 100 ? 'var(--success-text)' : '#007AFF';
 
   return (
     <div className="flex flex-col items-center shrink-0" data-testid="collection-ring">
