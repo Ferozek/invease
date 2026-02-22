@@ -13,6 +13,7 @@ import { temporal, type TemporalState } from 'zundo';
 import type { CustomerDetails, InvoiceDetails, LineItem, VatRate, InvoiceTotals, CisStatus, CisCategory } from '@/types/invoice';
 import { getTodayISO } from '@/lib/dateUtils';
 import { getCisDeductionRate } from '@/lib/cisUtils';
+import { useSettingsStore } from '@/stores/settingsStore';
 
 interface InvoiceState {
   // Customer details
@@ -42,12 +43,12 @@ interface InvoiceState {
   getTotals: (cisStatus?: CisStatus) => InvoiceTotals;
 }
 
-const createEmptyLineItem = (isCis: boolean = false): LineItem => ({
+const createEmptyLineItem = (isCis: boolean = false, vatRate?: VatRate): LineItem => ({
   id: crypto.randomUUID(),
   description: '',
   quantity: 1,
   netAmount: 0,
-  vatRate: '20' as VatRate,
+  vatRate: vatRate ?? ('20' as VatRate),
   cisCategory: isCis ? 'labour' : 'not_applicable' as CisCategory,
 });
 
@@ -153,9 +154,12 @@ export const useInvoiceStore = create<InvoiceState>()(
           details: { ...state.details, ...details },
         })),
 
-        addLineItem: (isCis = false) => set((state) => ({
-          lineItems: [...state.lineItems, createEmptyLineItem(isCis)],
-        })),
+        addLineItem: (isCis = false) => {
+          const { defaultVatRate } = useSettingsStore.getState();
+          set((state) => ({
+            lineItems: [...state.lineItems, createEmptyLineItem(isCis, defaultVatRate)],
+          }));
+        },
 
         removeLineItem: (id) => set((state) => ({
           lineItems: state.lineItems.filter((item) => item.id !== id),
@@ -167,18 +171,21 @@ export const useInvoiceStore = create<InvoiceState>()(
           ),
         })),
 
-        resetInvoice: (isCis = false) => set({
-          customer: defaultCustomer,
-          details: {
-            ...defaultInvoiceDetails,
-            date: getTodayISO(),
-            paymentTerms: '30',
-            notes: '',
-            documentType: 'invoice',
-            creditNoteFields: undefined,
-          },
-          lineItems: [createEmptyLineItem(isCis)],
-        }),
+        resetInvoice: (isCis = false) => {
+          const settings = useSettingsStore.getState();
+          set({
+            customer: defaultCustomer,
+            details: {
+              ...defaultInvoiceDetails,
+              date: getTodayISO(),
+              paymentTerms: settings.defaultPaymentTerms || '30',
+              notes: settings.defaultNotes || '',
+              documentType: 'invoice',
+              creditNoteFields: undefined,
+            },
+            lineItems: [createEmptyLineItem(isCis, settings.defaultVatRate)],
+          });
+        },
 
         getTotals: (cisStatus = 'not_applicable') => calculateTotals(get().lineItems, cisStatus),
       }),
