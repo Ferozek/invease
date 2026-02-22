@@ -8,6 +8,7 @@ import { generateHistoryExportCsv, downloadCsv } from '@/lib/export/csvExport';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import InvoiceHistoryItem, { PEEK_HINT_KEY } from './InvoiceHistoryItem';
 import CustomerMergePanel from './CustomerMergePanel';
+import CustomerProfileDrawer from './CustomerProfileDrawer';
 
 type FilterTab = 'all' | 'invoice' | 'credit_note';
 export type StatusFilter = 'all' | 'unpaid' | 'overdue' | 'paid';
@@ -41,6 +42,7 @@ export default function InvoiceHistoryPanel({
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [profileCustomerName, setProfileCustomerName] = useState<string | null>(null);
   const invoices = useHistoryStore((state) => state.invoices);
   const deleteInvoice = useHistoryStore((state) => state.deleteInvoice);
   const markAsPaid = useHistoryStore((state) => state.markAsPaid);
@@ -436,6 +438,7 @@ export default function InvoiceHistoryPanel({
                             selectionMode={selectionMode}
                             isSelected={selectedIds.has(inv.id)}
                             onToggleSelect={() => toggleSelectItem(inv.id)}
+                            onViewCustomer={() => setProfileCustomerName(inv.customerName)}
                           />
                         </motion.div>
                       ))}
@@ -528,6 +531,14 @@ export default function InvoiceHistoryPanel({
           <CustomerMergePanel
             isOpen={showMergePanel}
             onClose={() => setShowMergePanel(false)}
+          />
+
+          {/* Customer Profile Drawer */}
+          <CustomerProfileDrawer
+            isOpen={!!profileCustomerName}
+            onClose={() => setProfileCustomerName(null)}
+            customerName={profileCustomerName || ''}
+            onDuplicate={(inv) => { setProfileCustomerName(null); onDuplicate(inv); }}
           />
         </>
       )}
