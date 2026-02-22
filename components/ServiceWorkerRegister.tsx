@@ -18,43 +18,43 @@ export default function ServiceWorkerRegister() {
       process.env.NODE_ENV === 'production'
     ) {
       let intervalId: ReturnType<typeof setInterval> | undefined;
+      let registration: ServiceWorkerRegistration | undefined;
 
-      // Register service worker after page load
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('/sw.js')
-          .then((registration) => {
-            logger.info('Service worker registered', { scope: registration.scope });
+      // Register service worker
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then((reg) => {
+          registration = reg;
+          logger.info('Service worker registered', { scope: reg.scope });
 
-            // Check for updates periodically
-            intervalId = setInterval(() => {
-              registration.update();
-            }, 60 * 60 * 1000); // Every hour
+          // Check for updates periodically
+          intervalId = setInterval(() => {
+            reg.update();
+          }, 60 * 60 * 1000); // Every hour
 
-            // Handle updates
-            registration.addEventListener('updatefound', () => {
-              const newWorker = registration.installing;
-              if (newWorker) {
-                newWorker.addEventListener('statechange', () => {
-                  if (
-                    newWorker.state === 'installed' &&
-                    navigator.serviceWorker.controller
-                  ) {
-                    // New version available
-                    logger.info('New service worker version available');
-                    // Could show a toast notification here
-                  }
-                });
-              }
-            });
-          })
-          .catch((error) => {
-            logger.error('Service worker registration failed', error);
+          // Handle updates
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (newWorker) {
+              newWorker.addEventListener('statechange', () => {
+                if (
+                  newWorker.state === 'installed' &&
+                  navigator.serviceWorker.controller
+                ) {
+                  // New version available
+                  logger.info('New service worker version available');
+                }
+              });
+            }
           });
-      });
+        })
+        .catch((error) => {
+          logger.error('Service worker registration failed', error);
+        });
 
       return () => {
         if (intervalId) clearInterval(intervalId);
+        if (registration) registration.unregister();
       };
     }
   }, []);
