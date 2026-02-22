@@ -113,7 +113,8 @@ export default function ExportMenu({ invoice, totals }: ExportMenuProps) {
   const handleExportLineItems = () => {
     try {
       const csv = generateLineItemsCsv(invoice, totals);
-      const filename = `invoice-${invoice.details.invoiceNumber}-line-items.csv`;
+      const date = new Date().toISOString().split('T')[0];
+      const filename = `invoice-${invoice.details.invoiceNumber}-line-items-${date}.csv`;
       downloadCsv(csv, filename);
       toast.success('CSV exported', {
         description: 'Line items exported successfully',
@@ -129,7 +130,8 @@ export default function ExportMenu({ invoice, totals }: ExportMenuProps) {
   const handleExportSummary = () => {
     try {
       const csv = generateSummaryCsv(invoice, totals);
-      const filename = `invoice-${invoice.details.invoiceNumber}-summary.csv`;
+      const date = new Date().toISOString().split('T')[0];
+      const filename = `invoice-${invoice.details.invoiceNumber}-summary-${date}.csv`;
       downloadCsv(csv, filename);
       toast.success('CSV exported', {
         description: 'Summary exported successfully',
