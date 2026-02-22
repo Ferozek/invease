@@ -44,7 +44,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
     onClick?.(e);
   };
   // Base styles
-  const baseStyles = 'cursor-pointer inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
+  const baseStyles = 'cursor-pointer inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 active:scale-[0.98]';
 
   // Variant styles — Apple: blue = action, red = destructive only
   const variantStyles = {
