@@ -16,13 +16,22 @@ import type { InvoiceData, InvoiceTotals } from '@/types/invoice';
 
 const DEFAULT_BRAND_COLOR = '#0b4f7a';
 
+export type WatermarkType = 'DRAFT' | 'PAID' | 'CANCELLED' | null;
+
+const WATERMARK_COLORS: Record<string, string> = {
+  DRAFT: '#94a3b8',
+  PAID: '#16a34a',
+  CANCELLED: '#dc2626',
+};
+
 interface InvoicePDFProps {
   invoice: InvoiceData;
   totals: InvoiceTotals;
   brandColor?: string;
+  watermark?: WatermarkType;
 }
 
-export default function InvoicePDF({ invoice, totals, brandColor }: InvoicePDFProps) {
+export default function InvoicePDF({ invoice, totals, brandColor, watermark }: InvoicePDFProps) {
   const color = brandColor || DEFAULT_BRAND_COLOR;
   const isCreditNote = invoice.details.documentType === 'credit_note';
   const bankDetailsPresent = checkBankDetails(invoice.bankDetails);
@@ -327,6 +336,15 @@ export default function InvoicePDF({ invoice, totals, brandColor }: InvoicePDFPr
                   : `Payment is due within ${invoice.details.paymentTerms} days.`
               }`}
         </Text>
+
+        {/* Watermark overlay */}
+        {watermark ? (
+          <View style={styles.watermarkContainer}>
+            <Text style={[styles.watermarkText, { color: WATERMARK_COLORS[watermark] || '#94a3b8' }]}>
+              {watermark}
+            </Text>
+          </View>
+        ) : null}
       </Page>
     </Document>
   );

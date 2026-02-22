@@ -376,6 +376,23 @@ const styles = StyleSheet.create({
     lineHeight: 1.5,
     fontStyle: 'italic' as const,
   },
+  // Watermark overlay (DRAFT, PAID, CANCELLED)
+  watermarkContainer: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  watermarkText: {
+    fontSize: 72,
+    fontFamily: 'Helvetica-Bold',
+    opacity: 0.08,
+    transform: 'rotate(-45deg)',
+    letterSpacing: 12,
+  },
 });
 
 export default styles;
