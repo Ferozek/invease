@@ -537,6 +537,7 @@ export default function InvoiceHistoryPanel({
           <CustomerProfileDrawer
             isOpen={!!profileCustomerName}
             onClose={() => setProfileCustomerName(null)}
+            onBack={() => { setProfileCustomerName(null); setShowMergePanel(true); }}
             customerName={profileCustomerName || ''}
             onDuplicate={(inv) => { setProfileCustomerName(null); onDuplicate(inv); }}
           />

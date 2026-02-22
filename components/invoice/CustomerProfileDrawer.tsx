@@ -8,6 +8,7 @@ import { formatCurrency } from '@/lib/formatters';
 interface CustomerProfileDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  onBack?: () => void;
   customerName: string;
   onDuplicate?: (invoice: SavedInvoice) => void;
 }
@@ -20,6 +21,7 @@ interface CustomerProfileDrawerProps {
 export default function CustomerProfileDrawer({
   isOpen,
   onClose,
+  onBack,
   customerName,
   onDuplicate,
 }: CustomerProfileDrawerProps) {
@@ -101,13 +103,30 @@ export default function CustomerProfileDrawer({
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-[var(--surface-border)]">
-              <h2 className="text-lg font-semibold text-[var(--text-primary)] truncate">
-                {customerName}
-              </h2>
+              <div className="flex items-center gap-2 min-w-0">
+                {onBack && (
+                  <button
+                    type="button"
+                    onClick={onBack}
+                    className="cursor-pointer flex items-center gap-0.5 -ml-1 px-1 py-1 rounded-lg
+                      hover:bg-[var(--surface-elevated)] transition-colors shrink-0
+                      min-w-[44px] min-h-[44px] justify-center"
+                    aria-label="Back to Customers"
+                  >
+                    <svg className="w-5 h-5 text-[var(--brand-blue)]" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                    </svg>
+                    <span className="text-[var(--brand-blue)] text-sm font-normal">Customers</span>
+                  </button>
+                )}
+                <h2 className="text-lg font-semibold text-[var(--text-primary)] truncate">
+                  {customerName}
+                </h2>
+              </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
+                className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors shrink-0"
                 aria-label="Close"
               >
                 <svg className="w-5 h-5 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">

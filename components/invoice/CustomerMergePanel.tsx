@@ -63,8 +63,6 @@ export default function CustomerMergePanel({ isOpen, onClose }: CustomerMergePan
     return customers.find((c) => c.name === name)?.invoiceCount || 0;
   }, [customers]);
 
-  if (customers.length < 2) return null; // Need at least 2 customers to merge
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -138,7 +136,7 @@ export default function CustomerMergePanel({ isOpen, onClose }: CustomerMergePan
 
               {/* Manual merge — tap to select, tap another to merge */}
               <div className="p-4">
-                {manualFrom && (
+                {customers.length >= 2 && manualFrom && (
                   <div className="mb-3 px-3 py-2 rounded-lg bg-[var(--brand-blue-50)] border border-[var(--brand-blue)]/20">
                     <p className="text-xs text-[var(--brand-blue)]">
                       Merging <strong>{manualFrom}</strong> — tap another customer to merge into
@@ -153,49 +151,61 @@ export default function CustomerMergePanel({ isOpen, onClose }: CustomerMergePan
                   </div>
                 )}
 
-                {!manualFrom && !suggestions.length && (
+                {customers.length >= 2 && !manualFrom && !suggestions.length && (
                   <p className="text-xs text-[var(--text-muted)] mb-3">
                     Tap a customer to start merging, then tap another to combine them.
                   </p>
                 )}
 
-                <ul className="space-y-1">
-                  {customers.map((c) => (
-                    <li key={c.name}>
-                      <button
-                        type="button"
-                        onClick={() => handleManualSelect(c.name)}
-                        className={`cursor-pointer w-full text-left px-3 py-2.5 rounded-xl transition-all ${
-                          manualFrom === c.name
-                            ? 'bg-[var(--brand-blue)] text-white shadow-sm'
-                            : manualFrom
-                              ? 'bg-[var(--surface-elevated)] hover:bg-[var(--brand-blue-50)] border border-transparent hover:border-[var(--brand-blue)]/20'
-                              : 'hover:bg-[var(--surface-elevated)]'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <p className={`font-medium text-sm ${
-                            manualFrom === c.name ? 'text-white' : 'text-[var(--text-primary)]'
-                          }`}>
-                            {c.name}
-                          </p>
-                          <span className={`text-xs ${
-                            manualFrom === c.name ? 'text-white/70' : 'text-[var(--text-muted)]'
-                          }`}>
-                            {c.invoiceCount} {c.invoiceCount === 1 ? 'invoice' : 'invoices'}
-                          </span>
-                        </div>
-                        {c.postCode && (
-                          <p className={`text-xs mt-0.5 ${
-                            manualFrom === c.name ? 'text-white/60' : 'text-[var(--text-muted)]'
-                          }`}>
-                            {c.postCode}
-                          </p>
-                        )}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                {customers.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <p className="text-[var(--text-muted)] text-sm">No customers yet</p>
+                    <p className="text-[var(--text-muted)] text-xs mt-1">Save an invoice to see customers here</p>
+                  </div>
+                ) : (
+                  <ul className="space-y-1">
+                    {customers.map((c) => {
+                      const canMerge = customers.length >= 2;
+                      return (
+                        <li key={c.name}>
+                          <button
+                            type="button"
+                            onClick={canMerge ? () => handleManualSelect(c.name) : undefined}
+                            className={`w-full text-left px-3 py-2.5 rounded-xl transition-all ${
+                              canMerge ? 'cursor-pointer' : 'cursor-default'
+                            } ${
+                              manualFrom === c.name
+                                ? 'bg-[var(--brand-blue)] text-white shadow-sm'
+                                : manualFrom
+                                  ? 'bg-[var(--surface-elevated)] hover:bg-[var(--brand-blue-50)] border border-transparent hover:border-[var(--brand-blue)]/20'
+                                  : canMerge ? 'hover:bg-[var(--surface-elevated)]' : ''
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <p className={`font-medium text-sm ${
+                                manualFrom === c.name ? 'text-white' : 'text-[var(--text-primary)]'
+                              }`}>
+                                {c.name}
+                              </p>
+                              <span className={`text-xs ${
+                                manualFrom === c.name ? 'text-white/70' : 'text-[var(--text-muted)]'
+                              }`}>
+                                {c.invoiceCount} {c.invoiceCount === 1 ? 'invoice' : 'invoices'}
+                              </span>
+                            </div>
+                            {c.postCode && (
+                              <p className={`text-xs mt-0.5 ${
+                                manualFrom === c.name ? 'text-white/60' : 'text-[var(--text-muted)]'
+                              }`}>
+                                {c.postCode}
+                              </p>
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
             </div>
           </motion.div>
