@@ -22,6 +22,9 @@ export interface InvoiceHistoryItemProps {
   onRecordPayment: (amount: number) => void;
   onCreateCreditNote?: () => void;
   showPeekHint?: boolean;
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
 }
 
 /**
@@ -41,6 +44,9 @@ export default function InvoiceHistoryItem({
   onRecordPayment,
   onCreateCreditNote,
   showPeekHint,
+  selectionMode,
+  isSelected,
+  onToggleSelect,
 }: InvoiceHistoryItemProps) {
   const isCreditNote = (invoice.documentType || 'invoice') === 'credit_note';
   const isPaid = invoice.status === 'paid';
@@ -134,9 +140,9 @@ export default function InvoiceHistoryItem({
         </button>
       </div>
 
-      {/* Swipeable content — Apple Mail bidirectional swipe */}
+      {/* Swipeable content — Apple Mail bidirectional swipe (disabled in selection mode) */}
       <motion.div
-        drag="x"
+        drag={selectionMode ? false : 'x'}
         dragConstraints={{
           left: -ACTION_BUTTON_WIDTH,
           right: canSwipeRight ? ACTION_BUTTON_WIDTH : 0,
@@ -160,16 +166,39 @@ export default function InvoiceHistoryItem({
             setSwipeOffset(0);
           }
         }}
-        animate={{ x: swipeOffset }}
+        animate={{ x: selectionMode ? 0 : swipeOffset }}
         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         className="px-4 py-3 border-b border-[var(--surface-border)] hover:bg-[var(--surface-elevated)]
           transition-colors relative bg-[var(--surface-card)] touch-pan-y"
         onMouseEnter={() => !isDragging && setShowActions(true)}
         onMouseLeave={() => setShowActions(false)}
-        onClick={() => swipeOffset !== 0 && handleResetSwipe()}
+        onClick={() => {
+          if (selectionMode && onToggleSelect) {
+            onToggleSelect();
+          } else if (swipeOffset !== 0) {
+            handleResetSwipe();
+          }
+        }}
       >
         {/* Invoice header row */}
         <div className="flex items-center gap-2">
+          {/* Selection checkbox */}
+          {selectionMode && (
+            <div
+              className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                isSelected
+                  ? 'bg-[var(--brand-blue)] border-[var(--brand-blue)]'
+                  : 'border-[var(--text-muted)] bg-transparent'
+              }`}
+              aria-hidden="true"
+            >
+              {isSelected && (
+                <svg className="w-3.5 h-3.5 text-white" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                </svg>
+              )}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <p className="font-medium text-[var(--text-primary)] truncate">
@@ -189,8 +218,8 @@ export default function InvoiceHistoryItem({
             </p>
           </div>
 
-          {/* Desktop: hover actions */}
-          <div className={`hidden sm:flex items-center transition-opacity ${showActions ? 'opacity-100' : 'opacity-0'}`}>
+          {/* Desktop: hover actions (hidden in selection mode) */}
+          <div className={`hidden sm:flex items-center transition-opacity ${selectionMode ? '!hidden' : showActions ? 'opacity-100' : 'opacity-0'}`}>
             {onCreateCreditNote && (
               <button type="button" onClick={onCreateCreditNote} className="cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 transition-colors" aria-label="Create credit note" title="Create Credit Note">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
@@ -210,8 +239,8 @@ export default function InvoiceHistoryItem({
             </button>
           </div>
 
-          {/* Mobile: compact icons, swipe for primary actions */}
-          <div className="sm:hidden flex items-center">
+          {/* Mobile: compact icons, swipe for primary actions (hidden in selection mode) */}
+          <div className={`sm:hidden flex items-center ${selectionMode ? '!hidden' : ''}`}>
             {onCreateCreditNote && (
               <button type="button" onClick={onCreateCreditNote} className="cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-red-500" aria-label="Create credit note">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">

@@ -37,6 +37,8 @@ export default function InvoiceHistoryPanel({
   const [statusFilter, setStatusFilter] = useState<StatusFilter>(initialStatusFilter || 'all');
   const [invoiceToDelete, setInvoiceToDelete] = useState<SavedInvoice | null>(null);
   const [showMergePanel, setShowMergePanel] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const invoices = useHistoryStore((state) => state.invoices);
   const deleteInvoice = useHistoryStore((state) => state.deleteInvoice);
   const markAsPaid = useHistoryStore((state) => state.markAsPaid);
@@ -53,8 +55,26 @@ export default function InvoiceHistoryPanel({
     if (!isOpen) {
       setSearchQuery('');
       setStatusFilter(initialStatusFilter || 'all');
+      setSelectionMode(false);
+      setSelectedIds(new Set());
     }
   }
+
+  const toggleSelectionMode = useCallback(() => {
+    setSelectionMode((prev) => {
+      if (prev) setSelectedIds(new Set());
+      return !prev;
+    });
+  }, []);
+
+  const toggleSelectItem = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
 
   const handleDeleteRequest = useCallback((invoice: SavedInvoice) => {
     setInvoiceToDelete(invoice);
@@ -188,10 +208,45 @@ export default function InvoiceHistoryPanel({
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-[var(--surface-border)]">
-              <h2 className="text-lg font-semibold text-[var(--text-primary)]">History</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+                  {selectionMode ? `${selectedIds.size} selected` : 'History'}
+                </h2>
+              </div>
               <div className="flex items-center gap-1">
+                {/* Select mode toggle */}
+                {invoices.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={toggleSelectionMode}
+                    className={`cursor-pointer px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      selectionMode
+                        ? 'bg-[var(--brand-blue)] text-white'
+                        : 'hover:bg-[var(--surface-elevated)] text-[var(--text-muted)]'
+                    }`}
+                    aria-label={selectionMode ? 'Cancel selection' : 'Select invoices'}
+                  >
+                    {selectionMode ? 'Done' : 'Select'}
+                  </button>
+                )}
+                {/* Select All / Deselect All */}
+                {selectionMode && filteredInvoices.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedIds.size === filteredInvoices.length) {
+                        setSelectedIds(new Set());
+                      } else {
+                        setSelectedIds(new Set(filteredInvoices.map((inv) => inv.id)));
+                      }
+                    }}
+                    className="cursor-pointer px-2 py-1.5 rounded-lg text-xs font-medium text-[var(--brand-blue)] hover:bg-[var(--surface-elevated)] transition-colors"
+                  >
+                    {selectedIds.size === filteredInvoices.length ? 'Deselect All' : 'Select All'}
+                  </button>
+                )}
                 {/* Export CSV button */}
-                {filteredInvoices.length > 0 && (
+                {!selectionMode && filteredInvoices.length > 0 && (
                   <button
                     type="button"
                     onClick={handleExportCsv}
@@ -205,7 +260,7 @@ export default function InvoiceHistoryPanel({
                   </button>
                 )}
                 {/* Customers / Merge button */}
-                {invoices.length > 0 && (
+                {!selectionMode && invoices.length > 0 && (
                   <button
                     type="button"
                     onClick={() => setShowMergePanel(true)}
@@ -218,16 +273,18 @@ export default function InvoiceHistoryPanel({
                     </svg>
                   </button>
                 )}
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
-                  aria-label="Close"
-                >
-                  <svg className="w-5 h-5 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+                {!selectionMode && (
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors"
+                    aria-label="Close"
+                  >
+                    <svg className="w-5 h-5 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                )}
               </div>
             </div>
 
@@ -371,7 +428,10 @@ export default function InvoiceHistoryPanel({
                                 ? () => onCreateCreditNote(inv)
                                 : undefined
                             }
-                            showPeekHint={inv.id === peekHintId}
+                            showPeekHint={!selectionMode && inv.id === peekHintId}
+                            selectionMode={selectionMode}
+                            isSelected={selectedIds.has(inv.id)}
+                            onToggleSelect={() => toggleSelectItem(inv.id)}
                           />
                         </motion.div>
                       ))}
