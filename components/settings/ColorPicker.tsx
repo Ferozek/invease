@@ -64,7 +64,7 @@ export default function ColorPicker() {
             key={color.value}
             type="button"
             onClick={() => handleColorChange(color.value)}
-            className={`w-8 h-8 rounded-full border-2 transition-all
+            className={`w-11 h-11 rounded-full border-2 transition-all
               ${inputValue === color.value
                 ? 'border-[var(--text-primary)] scale-110'
                 : 'border-transparent hover:scale-105'

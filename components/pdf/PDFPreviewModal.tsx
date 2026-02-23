@@ -351,7 +351,7 @@ ${companyName}`;
             </div>
 
             {/* Content */}
-            <div className="flex-1 bg-[#525659] overflow-auto flex items-center justify-center p-4">
+            <div className="flex-1 bg-neutral-600 dark:bg-neutral-800 overflow-auto flex items-center justify-center p-4">
               {isLoading && (
                 <div className="w-full max-w-[800px] mx-auto">
                   <div
@@ -394,7 +394,7 @@ ${companyName}`;
                       </div>
                     </div>
                   </div>
-                  <p className="text-white text-center text-sm mt-3">Generating preview...</p>
+                  <p className="text-white/80 text-center text-sm mt-3">Generating preview...</p>
                 </div>
               )}
 

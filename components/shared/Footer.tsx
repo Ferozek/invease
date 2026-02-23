@@ -14,7 +14,7 @@ export default function Footer() {
 
   return (
     <footer
-      className="mt-auto border-t border-[var(--border-secondary)] bg-[var(--bg-primary)]"
+      className="mt-auto border-t border-[var(--surface-border)] bg-[var(--surface-page)]"
       role="contentinfo"
     >
       <div className="max-w-4xl mx-auto px-4 py-6 sm:px-6">
@@ -25,28 +25,28 @@ export default function Footer() {
         >
           <Link
             href="/privacy"
-            className="text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)]
+            className="text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)]
               min-h-[44px] flex items-center transition-colors"
           >
             Privacy Policy
           </Link>
           <Link
             href="/terms"
-            className="text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)]
+            className="text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)]
               min-h-[44px] flex items-center transition-colors"
           >
             Terms of Service
           </Link>
           <Link
             href="/accessibility"
-            className="text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)]
+            className="text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)]
               min-h-[44px] flex items-center transition-colors"
           >
             Accessibility
           </Link>
           <a
             href={`mailto:${siteConfig.support.feedbackEmail}?subject=Invease%20Feedback`}
-            className="text-sm text-[var(--text-tertiary)] hover:text-[var(--text-primary)]
+            className="text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)]
               min-h-[44px] flex items-center transition-colors"
           >
             Send Feedback
@@ -54,7 +54,7 @@ export default function Footer() {
         </nav>
 
         {/* Copyright & Attribution */}
-        <div className="text-center text-xs text-[var(--text-tertiary)]">
+        <div className="text-center text-xs text-[var(--text-muted)]">
           <p>
             &copy; {currentYear} {siteConfig.name}. A service by{' '}
             <a

@@ -93,7 +93,7 @@ export default function ShortcutHelpModal({ isOpen, onClose }: ShortcutHelpModal
               <button
                 type="button"
                 onClick={onClose}
-                className="cursor-pointer w-8 h-8 flex items-center justify-center rounded-full
+                className="cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center rounded-full
                   text-[var(--text-muted)] hover:bg-[var(--surface-elevated)] transition-colors"
                 aria-label="Close"
               >

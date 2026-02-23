@@ -185,7 +185,7 @@ export default function CustomerProfileDrawer({
                     type="button"
                     onClick={handleDownloadStatement}
                     disabled={isGeneratingStatement}
-                    className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors shrink-0
+                    className="cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-[var(--surface-elevated)] transition-colors shrink-0
                       text-[var(--brand-blue)] disabled:opacity-50"
                     aria-label="Download Statement"
                     title="Download Statement of Account"
@@ -205,7 +205,7 @@ export default function CustomerProfileDrawer({
               <button
                 type="button"
                 onClick={onClose}
-                className="cursor-pointer p-2 rounded-lg hover:bg-[var(--surface-elevated)] transition-colors shrink-0"
+                className="cursor-pointer min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-[var(--surface-elevated)] transition-colors shrink-0"
                 aria-label="Close"
               >
                 <svg className="w-5 h-5 text-[var(--text-muted)]" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
