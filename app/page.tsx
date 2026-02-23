@@ -525,7 +525,7 @@ export default function Home() {
 
             {/* Preview Column - complementary content */}
             <aside aria-label="Invoice preview" className="lg:col-span-1">
-            <div className="sticky top-6">
+            <div className="sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto">
               <Card variant="accent" className="p-6 overflow-hidden">
                 {/* Toolbar — always visible (Apple: never hide navigation) */}
                 <div className="relative">

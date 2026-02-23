@@ -295,6 +295,12 @@ export const useHistoryStore = create<HistoryState>()(
           // v4 → v5: Add customerNotes
           state.customerNotes = state.customerNotes || {};
         }
+        // Defensive: filter out any corrupted entries missing invoice data
+        if (state.invoices) {
+          state.invoices = state.invoices.filter(
+            (inv) => inv.invoice?.customer && inv.invoice?.details
+          );
+        }
         return state as HistoryState;
       },
     }
@@ -373,6 +379,8 @@ export const selectDashboardStats = (
   let currentCount = 0;
 
   for (const inv of state.invoices) {
+    // Guard against corrupted localStorage entries (missing invoice data)
+    if (!inv.invoice?.details || !inv.invoice?.customer) continue;
     const inPeriod = isWithinPeriod(inv.invoice.details.date, period);
     const isCreditNote = inv.documentType === 'credit_note';
     const paid = inv.amountPaid || 0;
@@ -473,6 +481,8 @@ export const selectUniqueCustomers = (state: HistoryState): UniqueCustomer[] => 
   // Iterate oldest→newest so most recent entry overwrites
   for (let i = state.invoices.length - 1; i >= 0; i--) {
     const inv = state.invoices[i];
+    // Guard against corrupted localStorage entries
+    if (!inv.invoice?.customer) continue;
     const key = inv.customerName.toLowerCase().trim();
     if (!key) continue;
     const existing = map.get(key);
