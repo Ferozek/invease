@@ -20,6 +20,15 @@ export default function ServiceWorkerRegister() {
       let intervalId: ReturnType<typeof setInterval> | undefined;
       let registration: ServiceWorkerRegistration | undefined;
 
+      // Request persistent storage so browser won't evict localStorage/IndexedDB
+      if (navigator.storage?.persist) {
+        navigator.storage.persist().then((granted) => {
+          if (granted) {
+            logger.info('Persistent storage granted');
+          }
+        });
+      }
+
       // Register service worker
       navigator.serviceWorker
         .register('/sw.js')
