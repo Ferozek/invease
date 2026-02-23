@@ -14,6 +14,16 @@ export default function GlobalError({
     Sentry.captureException(error);
   }, [error]);
 
+  const handleReset = () => {
+    // Clear the invoice draft so Zustand rehydrates cleanly
+    try {
+      sessionStorage.removeItem('invease-invoice-draft');
+    } catch {
+      // sessionStorage may not be available
+    }
+    reset();
+  };
+
   return (
     <html lang="en">
       <body>
@@ -23,7 +33,7 @@ export default function GlobalError({
             An unexpected error occurred. The error has been reported automatically.
           </p>
           <button
-            onClick={reset}
+            onClick={handleReset}
             style={{
               padding: '0.75rem 1.5rem',
               backgroundColor: '#0b4f7a',

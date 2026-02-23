@@ -8,7 +8,7 @@ import PaymentQRCode from './PaymentQRCode';
 export default function BankDetailsForm() {
   const { bankDetails, setBankDetails } = useCompanyStore();
   const totals = useInvoiceStore((s) => s.getTotals());
-  const reference = useInvoiceStore((s) => s.details.invoiceNumber);
+  const reference = useInvoiceStore((s) => s.details?.invoiceNumber ?? '');
 
   return (
     <div className="space-y-4">

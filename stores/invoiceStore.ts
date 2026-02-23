@@ -238,18 +238,55 @@ type InvoiceTemporalState = TemporalState<{
 }>;
 
 // Export undo/redo functions for keyboard shortcuts
-export const undo = () => useInvoiceStore.temporal.getState().undo();
-export const redo = () => useInvoiceStore.temporal.getState().redo();
+export const undo = () => {
+  const { pastStates } = useInvoiceStore.temporal.getState();
+  if (pastStates.length === 0) return;
+  // Get current functions before undo (temporal only restores data fields)
+  const currentState = useInvoiceStore.getState();
+  useInvoiceStore.temporal.getState().undo();
+  // Re-merge functions in case the state was replaced instead of merged
+  const afterUndo = useInvoiceStore.getState();
+  if (!afterUndo.setCustomerDetails) {
+    useInvoiceStore.setState({
+      ...currentState,
+      customer: afterUndo.customer ?? currentState.customer,
+      details: afterUndo.details ?? currentState.details,
+      lineItems: afterUndo.lineItems ?? currentState.lineItems,
+    });
+  }
+};
+export const redo = () => {
+  const { futureStates } = useInvoiceStore.temporal.getState();
+  if (futureStates.length === 0) return;
+  const currentState = useInvoiceStore.getState();
+  useInvoiceStore.temporal.getState().redo();
+  const afterRedo = useInvoiceStore.getState();
+  if (!afterRedo.setCustomerDetails) {
+    useInvoiceStore.setState({
+      ...currentState,
+      customer: afterRedo.customer ?? currentState.customer,
+      details: afterRedo.details ?? currentState.details,
+      lineItems: afterRedo.lineItems ?? currentState.lineItems,
+    });
+  }
+};
 export const clearHistory = () => useInvoiceStore.temporal.getState().clear();
 
 // Hook for accessing temporal state (undo/redo availability)
 export const useInvoiceHistory = () => {
-  const temporal = useStore(useInvoiceStore.temporal);
+  const pastLen = useStore(
+    useInvoiceStore.temporal,
+    (state) => state.pastStates.length
+  );
+  const futureLen = useStore(
+    useInvoiceStore.temporal,
+    (state) => state.futureStates.length
+  );
 
   return {
-    canUndo: temporal.pastStates.length > 0,
-    canRedo: temporal.futureStates.length > 0,
-    undo: temporal.undo,
-    redo: temporal.redo,
+    canUndo: pastLen > 0,
+    canRedo: futureLen > 0,
+    undo,
+    redo,
   };
 };
