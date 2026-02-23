@@ -66,14 +66,16 @@ export default function InvoiceToolbar({
   const { canUndo, canRedo, undo, redo } = useInvoiceHistory();
 
   return (
-    <div className="flex items-center justify-between mb-4">
-      <div className="flex items-center gap-3">
-        <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-          {isCreditNote ? 'Credit Note' : 'Invoice'} Preview
-        </h2>
-        <AutoSaveIndicator />
+    <div className="mb-4">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-semibold text-[var(--text-primary)]">
+            {isCreditNote ? 'Credit Note' : 'Invoice'} Preview
+          </h2>
+          <AutoSaveIndicator />
+        </div>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 flex-wrap">
         {/* Undo/Redo — visible buttons for discoverability */}
         <ToolbarButton
           onClick={undo}
@@ -120,6 +122,6 @@ export default function InvoiceToolbar({
           <SettingsIcon />
         </ToolbarButton>
       </div>
-    </div>
+      </div>
   );
 }
