@@ -8,6 +8,7 @@
   "background_color": "#ffffff",
   "theme_color": "#0b4f7a",
   "categories": ["business", "finance", "productivity"],
+  "id": "/",
   "icons": [
     {
       "src": "/icons/icon.svg",
@@ -19,40 +20,52 @@
       "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "screenshots": [
     {
       "src": "/screenshots/desktop-invoice.png",
-      "sizes": "1280x720",
+      "sizes": "2560x1440",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Create professional invoices with live preview"
     },
     {
       "src": "/screenshots/desktop-dashboard.png",
-      "sizes": "1280x720",
+      "sizes": "2560x1440",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Track payments and outstanding balances"
     },
     {
       "src": "/screenshots/mobile-invoice.png",
-      "sizes": "540x720",
+      "sizes": "750x1000",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Create invoices on the go"
     },
     {
       "src": "/screenshots/mobile-dashboard.png",
-      "sizes": "540x720",
+      "sizes": "750x1000",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Dashboard with payment tracking"
