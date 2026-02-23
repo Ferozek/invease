@@ -19,14 +19,14 @@ export default function BusinessTypeStep({
 }: BusinessTypeStepProps) {
   return (
     <div>
-      <h2 className="text-xl font-semibold text-[var(--brand-blue)] mb-2">
+      <h2 id="business-type-heading" className="text-xl font-semibold text-[var(--brand-blue)] mb-2">
         What type of business are you?
       </h2>
       <p className="text-[var(--text-secondary)] mb-6">
         This helps us show the right fields for your invoices.
       </p>
 
-      <div className="space-y-3">
+      <div role="radiogroup" aria-labelledby="business-type-heading" className="space-y-3">
         {BUSINESS_TYPE_OPTIONS.map((type) => (
           <label
             key={type.value}

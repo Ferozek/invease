@@ -68,12 +68,16 @@ export default function InvoiceDetailsForm() {
           <input
             id="invoiceDate"
             type="date"
+            required
+            aria-required="true"
+            aria-invalid={touched.date && errors.date ? 'true' : undefined}
+            aria-describedby={touched.date && errors.date ? 'invoiceDate-error' : undefined}
             className={`form-input ${touched.date && errors.date ? 'form-input-error' : ''}`}
             value={details.date}
             onChange={(e) => setInvoiceDetails({ date: e.target.value })}
             onBlur={(e) => handleBlur('date', e.target.value)}
           />
-          <FieldError error={touched.date ? errors.date : null} />
+          <FieldError id="invoiceDate-error" error={touched.date ? errors.date : null} />
         </div>
         <div>
           <label htmlFor="supplyDate" className="form-label">Supply Date</label>
@@ -91,13 +95,17 @@ export default function InvoiceDetailsForm() {
           <input
             id="invoiceNumber"
             type="text"
+            required
+            aria-required="true"
+            aria-invalid={touched.invoiceNumber && errors.invoiceNumber ? 'true' : undefined}
+            aria-describedby={touched.invoiceNumber && errors.invoiceNumber ? 'invoiceNumber-error' : undefined}
             className={`form-input ${touched.invoiceNumber && errors.invoiceNumber ? 'form-input-error' : ''}`}
             placeholder="e.g., INV-001"
             value={details.invoiceNumber}
             onChange={(e) => setInvoiceDetails({ invoiceNumber: e.target.value })}
             onBlur={(e) => handleBlur('invoiceNumber', e.target.value)}
           />
-          <FieldError error={touched.invoiceNumber ? errors.invoiceNumber : null} />
+          <FieldError id="invoiceNumber-error" error={touched.invoiceNumber ? errors.invoiceNumber : null} />
           {duplicateWarning && !errors.invoiceNumber && (
             <div className="mt-2 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 p-3">
               <div className="flex items-start gap-2">
@@ -143,6 +151,8 @@ export default function InvoiceDetailsForm() {
           <label htmlFor="paymentTerms" className="form-label form-label-required">Payment Terms</label>
           <select
             id="paymentTerms"
+            required
+            aria-required="true"
             className="form-input"
             value={details.paymentTerms}
             onChange={(e) => setInvoiceDetails({ paymentTerms: e.target.value })}

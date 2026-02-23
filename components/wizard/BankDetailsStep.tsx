@@ -107,6 +107,10 @@ export default function BankDetailsStep() {
           id="bankName"
           type="text"
           autoComplete="organization"
+          required
+          aria-required="true"
+          aria-invalid={touched.bankName && errors.bankName ? 'true' : undefined}
+          aria-describedby={touched.bankName && errors.bankName ? 'bankName-error' : undefined}
           className={`form-input ${touched.bankName && errors.bankName ? 'form-input-error' : ''}`}
           placeholder="e.g., Barclays, HSBC, Lloyds"
           value={bankDetails.bankName}
@@ -118,7 +122,7 @@ export default function BankDetailsStep() {
           }}
           autoFocus
         />
-        <FieldError error={touched.bankName ? errors.bankName : null} />
+        <FieldError id="bankName-error" error={touched.bankName ? errors.bankName : null} />
       </div>
 
       {/* Account Name */}
@@ -130,6 +134,10 @@ export default function BankDetailsStep() {
           id="accountName"
           type="text"
           autoComplete="name"
+          required
+          aria-required="true"
+          aria-invalid={touched.accountName && errors.accountName ? 'true' : undefined}
+          aria-describedby={touched.accountName && errors.accountName ? 'accountName-error' : undefined}
           className={`form-input ${touched.accountName && errors.accountName ? 'form-input-error' : ''}`}
           placeholder="Name on the account"
           value={bankDetails.accountName}
@@ -141,7 +149,7 @@ export default function BankDetailsStep() {
           }}
         />
         {touched.accountName && errors.accountName ? (
-          <FieldError error={errors.accountName} />
+          <FieldError id="accountName-error" error={errors.accountName} />
         ) : (
           <p className="text-xs text-[var(--text-muted)] mt-1">
             As it appears on your bank statements
@@ -159,6 +167,10 @@ export default function BankDetailsStep() {
             id="accountNumber"
             type="text"
             inputMode="numeric"
+            required
+            aria-required="true"
+            aria-invalid={touched.accountNumber && errors.accountNumber ? 'true' : undefined}
+            aria-describedby={touched.accountNumber && errors.accountNumber ? 'accountNumber-error' : undefined}
             className={`form-input font-mono ${touched.accountNumber && errors.accountNumber ? 'form-input-error' : ''}`}
             placeholder="12345678"
             maxLength={8}
@@ -170,7 +182,7 @@ export default function BankDetailsStep() {
             onBlur={(e) => handleBlur('accountNumber', e.target.value)}
           />
           {touched.accountNumber && errors.accountNumber ? (
-            <FieldError error={errors.accountNumber} />
+            <FieldError id="accountNumber-error" error={errors.accountNumber} />
           ) : (
             <p className="text-xs text-[var(--text-muted)] mt-1">8 digits</p>
           )}
@@ -184,6 +196,10 @@ export default function BankDetailsStep() {
             id="sortCode"
             type="text"
             inputMode="numeric"
+            required
+            aria-required="true"
+            aria-invalid={touched.sortCode && errors.sortCode ? 'true' : undefined}
+            aria-describedby={touched.sortCode && errors.sortCode ? 'sortCode-error' : undefined}
             className={`form-input font-mono ${touched.sortCode && errors.sortCode ? 'form-input-error' : ''}`}
             placeholder="00-00-00"
             maxLength={8}
@@ -192,7 +208,7 @@ export default function BankDetailsStep() {
             onBlur={(e) => handleBlur('sortCode', e.target.value)}
           />
           {touched.sortCode && errors.sortCode ? (
-            <FieldError error={errors.sortCode} />
+            <FieldError id="sortCode-error" error={errors.sortCode} />
           ) : (
             <p className="text-xs text-[var(--text-muted)] mt-1">6 digits</p>
           )}

@@ -130,6 +130,10 @@ export default function IdentityStep({ businessType }: IdentityStepProps) {
         <input
           id="companyName"
           type="text"
+          required
+          aria-required="true"
+          aria-invalid={touched.companyName && errors.companyName ? 'true' : undefined}
+          aria-describedby={touched.companyName && errors.companyName ? 'companyName-error' : undefined}
           className={`form-input ${touched.companyName && errors.companyName ? 'form-input-error' : ''}`}
           placeholder={getNamePlaceholder()}
           value={companyName}
@@ -141,7 +145,7 @@ export default function IdentityStep({ businessType }: IdentityStepProps) {
           }}
           autoFocus
         />
-        <FieldError error={touched.companyName ? errors.companyName : null} />
+        <FieldError id="companyName-error" error={touched.companyName ? errors.companyName : null} />
       </div>
 
       {/* Company Number - only for Ltd */}
@@ -177,6 +181,10 @@ export default function IdentityStep({ businessType }: IdentityStepProps) {
         </label>
         <textarea
           id="address"
+          required
+          aria-required="true"
+          aria-invalid={touched.address && errors.address ? 'true' : undefined}
+          aria-describedby={touched.address && errors.address ? 'address-error' : undefined}
           className={`form-input resize-none ${touched.address && errors.address ? 'form-input-error' : ''}`}
           rows={3}
           placeholder="Enter your business address"
@@ -188,7 +196,7 @@ export default function IdentityStep({ businessType }: IdentityStepProps) {
             handleBlur('address', formatted, true);
           }}
         />
-        <FieldError error={touched.address ? errors.address : null} />
+        <FieldError id="address-error" error={touched.address ? errors.address : null} />
       </div>
 
       {/* Postcode */}
@@ -199,6 +207,10 @@ export default function IdentityStep({ businessType }: IdentityStepProps) {
         <input
           id="postCode"
           type="text"
+          required
+          aria-required="true"
+          aria-invalid={touched.postCode && errors.postCode ? 'true' : undefined}
+          aria-describedby={touched.postCode && errors.postCode ? 'postCode-error' : undefined}
           className={`form-input max-w-[200px] ${touched.postCode && errors.postCode ? 'form-input-error' : ''}`}
           placeholder="e.g., SW1A 1AA"
           value={postCode}
@@ -209,7 +221,7 @@ export default function IdentityStep({ businessType }: IdentityStepProps) {
             handleBlur('postCode', formatted, true);
           }}
         />
-        <FieldError error={touched.postCode ? errors.postCode : null} />
+        <FieldError id="postCode-error" error={touched.postCode ? errors.postCode : null} />
       </div>
     </div>
   );

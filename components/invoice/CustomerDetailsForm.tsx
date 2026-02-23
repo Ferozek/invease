@@ -155,6 +155,9 @@ export default function CustomerDetailsForm() {
           type="text"
           autoComplete="off"
           role="combobox"
+          required
+          aria-required="true"
+          aria-invalid={touched.name && errors.name ? 'true' : undefined}
           aria-expanded={showSuggestions && suggestions.length > 0}
           aria-controls="customer-suggestions"
           aria-activedescendant={highlightedIndex >= 0 ? `customer-option-${highlightedIndex}` : undefined}
@@ -179,7 +182,7 @@ export default function CustomerDetailsForm() {
           }}
           onKeyDown={handleNameKeyDown}
         />
-        <FieldError error={touched.name ? errors.name : null} />
+        <FieldError id="customerName-error" error={touched.name ? errors.name : null} />
 
         {/* Autocomplete suggestions — Apple Contacts pattern */}
         {showSuggestions && suggestions.length > 0 && (
@@ -264,6 +267,10 @@ export default function CustomerDetailsForm() {
           id="customerPostCode"
           type="text"
           autoComplete="postal-code"
+          required
+          aria-required="true"
+          aria-invalid={touched.postCode && errors.postCode ? 'true' : undefined}
+          aria-describedby={touched.postCode && errors.postCode ? 'customerPostCode-error' : undefined}
           className={`form-input ${touched.postCode && errors.postCode ? 'form-input-error' : ''}`}
           placeholder="e.g., SW1A 1AA"
           value={customer.postCode}
@@ -274,13 +281,17 @@ export default function CustomerDetailsForm() {
             handleBlur('postCode', formatted);
           }}
         />
-        <FieldError error={touched.postCode ? errors.postCode : null} />
+        <FieldError id="customerPostCode-error" error={touched.postCode ? errors.postCode : null} />
       </div>
       <div className="md:col-span-2">
         <label htmlFor="customerAddress" className="form-label form-label-required">Address</label>
         <textarea
           id="customerAddress"
           autoComplete="street-address"
+          required
+          aria-required="true"
+          aria-invalid={touched.address && errors.address ? 'true' : undefined}
+          aria-describedby={touched.address && errors.address ? 'customerAddress-error' : undefined}
           className={`form-input ${touched.address && errors.address ? 'form-input-error' : ''}`}
           rows={3}
           placeholder="Customer address"
@@ -292,7 +303,7 @@ export default function CustomerDetailsForm() {
             handleBlur('address', formatted);
           }}
         />
-        <FieldError error={touched.address ? errors.address : null} />
+        <FieldError id="customerAddress-error" error={touched.address ? errors.address : null} />
       </div>
     </div>
   );

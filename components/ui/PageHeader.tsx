@@ -37,52 +37,32 @@ export default function PageHeader({
     <div className={`${backgroundStyle} ${gradient ? 'py-12' : 'mb-8'} ${className}`}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-start justify-between">
-          {onTitleClick ? (
-            <button
-              type="button"
-              onClick={onTitleClick}
-              className="cursor-pointer flex items-start gap-4 text-left active:opacity-80 transition-opacity"
-              aria-label="Scroll to top"
-            >
-              {icon && (
-                <div className={`flex-shrink-0 ${gradient ? 'bg-white/20' : 'bg-[var(--brand-blue-50)]'} rounded-xl p-3`}>
-                  <div className={`w-8 h-8 flex items-center justify-center ${gradient ? 'text-white' : 'text-[var(--brand-blue)]'}`}>
-                    {icon}
-                  </div>
+          <div
+            className={`flex items-start gap-4 ${onTitleClick ? 'cursor-pointer active:opacity-80 transition-opacity' : ''}`}
+            onClick={onTitleClick}
+            role={onTitleClick ? 'button' : undefined}
+            tabIndex={onTitleClick ? 0 : undefined}
+            onKeyDown={onTitleClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTitleClick(); } } : undefined}
+            aria-label={onTitleClick ? 'Scroll to top' : undefined}
+          >
+            {icon && (
+              <div className={`flex-shrink-0 ${gradient ? 'bg-white/20' : 'bg-[var(--brand-blue-50)]'} rounded-xl p-3`}>
+                <div className={`w-8 h-8 flex items-center justify-center ${gradient ? 'text-white' : 'text-[var(--brand-blue)]'}`}>
+                  {icon}
                 </div>
-              )}
-              <div>
-                <h1 className={`text-3xl font-bold ${textColor} mb-2`}>
-                  {title}
-                </h1>
-                {description && (
-                  <p className={`${descriptionColor} max-w-2xl`}>
-                    {description}
-                  </p>
-                )}
               </div>
-            </button>
-          ) : (
-            <div className="flex items-start gap-4">
-              {icon && (
-                <div className={`flex-shrink-0 ${gradient ? 'bg-white/20' : 'bg-[var(--brand-blue-50)]'} rounded-xl p-3`}>
-                  <div className={`w-8 h-8 flex items-center justify-center ${gradient ? 'text-white' : 'text-[var(--brand-blue)]'}`}>
-                    {icon}
-                  </div>
-                </div>
+            )}
+            <div>
+              <h1 className={`text-3xl font-bold ${textColor} mb-2`}>
+                {title}
+              </h1>
+              {description && (
+                <p className={`${descriptionColor} max-w-2xl`}>
+                  {description}
+                </p>
               )}
-              <div>
-                <h1 className={`text-3xl font-bold ${textColor} mb-2`}>
-                  {title}
-                </h1>
-                {description && (
-                  <p className={`${descriptionColor} max-w-2xl`}>
-                    {description}
-                  </p>
-                )}
-              </div>
             </div>
-          )}
+          </div>
           {actions && (
             <div className="flex-shrink-0">
               {actions}
