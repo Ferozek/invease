@@ -125,13 +125,16 @@
   html {
     scroll-behavior: smooth;
     color-scheme: light;
+    /* Dynamic Type: respect user's OS/browser text size preference */
+    font-size: 100%;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   html.dark {
     color-scheme: dark;
   }
 
-  html,
   body {
     background-color: var(--surface-bg);
     color: var(--text-primary);

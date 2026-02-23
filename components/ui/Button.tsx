@@ -50,7 +50,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   const variantStyles = {
     primary: 'btn-primary bg-[var(--cta-primary-bg)] hover:bg-[var(--cta-primary-hover)] text-white focus:ring-[var(--brand-blue)]',
     destructive: 'btn-destructive bg-[var(--cta-destructive-bg)] hover:bg-[var(--cta-destructive-hover)] text-white focus:ring-[var(--brand-red)]',
-    secondary: 'btn-secondary bg-[var(--brand-blue)] hover:bg-[#08436b] text-white focus:ring-[var(--brand-blue)]',
+    secondary: 'btn-secondary bg-[var(--brand-blue-50)] text-[var(--brand-blue)] border border-[var(--brand-blue)]/20 hover:bg-[var(--brand-blue)] hover:text-white focus:ring-[var(--brand-blue)]',
     ghost: 'btn-ghost border-2 border-[var(--brand-blue)] text-[var(--brand-blue)] hover:bg-[var(--brand-blue)] hover:text-white focus:ring-[var(--brand-blue)]',
     muted: 'btn-muted bg-[var(--brand-blue-50)] text-[var(--brand-blue)] hover:bg-[var(--brand-blue)] hover:text-white focus:ring-[var(--brand-blue)]',
   };

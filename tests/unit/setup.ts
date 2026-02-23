@@ -2,6 +2,7 @@
  * Vitest Setup
  * Mock browser APIs not available in jsdom
  */
+import '@testing-library/jest-dom/vitest';
 
 // Mock localStorage
 const localStorageMock = (() => {

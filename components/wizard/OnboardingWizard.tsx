@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { analytics } from '@/lib/analytics';
 import Card from '@/components/ui/Card';
@@ -13,6 +13,26 @@ import BankDetailsStep, { isBankDetailsStepValid } from './BankDetailsStep';
 import ReviewStep from './ReviewStep';
 import { useCompanyStore } from '@/stores/companyStore';
 import type { BusinessType } from '@/types/invoice';
+
+/** Returns list of missing required field names for a given step */
+function getMissingFields(step: number, selectedType: BusinessType | null): string[] {
+  const missing: string[] = [];
+  if (step === 1) {
+    if (!selectedType) missing.push('Business type');
+  } else if (step === 2) {
+    const { companyName, address, postCode } = useCompanyStore.getState();
+    if (!companyName.trim()) missing.push('Business name');
+    if (!address.trim()) missing.push('Address');
+    if (!postCode.trim()) missing.push('Postcode');
+  } else if (step === 4) {
+    const { bankDetails } = useCompanyStore.getState();
+    if (!bankDetails.bankName.trim()) missing.push('Bank name');
+    if (!bankDetails.accountName.trim()) missing.push('Account name');
+    if (bankDetails.accountNumber.trim().length !== 8) missing.push('Account number');
+    if (bankDetails.sortCode.replace(/-/g, '').length !== 6) missing.push('Sort code');
+  }
+  return missing;
+}
 
 const TOTAL_STEPS = 5;
 
@@ -51,9 +71,13 @@ export default function OnboardingWizard() {
   // Use stored business type if available (for returning users)
   const effectiveBusinessType = selectedType || businessType;
 
+  // Track whether user has attempted to continue (for error summary)
+  const [hasAttemptedContinue, setHasAttemptedContinue] = useState(false);
+
   const goToStep = useCallback((newStep: number) => {
     setDirection(newStep > step ? 1 : -1);
     setStep(newStep);
+    setHasAttemptedContinue(false);
   }, [step]);
 
   const handleNext = useCallback(() => {
@@ -114,6 +138,26 @@ export default function OnboardingWizard() {
   // Bank details are validated before PDF download, so safe to defer
   const canSkip = step === 3 || step === 4;
 
+  // Compute missing fields for error summary (only shown after user attempts Continue)
+  const missingFields = useMemo(
+    () => getMissingFields(step, selectedType),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [step, selectedType, hasAttemptedContinue]
+  );
+
+  // Handle Continue click — show errors if invalid, otherwise proceed
+  const handleContinueClick = useCallback(() => {
+    if (!isCurrentStepValid()) {
+      setHasAttemptedContinue(true);
+      return;
+    }
+    if (step === 5) {
+      handleComplete();
+    } else {
+      handleNext();
+    }
+  }, [isCurrentStepValid, step, handleComplete, handleNext]);
+
   return (
     <div className="min-h-[calc(100vh-200px)] flex flex-col">
       {/* Header */}
@@ -172,6 +216,16 @@ export default function OnboardingWizard() {
       {/* Sticky Bottom Navigation - Apple style */}
       {step > 1 && (
         <div className="fixed bottom-0 left-0 right-0 bg-[var(--surface-card)]/95 backdrop-blur-sm border-t border-[var(--surface-border)] safe-area-bottom">
+          {/* Error summary — appears when user taps Continue with missing fields */}
+          {hasAttemptedContinue && missingFields.length > 0 && (
+            <div className="max-w-lg mx-auto px-4 pt-3" role="alert" aria-live="assertive">
+              <p className="text-sm text-[var(--cta-destructive-bg)] font-medium">
+                {missingFields.length === 1
+                  ? `${missingFields[0]} is required`
+                  : `${missingFields.length} fields need attention: ${missingFields.join(', ')}`}
+              </p>
+            </div>
+          )}
           <div className="max-w-lg mx-auto px-4 py-4 flex items-center gap-3">
             <Button
               variant="ghost"
@@ -208,8 +262,7 @@ export default function OnboardingWizard() {
               <Button
                 variant="primary"
                 className="flex-1"
-                disabled={!isCurrentStepValid()}
-                onClick={step === 5 ? handleComplete : handleNext}
+                onClick={handleContinueClick}
               >
                 {getNextButtonText()}
               </Button>
